@@ -41,8 +41,8 @@ School_Medical_System/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-repo/school-medical-management.git
-cd school-medical-management
+git clone https://github.com/HoangNQstoine/School_Medical_System.git
+cd school-medical-system
 ```
 
 ### 2. Backend Setup (Spring Boot)
