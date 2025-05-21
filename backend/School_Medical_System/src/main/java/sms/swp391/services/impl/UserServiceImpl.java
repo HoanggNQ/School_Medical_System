@@ -16,7 +16,6 @@ import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
-import sms.swp391.utils.Constants;
 import sms.swp391.utils.EntityToDTO;
 
 

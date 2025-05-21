@@ -2,16 +2,11 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.requests.*;
 
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
-import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.UserRepository;
-
-import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor

@@ -16,8 +16,6 @@ import sms.swp391.repositories.UserRepository;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.SendMailService;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 @Service
