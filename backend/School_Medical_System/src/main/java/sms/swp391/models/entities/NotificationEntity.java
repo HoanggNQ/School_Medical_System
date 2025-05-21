@@ -10,13 +10,14 @@ import sms.swp391.models.dtos.enums.StatusEnum;
 
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "notifications", schema = "public")
 @Getter
 @Setter
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "notifications")
 public class NotificationEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id", nullable = false)
@@ -33,10 +34,11 @@ public class NotificationEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private StatusEnum status ;
+    private StatusEnum status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
-    private UserEntity createNotification;
+    private UserEntity creator; // đổi tên từ createNotification → creator
 }
+

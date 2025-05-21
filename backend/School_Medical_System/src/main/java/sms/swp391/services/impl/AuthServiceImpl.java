@@ -60,7 +60,6 @@ public class AuthServiceImpl implements AuthService {
         String password = passwordEncoder.encode(userRegisterDTO.getPassword());
         UserEntity userCreate = DTOToEntity.UserResponseToEntity(userRegisterDTO);
         userCreate.setStatus(StatusEnum.VERIFY);
-        userCreate.setRoleName(RoleEnum.STUDENT);
         userCreate.setPassword(password);
         userRepository.save(userCreate);
 

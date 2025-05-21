@@ -72,5 +72,10 @@ public class AppConfig {
         return mailSender;
     }
 
-
+    @Bean
+    RedisTemplate<String, Object> redisTemplate (RedisConnectionFactory redisConnectionFactory) {
+        var template = new RedisTemplate<String, Object>();
+        template.setConnectionFactory(redisConnectionFactory);
+        return template;
+    }
 }

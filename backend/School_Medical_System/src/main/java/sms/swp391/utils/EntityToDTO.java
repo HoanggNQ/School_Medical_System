@@ -1,6 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
+import sms.swp391.models.dtos.respones.NotificationResponse;
 import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.models.entities.*;
 
@@ -22,5 +23,13 @@ public class EntityToDTO {
                 .build();
     }
 
-
+    public static NotificationResponse notificationEntityDTO(NotificationEntity notificationEntity) {
+        return NotificationResponse.builder()
+                .notificationId(notificationEntity.getNotificationId())
+                .content(notificationEntity.getContent())
+                .title(notificationEntity.getTitle())
+                .userId(notificationEntity.getCreator().getUserId())
+                .dateCreate(notificationEntity.getDateCreate())
+                .build();
+    }
 }
