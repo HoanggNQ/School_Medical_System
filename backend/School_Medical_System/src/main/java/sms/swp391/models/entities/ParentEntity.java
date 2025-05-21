@@ -9,10 +9,10 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "parent", schema = "public")
+@Getter
+@Setter
 public class ParentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,13 +20,9 @@ public class ParentEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity userEntity;
 
-
-
-    @OneToMany(mappedBy = "parentEntity")
+    @OneToMany(mappedBy = "parentEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StudentEntity> studentEntities = new LinkedHashSet<>();
-
 }

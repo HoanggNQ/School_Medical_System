@@ -11,10 +11,10 @@ import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "student", schema = "public")
+@Getter
+@Setter
 public class StudentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,28 +22,23 @@ public class StudentEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "class_id")
     private ClassEntity classEntityField;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "parent_id")
     private ParentEntity parentEntity;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity userEntity;
 
     @Column(name = "genetic_disease", length = Integer.MAX_VALUE)
     private String geneticDisease;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updated_at")
     private Instant updatedAt;
 
@@ -64,5 +59,4 @@ public class StudentEntity {
 
     @OneToMany(mappedBy = "studentEntity")
     private Set<StudentVaccinationEntity> studentVaccinationEntities = new LinkedHashSet<>();
-
 }

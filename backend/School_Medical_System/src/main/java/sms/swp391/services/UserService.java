@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.multipart.MultipartFile;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.UserResponse;
@@ -33,4 +34,5 @@ public interface UserService {
     UserResponse checkUser(String email);
 
     UserResponse setPasswordForget(String email, String newPassword, String newPasswordConfirm);
+    void chooseRole(String email , RoleEnum role);
 }

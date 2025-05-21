@@ -30,8 +30,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll() // Cho phép tất cả các yêu cầu đến endpoint xác thực
                         .requestMatchers("/swagger-ui/**").permitAll() // Cho phép truy cập Swagger UI
                         .requestMatchers("/v3/api-docs/**").permitAll() // Cho phép truy cập tài liệu API
-                        .requestMatchers("api/v1/test/**").permitAll()
-                        .requestMatchers("/api/v1/OTP/**").permitAll()
+                        .requestMatchers("/api/v1/test/**").permitAll()
+                        .requestMatchers("/api/v1/otp/**").permitAll()
                         .requestMatchers("/api/v1/mail/**").permitAll()
 
 

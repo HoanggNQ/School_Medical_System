@@ -3,7 +3,6 @@ package sms.swp391.models.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +12,7 @@ import sms.swp391.models.dtos.enums.StatusEnum;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
@@ -22,7 +22,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "\"User\"", schema = "public")
+@Table(name = "user", schema = "public")
 public class UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,17 +62,19 @@ public class UserEntity implements UserDetails {
     @Column(name = "avatarurl", length = Integer.MAX_VALUE)
     private String avatarurl;
 
-    @ColumnDefault("true")
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private StatusEnum status;
-
-
 
     @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private ParentEntity parentEntity;
 
     @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private StudentEntity studentEntity;
+
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<NotificationEntity> notifications = new LinkedHashSet<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();

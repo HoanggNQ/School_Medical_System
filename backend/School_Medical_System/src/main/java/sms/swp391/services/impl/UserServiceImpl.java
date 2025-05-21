@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.UserResponse;
@@ -15,6 +16,7 @@ import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
+import sms.swp391.utils.Constants;
 import sms.swp391.utils.EntityToDTO;
 
 
@@ -32,8 +34,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponse> getListUser() {
         List<UserEntity> userEntities = userRepository.findAll();
-//        var userResponses = userEntities.stream().map
-//                (a->EntityToDTO.UserEntityToDTO(a)).toList();
         var userResponses = userEntities.stream().map(EntityToDTO::UserEntityToDTO).toList();
         return userResponses;
     }
@@ -163,6 +163,19 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(password);
         userRepository.save(userEntity);
         return EntityToDTO.UserEntityToDTO(userEntity);
+    }
+
+
+    @Override
+    public void chooseRole(String email, RoleEnum role) {
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (userEntity.getRoleName() != null) {
+            throw new ActionFailedException("Role has already been assigned");
+        }
+        userEntity.setRoleName(role);
+        userRepository.save(userEntity);
     }
 
 }
