@@ -32,7 +32,7 @@ public class AuthController {
             return ResponseEntity.ok().body(
                     ResponseObject.builder()
                             .code("AUTH_SUCCESS")
-                            .message("Welcome To Second Chance Shop")
+                            .message("Welcome To School Medical System")
                             .status(HttpStatus.OK)
                             .isSuccess(true)
                             .data(jwtResponse)

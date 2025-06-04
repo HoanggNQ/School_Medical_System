@@ -32,17 +32,30 @@ public class OtpServiceImpl implements OTPService {
 
     @Override
     public void generateOTPCode(String email, String template) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) {
-            String otpInRedis = (String) redisTemplate.opsForHash().get(email, "otp");
-            if (otpInRedis != null) {
-                throw new ActionFailedException("OTP has been sent. Please check your email !");
+        // Check if an OTP already exists
+        String existingOtp = (String) redisTemplate.opsForHash().get(email, "otp");
+        if (existingOtp != null) {
+            // Calculate remaining TTL
+            Long timeToLive = redisTemplate.getExpire(email, TimeUnit.SECONDS);
+            if (timeToLive != null && timeToLive > 0) {
+                long minutes = timeToLive / 60;
+                long seconds = timeToLive % 60;
+                throw new ActionFailedException(
+                        String.format("OTP has already been sent. Please wait %d minute(s) and %d second(s) before requesting again.", minutes, seconds)
+                );
+            } else {
+                // TTL is negative or not set – delete the key to reset
+                redisTemplate.delete(email);
             }
         }
-        var value = generateRandomOTP();
-        redisTemplate.delete(email);
-        redisTemplate.opsForValue().set(email, value, timeOut, TimeUnit.MINUTES); // Sử dụng email làm key
+        // Generate and store a new OTP
+        String value = generateRandomOTP();
+        redisTemplate.opsForValue().set(email, value, timeOut, TimeUnit.MINUTES);
+
+        // Send email
         mailSenderService.sendOtpEmail(email, value, template);
     }
+
 
 
     @Override

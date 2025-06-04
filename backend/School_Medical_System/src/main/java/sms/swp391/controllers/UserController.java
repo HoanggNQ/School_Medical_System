@@ -19,6 +19,7 @@ import sms.swp391.models.dtos.requests.ChangePassworDTO;
 import sms.swp391.models.dtos.requests.ChooseRoleRequest;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
+import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.services.OTPService;
@@ -85,29 +86,27 @@ public class UserController {
         UserResponse userResponse = userService.userDelete(id);
         return ResponseEntity.ok().body(
                 ResponseObject.builder()
-                        .code("UPDATE_SUCCESS")
-                        .message("Update user successfully")
+                        .code("DELETE_SUCCESS")
+                        .message("Delete user successfully")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
                         .data(userResponse)
                         .build()
         );
     }
-
     @GetMapping
     public ResponseEntity<ResponseObject> getUsers(
             @RequestParam(value = "search", required = false) String search,
             @PageableDefault(page = 0, size = 10)
             @SortDefault.SortDefaults({
-                    @SortDefault(sort = "name", direction = Sort.Direction.ASC),
-                    @SortDefault(sort = "userId", direction = Sort.Direction.DESC)
-            })
-            Pageable pageable) {
-        UserResponse userResponse = userService.getUsers(search, pageable);
-        return ResponseEntity.ok().body(
+                    @SortDefault(sort = "fullname", direction = Sort.Direction.ASC),
+                    @SortDefault(sort = "username", direction = Sort.Direction.DESC)
+            }) Pageable pageable) {
+        PaginatedUserResponse userResponse = userService.getUsers(search, pageable);
+        return ResponseEntity.ok(
                 ResponseObject.builder()
-                        .code("UPDATE_SUCCESS")
-                        .message("Update user successfully")
+                        .code("GET_SUCCESS")
+                        .message("Get user successfully")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
                         .data(userResponse)
@@ -131,36 +130,46 @@ public class UserController {
 
     @PutMapping(path = "change-password")
     public ResponseEntity<ResponseObject> changePassword(@RequestBody ChangePassworDTO changePassworDTO) {
+        // First validate the old password and apply the new one
         UserResponse userResponse = userService.changPassword(
                 changePassworDTO.getEmail(),
                 changePassworDTO.getOldPassword(),
                 changePassworDTO.getNewPassword(),
                 changePassworDTO.getNewPasswordConfirm());
-        otpService.changePasswordOtp(userResponse.getEmail(), changePassworDTO.getNewPassword());
-        return ResponseEntity.ok().body(
+
+        // Optionally: send OTP confirmation for sensitive changes
+        otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.PASSWORD.toString());
+
+        return ResponseEntity.ok(
                 ResponseObject.builder()
-                        .code("GET_SUCCESS")
-                        .message("Get user successfully")
+                        .code("PASSWORD_CHANGED_OTP_SENT")
+                        .message("Password changed successfully. OTP sent to confirm change.")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
                         .data(userResponse)
                         .build()
         );
     }
+
     @PutMapping(path = "forget-password")
     public ResponseEntity<ResponseObject> forgetPass(@RequestParam String email) {
-        UserResponse check = userService.checkUser(email);
-        otpService.generateOTPCode(email,TemplateEnum.PASSWORD.toString());
-        return ResponseEntity.ok().body(
+        // Check if user exists
+        UserResponse user = userService.checkUser(email);
+
+        // Generate OTP for password reset
+        otpService.generateOTPCode(email, TemplateEnum.PASSWORD.toString());
+
+        return ResponseEntity.ok(
                 ResponseObject.builder()
-                        .code("GET_SUCCESS")
-                        .message("Get user successfully")
+                        .code("OTP_SENT")
+                        .message("OTP has been sent to your email for password reset.")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
-                        .data(check)
+                        .data(user)
                         .build()
         );
     }
+
     @PostMapping("/choose-role")
     public ResponseEntity<String> chooseRole(@RequestBody ChooseRoleRequest request) {
         userService.chooseRole(request.getEmail(), request.getRole());

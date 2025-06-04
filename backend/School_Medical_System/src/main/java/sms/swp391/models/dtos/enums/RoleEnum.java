@@ -2,5 +2,7 @@ package sms.swp391.models.dtos.enums;
 
 public enum RoleEnum {
     STUDENT,
-    PARENT
+    PARENT,
+    ADMIN,
+    SCHOOL_NURSE
 }

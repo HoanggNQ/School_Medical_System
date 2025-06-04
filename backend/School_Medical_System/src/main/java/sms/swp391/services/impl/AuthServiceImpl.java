@@ -69,9 +69,9 @@ public class AuthServiceImpl implements AuthService {
     public JwtResponse authenticateUser(LoginDTO loginDto) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
+                    new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
             );
-            UserEntity userEntity = userRepository.findByEmail(loginDto.getUsername()).orElseThrow(
+            UserEntity userEntity = userRepository.findByEmail(loginDto.getEmail()).orElseThrow(
                     () -> new NotFoundException("user not found")
             );
             if(userEntity.getStatus().equals("BAN")){

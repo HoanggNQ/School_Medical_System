@@ -1,7 +1,10 @@
 package sms.swp391.services.impl;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
+import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
@@ -20,6 +24,7 @@ import sms.swp391.utils.EntityToDTO;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -27,8 +32,6 @@ public class UserServiceImpl implements UserService {
 
 
     private final UserRepository userRepository;
-    private final OTPService otpService;
-    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -54,8 +57,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getUsers(String search, Pageable pageable) {
-        return null;
+    public PaginatedUserResponse getUsers(String search, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("fullname") || property.equals("username");
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<UserEntity> userPage;
+        if (search != null && !search.isEmpty()) {
+            userPage = userRepository.searchUsers(search, validatedPageable);
+        } else {
+            userPage = userRepository.findAll(validatedPageable);
+        }
+
+        List<UserResponse> userDTOs = userPage.stream()
+                .map(EntityToDTO::UserEntityToDTO)
+                .toList();
+
+        return PaginatedUserResponse.builder()
+                .users(userDTOs)
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .currentPage(userPage.getNumber())
+                .build();
     }
 
     @Override
@@ -83,8 +118,8 @@ public class UserServiceImpl implements UserService {
         try {
             var auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth == null) throw new AuthFailedException("This user is't authentication, please login again");
-            String username = auth.getName();
-            UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
+            String mail = auth.getName();
+            UserEntity userEntity = userRepository.findByEmail(mail).orElseThrow(
                     () -> new NotFoundException("user not found")
             );
             return EntityToDTO.UserEntityToDTO(userEntity);

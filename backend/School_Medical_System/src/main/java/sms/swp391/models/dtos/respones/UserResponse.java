@@ -25,4 +25,5 @@ public class UserResponse  {
     String status;
     Instant dateCreated;
     Instant updatedAt;
+
 }

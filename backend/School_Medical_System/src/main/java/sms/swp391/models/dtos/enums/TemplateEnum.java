@@ -4,4 +4,5 @@ public enum TemplateEnum {
     ACCOUNT,
     PASSWORD,
     FORGOT_PASSWORD,
+    CHANGE_PASSWORD_CONFIRMATION
 }

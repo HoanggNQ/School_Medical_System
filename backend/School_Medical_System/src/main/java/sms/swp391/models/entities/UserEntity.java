@@ -46,7 +46,8 @@ public class UserEntity implements UserDetails {
     @Column(name = "phone", length = 20,nullable = false, unique = true)
     private String phoneNumber;
 
-    @JoinColumn(name = "roleName")
+    @Enumerated(EnumType.STRING)
+    @JoinColumn(name = "role_Name")
     private RoleEnum roleName;
 
     @Column(name = "dob")
@@ -84,7 +85,7 @@ public class UserEntity implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
