@@ -21,8 +21,7 @@ import sms.swp391.repositories.UserRepository;
 import sms.swp391.security.JwtService;
 import sms.swp391.services.AuthService;
 import sms.swp391.services.OTPService;
-import sms.swp391.utils.DTOToEntity;
-import sms.swp391.utils.EntityToDTO;
+import sms.swp391.utils.UserMapper;
 
 import java.util.Optional;
 
@@ -56,12 +55,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String password = passwordEncoder.encode(userRegisterDTO.getPassword());
-        UserEntity userCreate = DTOToEntity.UserResponseToEntity(userRegisterDTO);
+        UserEntity userCreate = UserMapper.fromRegisterDTO(userRegisterDTO);
         userCreate.setStatus(StatusEnum.VERIFY);
         userCreate.setPassword(password);
         userRepository.save(userCreate);
 
-        return EntityToDTO.UserEntityToDTO(userCreate);
+        return UserMapper.toDTO(userCreate);
     }
 
 

@@ -9,7 +9,7 @@ import sms.swp391.models.entities.NotificationEntity;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.NotificationRepository;
 import sms.swp391.services.NotificationService;
-import sms.swp391.utils.EntityToDTO;
+import sms.swp391.utils.NotificationMapper;
 
 
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ public class NotificationServiceIplm implements NotificationService {
     public List<NotificationResponse> getAllNotification() {
         List<NotificationEntity> notificationEntities = notificationRepository.findAll();
 
-        var notificationResponses = notificationEntities.stream().map(EntityToDTO::notificationEntityDTO).toList();
+        var notificationResponses = notificationEntities.stream().map(NotificationMapper::toDTO).toList();
         return notificationResponses;
     }
     @Override
@@ -34,7 +34,7 @@ public class NotificationServiceIplm implements NotificationService {
         notificationEntity.setTitle(notificationCreateDTO.getTitle());
         notificationEntity.setDateCreate(LocalDate.now());
         notificationRepository.save(notificationEntity);
-        NotificationResponse notificationResponse = EntityToDTO.notificationEntityDTO(notificationEntity);
+        NotificationResponse notificationResponse = NotificationMapper.toDTO(notificationEntity);
 
         return notificationResponse;
     }
@@ -46,7 +46,7 @@ public class NotificationServiceIplm implements NotificationService {
         notificationEntity.setContent(notificationUpdateDTO.getContent());
         notificationEntity.setTitle(notificationUpdateDTO.getTitle());
         notificationRepository.save(notificationEntity);
-        NotificationResponse notificationResponse = EntityToDTO.notificationEntityDTO(notificationEntity);
+        NotificationResponse notificationResponse = NotificationMapper.toDTO(notificationEntity);
         return notificationResponse;
     }
 

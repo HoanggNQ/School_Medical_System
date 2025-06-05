@@ -1,9 +1,9 @@
 package sms.swp391.models.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.LinkedHashSet;
@@ -12,6 +12,9 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "class")
 public class ClassEntity {
     @Id
@@ -19,18 +22,21 @@ public class ClassEntity {
     @Column(name = "class_id", nullable = false)
     private Long id;
 
-    @Column(name = "grade")
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "class_name", nullable = false, length = 100)
+    private String className;
+
+    @NotNull
+    @Column(name = "grade", nullable = false)
     private Integer grade;
 
     @ColumnDefault("0")
     @Column(name = "totalstudent")
     private Integer totalstudent;
 
-    @Size(max = 100)
-    @Column(name = "class_name", length = 100)
-    private String className;
-
-    @OneToMany(mappedBy = "studentClass")
+    @OneToMany(mappedBy = "classEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StudentEntity> students = new LinkedHashSet<>();
+
 
 }
