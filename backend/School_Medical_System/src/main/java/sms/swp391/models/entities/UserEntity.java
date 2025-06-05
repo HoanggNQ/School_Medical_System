@@ -67,9 +67,7 @@ public class UserEntity implements UserDetails {
     @Column(name = "status")
     private StatusEnum status;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ParentEntity parentEntity;
-
+    
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private StudentEntity studentEntity;
 
@@ -83,6 +81,12 @@ public class UserEntity implements UserDetails {
         return authorities;
     }
 
+
+    // Helper methods
+    public void addNotification(NotificationEntity notification) {
+        notifications.add(notification);
+        notification.setCreator(this);
+    }
     @Override
     public String getUsername() {
         return email;

@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
@@ -18,9 +17,8 @@ import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
-import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
-import sms.swp391.utils.EntityToDTO;
+import sms.swp391.utils.UserMapper;
 
 
 import java.util.List;
@@ -36,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponse> getListUser() {
         List<UserEntity> userEntities = userRepository.findAll();
-        var userResponses = userEntities.stream().map(EntityToDTO::UserEntityToDTO).toList();
+        var userResponses = userEntities.stream().map(UserMapper::toDTO).toList();
         return userResponses;
     }
 
@@ -49,7 +47,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setStatus(StatusEnum.DELETED);
         try {
             var item = userRepository.save(userEntity);
-            UserResponse userResponse = EntityToDTO.UserEntityToDTO(item);
+            UserResponse userResponse = UserMapper.toDTO(item);
             return userResponse;
         } catch (Exception e) {
             throw new ActionFailedException(String.format("Failed delete user with ID: %s", id));
@@ -82,7 +80,7 @@ public class UserServiceImpl implements UserService {
         }
 
         List<UserResponse> userDTOs = userPage.stream()
-                .map(EntityToDTO::UserEntityToDTO)
+                .map(UserMapper::toDTO)
                 .toList();
 
         return PaginatedUserResponse.builder()
@@ -108,7 +106,7 @@ public class UserServiceImpl implements UserService {
         UserEntity uEntity = userRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("user not found")
         );
-        UserResponse userResponse = EntityToDTO.UserEntityToDTO(uEntity);
+        UserResponse userResponse = UserMapper.toDTO(uEntity);
         return userResponse;
     }
 
@@ -122,7 +120,7 @@ public class UserServiceImpl implements UserService {
             UserEntity userEntity = userRepository.findByEmail(mail).orElseThrow(
                     () -> new NotFoundException("user not found")
             );
-            return EntityToDTO.UserEntityToDTO(userEntity);
+            return UserMapper.toDTO(userEntity);
         } catch (Exception e) {
             throw new AuthFailedException("This user isn't authentication, please login again");
         }
@@ -140,8 +138,8 @@ public class UserServiceImpl implements UserService {
         userEntity.setFullname(updateUserDTO.getName());
 
         var item = userRepository.save(userEntity);
-        UserResponse userResponse = EntityToDTO.UserEntityToDTO(item);
-        return userResponse;
+        UserResponse userResponse = UserMapper.toDTO(item);
+            return userResponse;
 
     }
     @Override
@@ -158,7 +156,7 @@ public class UserServiceImpl implements UserService {
         if (!newPassword.equals(newPasswordConfirm)) {
             throw new ValidationFailedException("New password and confirmation do not match");
         }
-        return EntityToDTO.UserEntityToDTO(userEntity);
+        return UserMapper.toDTO(userEntity);
     }
     @Override
     public void setPassword(String email, String password) {
@@ -182,7 +180,7 @@ public class UserServiceImpl implements UserService {
         if(userEntity.getStatus().equals(StatusEnum.VERIFY)){
             throw new ActionFailedException("account has been not verify");
         }
-        return EntityToDTO.UserEntityToDTO(userEntity);
+        return UserMapper.toDTO(userEntity);
     }
     @Override
     public UserResponse setPasswordForget(String email, String newPassword, String newPasswordConfirm) {
@@ -196,7 +194,7 @@ public class UserServiceImpl implements UserService {
         String password = passwordEncoder.encode(newPassword);
         userEntity.setPassword(password);
         userRepository.save(userEntity);
-        return EntityToDTO.UserEntityToDTO(userEntity);
+        return UserMapper.toDTO(userEntity);
     }
 
 
