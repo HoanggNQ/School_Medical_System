@@ -35,7 +35,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     // Campaign Methods
     @Override
     @Transactional
-    public HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequest request, Long createdById) {
+    public HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById) {
         UserEntity creator = userRepository.findById(createdById)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + createdById));
 
@@ -49,7 +49,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     @Transactional
-    public HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequest request) {
+    public HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
 
@@ -113,7 +113,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     // Consent Methods
     @Override
     @Transactional
-    public HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequest request, Long parentId) {
+    public HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId) {
         HealthCheckConsentEntity consent = consentRepository.findById(consentId)
                 .orElseThrow(() -> new NotFoundException("Consent not found with id: " + consentId));
 
@@ -155,7 +155,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     // Result Methods
     @Override
     @Transactional
-    public HealthCheckResultResponse saveResult(HealthCheckResultRequest request, Long checkedById) {
+    public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
         UserEntity checkedBy = userRepository.findById(checkedById)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + checkedById));
 

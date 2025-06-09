@@ -30,6 +30,9 @@ public class UserRegisterDTO {
     @NotEmpty(message = "gender not null!!!")
     private String gender;
 
+    @NotEmpty(message = "gender not null!!!")
+    private RoleEnum roleName;
+
     @NotNull(message = "Dob not null!!!")
     @Past(message = "Dob must be in the past!!!")
     private LocalDate Dob;

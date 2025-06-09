@@ -1,7 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
-import sms.swp391.models.dtos.requests.HealthCheckResultRequest;
+import sms.swp391.models.dtos.requests.HealthCheckResultRequestDTO;
 import sms.swp391.models.dtos.respones.HealthCheckResultResponse;
 import sms.swp391.models.entities.HealthCheckResultEntity;
 import sms.swp391.models.entities.StudentEntity;
@@ -45,7 +45,7 @@ public class HealthCheckResultMapper {
                 .build();
     }
 
-    public static HealthCheckResultEntity fromRequestDTO(HealthCheckResultRequest dto) {
+    public static HealthCheckResultEntity fromRequestDTO(HealthCheckResultRequestDTO dto) {
         if (dto == null) return null;
 
         HealthCheckResultEntity entity = new HealthCheckResultEntity();

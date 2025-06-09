@@ -73,9 +73,6 @@ public class MedicationEntity {
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "medication")
-    private Set<MedicalEventMedicationEntity> medicalEventMedications = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "medication")
     private Set<MedicationRequestDetailEntity> medicationRequestDetails = new LinkedHashSet<>();
 
 }
