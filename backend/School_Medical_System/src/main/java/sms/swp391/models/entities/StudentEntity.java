@@ -20,6 +20,9 @@ import java.util.*;
 @Table(name = "student")
 public class StudentEntity {
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id", nullable = false)
