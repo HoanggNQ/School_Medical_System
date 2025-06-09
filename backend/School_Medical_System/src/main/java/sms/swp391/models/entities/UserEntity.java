@@ -23,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Table(name = "user", schema = "public")
-public class UserEntity implements UserDetails {
+public class    UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)

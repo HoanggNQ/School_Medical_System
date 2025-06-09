@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class HealthCheckConsentRequest {
+public class HealthCheckConsentRequestDTO {
     private String status;
     private String notes;
     private String specialRequests;

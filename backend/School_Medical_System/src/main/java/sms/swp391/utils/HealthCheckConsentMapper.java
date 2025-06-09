@@ -1,7 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
-import sms.swp391.models.dtos.requests.HealthCheckConsentRequest;
+import sms.swp391.models.dtos.requests.HealthCheckConsentRequestDTO;
 import sms.swp391.models.dtos.respones.HealthCheckConsentResponse;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
@@ -29,7 +29,7 @@ public class HealthCheckConsentMapper {
                 .build();
     }
 
-    public static HealthCheckConsentEntity fromRequestDTO(HealthCheckConsentRequest dto) {
+    public static HealthCheckConsentEntity fromRequestDTO(HealthCheckConsentRequestDTO dto) {
         if (dto == null) return null;
 
         HealthCheckConsentEntity entity = new HealthCheckConsentEntity();

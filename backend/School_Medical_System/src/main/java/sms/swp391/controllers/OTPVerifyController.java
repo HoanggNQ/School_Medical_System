@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.enums.TemplateEnum;
-import sms.swp391.models.dtos.requests.OTPVerifyRequest;
+import sms.swp391.models.dtos.requests.OTPVerifyRequestDTO;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
@@ -19,7 +19,7 @@ public class OTPVerifyController {
     private final UserService userService;
 
     @PatchMapping("/verify")
-    public ResponseEntity<ResponseObject> verifyOTP(@RequestBody OTPVerifyRequest request) {
+    public ResponseEntity<ResponseObject> verifyOTP(@RequestBody OTPVerifyRequestDTO request) {
         try {
             otpService.verifyOTP(request);
             userService.ActiveUser(request.getEmail());
@@ -30,7 +30,7 @@ public class OTPVerifyController {
     }
 
     @PatchMapping("/verify-set-password")
-    public ResponseEntity<ResponseObject> verifyOTPSetPassword(@RequestBody OTPVerifyRequest request) {
+    public ResponseEntity<ResponseObject> verifyOTPSetPassword(@RequestBody OTPVerifyRequestDTO request) {
         try {
             String newPassword = otpService.verifyOtpSetPassword(request);
             userService.setPassword(request.getEmail(), newPassword);
@@ -42,7 +42,7 @@ public class OTPVerifyController {
 
     @PatchMapping("/verify-set-password-forgot")
     public ResponseEntity<ResponseObject> verifyOTPSetPasswordForgot(
-            @RequestBody OTPVerifyRequest request,
+            @RequestBody OTPVerifyRequestDTO request,
             @RequestParam String newPassword,
             @RequestParam String confirmPassword) {
         try {

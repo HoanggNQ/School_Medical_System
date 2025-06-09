@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class HealthCheckCampaignRequest {
+public class HealthCheckCampaignRequestDTO {
     private String name;
     private String description;
     private LocalDate checkDate;
