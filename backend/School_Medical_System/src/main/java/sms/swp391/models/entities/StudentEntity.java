@@ -80,9 +80,6 @@ public class StudentEntity {
     @Builder.Default
     private Set<HealthDeclarationEntity> healthDeclarations = new HashSet<>();
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private Set<MedicalEventEntity> medicalEvents = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -96,9 +93,5 @@ public class StudentEntity {
     @Builder.Default
     private Set<VaccinationRecordEntity> vaccinationRecords = new HashSet<>();
 
-    // Helper method
-    public void addHealthCheckConsent(HealthCheckConsentEntity consent) {
-        healthCheckConsents.add(consent);
-        consent.setStudent(this);
-    }
+
 }

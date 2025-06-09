@@ -1,7 +1,6 @@
 package sms.swp391.controllers;
 
 
-import io.lettuce.core.RedisConnectionException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -10,14 +9,11 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.ChangePassworDTO;
-import sms.swp391.models.dtos.requests.ChooseRoleRequest;
-import sms.swp391.models.dtos.requests.UserRegisterDTO;
+import sms.swp391.models.dtos.requests.ChooseRoleRequestDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
@@ -171,7 +167,7 @@ public class UserController {
     }
 
     @PostMapping("/choose-role")
-    public ResponseEntity<String> chooseRole(@RequestBody ChooseRoleRequest request) {
+    public ResponseEntity<String> chooseRole(@RequestBody ChooseRoleRequestDTO request) {
         userService.chooseRole(request.getEmail(), request.getRole());
         return ResponseEntity.ok("Role assigned successfully");
     }

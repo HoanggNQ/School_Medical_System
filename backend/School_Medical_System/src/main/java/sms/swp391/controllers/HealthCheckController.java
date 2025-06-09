@@ -26,7 +26,7 @@ public class HealthCheckController {
 
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(
-            @RequestBody HealthCheckCampaignRequest request,
+            @RequestBody HealthCheckCampaignRequestDTO request,
             @RequestParam Long createdById) {
         try {
             HealthCheckCampaignResponse response = healthCheckService.createCampaign(request, createdById);
@@ -63,7 +63,7 @@ public class HealthCheckController {
     @PutMapping("/campaigns/{id}")
     public ResponseEntity<ResponseObject> updateCampaign(
             @PathVariable Long id,
-            @RequestBody HealthCheckCampaignRequest request) {
+            @RequestBody HealthCheckCampaignRequestDTO request) {
         try {
             HealthCheckCampaignResponse response = healthCheckService.updateCampaign(id, request);
             return ResponseEntity.ok(
@@ -193,7 +193,7 @@ public class HealthCheckController {
     @PutMapping("/consents/{id}")
     public ResponseEntity<ResponseObject> updateConsent(
             @PathVariable Long id,
-            @RequestBody HealthCheckConsentRequest request,
+            @RequestBody HealthCheckConsentRequestDTO request,
             @RequestParam Long parentId) {
         try {
             HealthCheckConsentResponse response = healthCheckService.updateConsent(id, request, parentId);
@@ -324,7 +324,7 @@ public class HealthCheckController {
 
     @PostMapping("/results")
     public ResponseEntity<ResponseObject> saveResult(
-            @RequestBody HealthCheckResultRequest request,
+            @RequestBody HealthCheckResultRequestDTO request,
             @RequestParam Long checkedById) {
         try {
             HealthCheckResultResponse response = healthCheckService.saveResult(request, checkedById);

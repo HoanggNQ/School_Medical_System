@@ -7,7 +7,7 @@ import sms.swp391.models.dtos.enums.RoleEnum;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChooseRoleRequest {
+public class ChooseRoleRequestDTO {
     private String email;
     private RoleEnum role;
 }

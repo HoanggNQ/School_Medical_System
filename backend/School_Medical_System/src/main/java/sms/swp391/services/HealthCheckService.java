@@ -7,9 +7,9 @@ import java.util.List;
 public interface HealthCheckService {
 
     // Campaign Management
-    HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequest request, Long createdById);
+    HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById);
 
-    HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequest request);
+    HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request);
 
     void startCampaign(Long campaignId);
 
@@ -18,7 +18,7 @@ public interface HealthCheckService {
     List<HealthCheckCampaignResponse> getAllCampaigns();
 
     // Consent Management
-    HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequest request, Long parentId);
+    HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId);
 
     List<HealthCheckConsentResponse> getConsentsByCampaign(Long campaignId);
 
@@ -27,7 +27,7 @@ public interface HealthCheckService {
     List<HealthCheckConsentResponse> getPendingConsentsByParent(Long parentId);
 
     // Result Management
-    HealthCheckResultResponse saveResult(HealthCheckResultRequest request, Long checkedById);
+    HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById);
 
     HealthCheckResultResponse getResultById(Long resultId);
 

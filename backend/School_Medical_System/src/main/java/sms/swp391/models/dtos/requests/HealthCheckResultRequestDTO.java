@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class HealthCheckResultRequest {
+public class HealthCheckResultRequestDTO {
     private Long campaignId;
     private Long studentId;
     private BigDecimal heightCm;

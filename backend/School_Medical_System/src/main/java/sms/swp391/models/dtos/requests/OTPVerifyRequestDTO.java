@@ -3,7 +3,7 @@ package sms.swp391.models.dtos.requests;
 import lombok.Data;
 
 @Data
-public class OTPVerifyRequest {
+public class OTPVerifyRequestDTO {
     private String otp;
     private String email;
 }

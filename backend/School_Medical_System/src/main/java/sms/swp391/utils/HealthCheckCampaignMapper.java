@@ -1,7 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
-import sms.swp391.models.dtos.requests.HealthCheckCampaignRequest;
+import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.respones.HealthCheckCampaignResponse;
 import sms.swp391.models.entities.HealthCheckCampaignEntity;
 
@@ -24,7 +24,7 @@ public class HealthCheckCampaignMapper {
                 .build();
     }
 
-    public static HealthCheckCampaignEntity fromRequestDTO(HealthCheckCampaignRequest dto) {
+    public static HealthCheckCampaignEntity fromRequestDTO(HealthCheckCampaignRequestDTO dto) {
         if (dto == null) return null;
 
         HealthCheckCampaignEntity entity = new HealthCheckCampaignEntity();

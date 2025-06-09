@@ -7,7 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
-import sms.swp391.models.dtos.requests.OTPVerifyRequest;
+import sms.swp391.models.dtos.requests.OTPVerifyRequestDTO;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.NotFoundException;
@@ -109,7 +109,7 @@ public class OtpServiceImpl implements OTPService {
 
 
     @Override
-    public void verifyOTP(OTPVerifyRequest request) {
+    public void verifyOTP(OTPVerifyRequestDTO request) {
         var storedOtp = (String) redisTemplate.opsForValue().get(request.getEmail()); // Lấy OTP bằng email
         if (storedOtp == null) {
             throw new ValidationFailedException("This OTP is not valid or expired");
@@ -121,7 +121,7 @@ public class OtpServiceImpl implements OTPService {
     }
 
     @Override
-    public String verifyOtpSetPassword(OTPVerifyRequest request) {
+    public String verifyOtpSetPassword(OTPVerifyRequestDTO request) {
         String otpInRedis = (String) redisTemplate.opsForHash().get(request.getEmail(), "otp");
         String password = (String) redisTemplate.opsForHash().get(request.getEmail(), "password");
 
