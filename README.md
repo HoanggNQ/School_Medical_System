@@ -16,7 +16,7 @@ School Medical Management is a web-based application designed to manage medical 
 
 ## Prerequisites
 Before setting up the project, ensure you have the following installed:
-- **Java**: JDK 21, **Spring** 3.4.5
+- **Java**: JDK 21, **Spring Boot** 3.4.5
 - **Maven**: 4.0.0
 - **Node.js**: 16.x or later (includes npm)
 - **PostgreSQL**: 16 or later
