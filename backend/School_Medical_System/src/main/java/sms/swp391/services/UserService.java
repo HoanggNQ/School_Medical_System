@@ -19,6 +19,7 @@ public interface UserService {
     UserResponse userDelete(long id);
 
     PaginatedUserResponse getUsers(String search, Pageable pageable);
+    PaginatedUserResponse getUsersByRoleName(RoleEnum search, Pageable pageable);
 
     void ActiveUser(String email);
 

@@ -55,7 +55,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
         // Cập nhật entity từ request
         HealthCheckCampaignEntity updatedCampaign = HealthCheckCampaignMapper.fromRequestDTO(request);
-        // Giữ lại các trường không được update (id, createdBy, createdAt, status)
         updatedCampaign.setId(campaign.getId());
         updatedCampaign.setCreatedBy(campaign.getCreatedBy());
         updatedCampaign.setCreatedAt(campaign.getCreatedAt());

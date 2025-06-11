@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.ChangePassworDTO;
 import sms.swp391.models.dtos.requests.ChooseRoleRequestDTO;
@@ -33,7 +34,7 @@ public class UserController {
 
 
 
-    @PutMapping(path = "update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseObject> update(@RequestPart("user") UserUpdateDTO updateUserDTO,
                                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         UserResponse userResponse = userService.updateUser(updateUserDTO, image);
@@ -99,6 +100,25 @@ public class UserController {
                     @SortDefault(sort = "username", direction = Sort.Direction.DESC)
             }) Pageable pageable) {
         PaginatedUserResponse userResponse = userService.getUsers(search, pageable);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_SUCCESS")
+                        .message("Get user successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(userResponse)
+                        .build()
+        );
+    }
+    @GetMapping("/searchByRole")
+    public ResponseEntity<ResponseObject> getUsersByRoles(
+            @RequestParam(value = "search", required = false) RoleEnum search,
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "fullname", direction = Sort.Direction.ASC),
+                    @SortDefault(sort = "username", direction = Sort.Direction.DESC)
+            }) Pageable pageable) {
+        PaginatedUserResponse userResponse = userService.getUsersByRoleName(search, pageable);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("GET_SUCCESS")

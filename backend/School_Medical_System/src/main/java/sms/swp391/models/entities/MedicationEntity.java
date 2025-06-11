@@ -46,6 +46,9 @@ public class MedicationEntity {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "quantity")
+    private Integer quantity;
+
     @Column(name = "medication_information", length = Integer.MAX_VALUE)
     private String medicationInformation;
 
@@ -56,10 +59,6 @@ public class MedicationEntity {
 
     @Column(name = "medication_img", length = Integer.MAX_VALUE)
     private String medicationImg;
-
-    @Size(max = 255)
-    @Column(name = "active_ingredient")
-    private String activeIngredient;
 
     @Size(max = 255)
     @Column(name = "manufacturer")
