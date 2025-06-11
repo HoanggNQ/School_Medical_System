@@ -44,7 +44,7 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
     @Override
     @Transactional(readOnly = true)
     public List<HealthDeclarationResponseDTO> getByDeclaredById(Long userId) {
-        List<HealthDeclarationEntity> entities = healthDeclarationRepository.findByDeclaredBy(userId);
+        List<HealthDeclarationEntity> entities = healthDeclarationRepository.findByDeclaredById(userId);
         return entities.stream()
                 .map(HealthDeclarationMapper::toDTO)
                 .collect(Collectors.toList());
