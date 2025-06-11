@@ -1,25 +1,20 @@
 package sms.swp391.models.dtos.requests;
-import jakarta.validation.Valid;
+
+import lombok.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HealthDeclarationUpdateDTO {
+public class HealthDeclarationCreateDTO {
+
     @NotNull
     private HealthDeclarationStatus status;
 
-    @NotBlank(message = "Academic year is required")
-    @Size(max = 9, message = "Academic year must not exceed 9 characters")
-    @Pattern(regexp = "\\d{4}-\\d{4}", message = "Academic year must be in format YYYY-YYYY")
+    @NotNull
     private String academicYear;
 
     private Float height;
@@ -30,6 +25,4 @@ public class HealthDeclarationUpdateDTO {
     private String currentMedications;
     private String emergencyContactName;
     private String emergencyContactPhone;
-
-
 }

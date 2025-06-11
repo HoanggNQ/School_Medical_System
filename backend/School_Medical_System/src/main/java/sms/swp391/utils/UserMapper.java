@@ -20,6 +20,8 @@ public class UserMapper {
                 .email(entity.getEmail())
                 .fullName(entity.getFullname())
                 .status(entity.getStatus().toString())
+                .roleName(entity.getRoleName())
+                .address(entity.getAddress())
                 .build();
     }
 

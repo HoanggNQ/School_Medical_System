@@ -1,20 +1,40 @@
 package sms.swp391.services;
 
-import sms.swp391.models.dtos.requests.HealthDeclarationRequestDTO;
-import sms.swp391.models.dtos.requests.HealthDeclarationReviewDTO;
-import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface HealthDeclarationService {
-    HealthDeclarationResponseDTO createHealthDeclaration(Long parentId, HealthDeclarationRequestDTO request);
-    HealthDeclarationResponseDTO updateHealthDeclaration(Long parentId, Long declarationId, HealthDeclarationUpdateDTO request);
-    List<HealthDeclarationResponseDTO> getHealthDeclarationsByStudent(Long studentId);
-    List<HealthDeclarationResponseDTO> getHealthDeclarationsByParent(Long parentId);
-    HealthDeclarationResponseDTO getHealthDeclarationById(Long declarationId);
-    void deleteHealthDeclaration(Long parentId, Long declarationId);
-    HealthDeclarationResponseDTO reviewHealthDeclaration(Long reviewerId, Long declarationId, HealthDeclarationReviewDTO reviewDto);
-    List<HealthDeclarationResponseDTO> getHealthDeclarationsByStatus(String status);
-    List<HealthDeclarationResponseDTO> getListHealthDeclarations();
+
+    List<HealthDeclarationResponseDTO> getByStudentId(Long studentId);
+
+    List<HealthDeclarationResponseDTO> getByDeclaredById(Long userId);
+
+    Page<HealthDeclarationResponseDTO> getByStatus(HealthDeclarationStatus status, Pageable pageable);
+
+    Page<HealthDeclarationResponseDTO> getAll(Pageable pageable);
+
+    boolean existsByStudentIdAndAcademicYear(Long studentId, String academicYear);
+
+    Page<HealthDeclarationResponseDTO> searchByFilters(
+            HealthDeclarationStatus status,
+            Long studentId,
+            Long declaredById,
+            String academicYear,
+            Pageable pageable
+    );
+
+    Optional<HealthDeclarationResponseDTO> getByIdWithDetails(Long id);
+
+    List<HealthDeclarationResponseDTO> getByStudentIdWithDetails(Long studentId);
+
+    List<HealthDeclarationResponseDTO> getByDeclaredByUserIdWithDetails(Long declaredById);
+
+    HealthDeclarationResponseDTO save(HealthDeclarationResponseDTO ResponseDTO);
+
+    void delete(Long id);
 }

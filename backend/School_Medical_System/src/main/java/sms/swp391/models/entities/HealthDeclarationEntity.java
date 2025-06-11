@@ -5,10 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 
 import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -37,24 +36,14 @@ public class HealthDeclarationEntity {
     @Column(name = "declaration_date")
     private Instant declarationDate;
 
-    @Size(max = 20)
-    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewed_by")
-    private UserEntity reviewedBy;
-
-    @Column(name = "reviewed_date")
-    private Instant reviewedDate;
+    private HealthDeclarationStatus status;
 
     @Size(max = 9)
     @NotNull
     @Column(name = "academic_year", nullable = false, length = 9)
     private String academicYear;
 
-    @OneToMany(mappedBy = "declaration")
-    private Set<HealthDeclarationDetailEntity> healthDeclarationDetails = new LinkedHashSet<>();
 
 }

@@ -92,6 +92,43 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public PaginatedUserResponse getUsersByRoleName(RoleEnum search, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("fullname") || property.equals("username");
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<UserEntity> userPage;
+        if (search != null && !search.toString().isEmpty()) {
+            userPage = userRepository.searchUsersByRoleName(search, validatedPageable);
+        } else {
+            userPage = userRepository.findAll(validatedPageable);
+        }
+
+        List<UserResponse> userDTOs = userPage.stream()
+                .map(UserMapper::toDTO)
+                .toList();
+
+        return PaginatedUserResponse.builder()
+                .users(userDTOs)
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .currentPage(userPage.getNumber())
+                .build();
+    }
+
+    @Override
     public void ActiveUser(String email) {
         UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundException("User not found!")

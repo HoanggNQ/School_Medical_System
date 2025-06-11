@@ -1,25 +1,28 @@
 package sms.swp391.models.dtos.respones;
 
 import lombok.*;
+import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 
-import java.util.List;
+import java.time.Instant;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class HealthDeclarationResponseDTO {
-
     private Long id;
     private Long studentId;
-    private String studentName;
     private Long declaredById;
-    private String declaredByName;
-    private String declarationDate;
-    private String status;
-    private Long reviewedById;
-    private String reviewedByName;
-    private String reviewedDate;
+    private Instant declarationDate;
+    private HealthDeclarationStatus status;
     private String academicYear;
-    private List<HealthDeclarationDetailResponseDTO> details;
+    private Float height;
+    private Float weight;
+    private String bloodType;
+    private String allergies;
+    private String chronicDiseases;
+    private String currentMedications;
+    private String emergencyContactName;
+    private String emergencyContactPhone;
 }
