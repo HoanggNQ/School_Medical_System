@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.LoginDTO;
@@ -64,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
         String password = passwordEncoder.encode(userRegisterDTO.getPassword());
         UserEntity userCreate = UserMapper.fromRegisterDTO(userRegisterDTO);
         userCreate.setStatus(StatusEnum.VERIFY);
+        userCreate.setRoleName(RoleEnum.PARENT);
         userCreate.setPassword(password);
         userRepository.save(userCreate);
 

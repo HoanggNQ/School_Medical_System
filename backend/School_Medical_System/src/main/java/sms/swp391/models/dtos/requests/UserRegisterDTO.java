@@ -16,6 +16,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRegisterDTO {
+    @Email
+    @Pattern(regexp = "\\S+", message = "Email must not contain whitespace")
+    @NotEmpty(message = "Email must not be empty")
+    private String email;
+
     @Pattern(regexp = "\\S+", message = "Password must not contain whitespace")
     @NotEmpty(message = "Password must not be empty")
     private String password;
@@ -30,9 +35,6 @@ public class UserRegisterDTO {
     @NotEmpty(message = "gender not null!!!")
     private String gender;
 
-    @NotEmpty(message = "gender not null!!!")
-    private RoleEnum roleName;
-
     @NotNull(message = "Dob not null!!!")
     @Past(message = "Dob must be in the past!!!")
     private LocalDate Dob;
@@ -41,9 +43,6 @@ public class UserRegisterDTO {
     @Pattern(regexp = "^0\\d{9}$", message = "Phone number must start with 0 and have 10 digits")
     @NotEmpty(message = "Phone number must not be empty")
     private String phoneNumber;
-    @Email
-    @Pattern(regexp = "\\S+", message = "Email must not contain whitespace")
-    @NotEmpty(message = "Email must not be empty")
-    private String email;
+
 
 }
