@@ -1,16 +1,15 @@
-// src/main/java/sms/swp391/models/dtos/request/StudentRequest.java
-package sms.swp391.models.dtos.request;
+package sms.swp391.models.dtos.requests;
+
 
 import lombok.*;
 import java.util.Map;
-
+@Data
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentRequest {
-    private Long userId;
     private Long classId;
     private Long parentId;
     private String studentCode;
@@ -18,4 +17,5 @@ public class StudentRequest {
     private String geneticDiseases;
     private String otherMedicalNotes;
     private Map<String, String> emergencyContact;
+    private UserRegisterDTO userRegister;
 }

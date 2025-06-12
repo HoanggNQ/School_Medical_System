@@ -25,8 +25,14 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "AND u.status = 'ACTIVE'")
     Page<UserEntity> searchUsers(@Param("keyword") String keyword, Pageable pageable);
 
+    @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'STUDENT'")
+    Optional<UserEntity> findByStudentIdAndRoleName(@Param("userId") Long userId);
 
+    @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'PARENT'")
+    Optional<UserEntity> findByParentIdAndRoleName(@Param("userId") Long userId);
     Optional<UserEntity> findByEmail(String email);
+
+    Optional<UserEntity> findByPhoneNumber(String phoneNumber);
 
 //    Optional<UserEntity> findByUserId(Long userId);
 //    @Query("SELECT u FROM UserEntity u WHERE u.userId = :keyword AND u.roleName = 'STUDENT'")

@@ -1,6 +1,6 @@
 package sms.swp391.utils;
 
-import sms.swp391.models.dtos.request.StudentRequest;
+import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.respones.StudentResponse;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.models.entities.StudentEntity;
@@ -36,7 +36,6 @@ public class StudentMapper {
                 .geneticDiseases(request.getGeneticDiseases())
                 .otherMedicalNotes(request.getOtherMedicalNotes())
                 .emergencyContact(request.getEmergencyContact())
-                .status("ACTIVE")
                 .build();
     }
 }

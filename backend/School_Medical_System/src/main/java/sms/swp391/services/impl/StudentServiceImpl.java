@@ -1,77 +1,178 @@
 package sms.swp391.services.impl;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import sms.swp391.models.dtos.respones.StudentResponse;
-import sms.swp391.models.entities.StudentEntity;
-import sms.swp391.repositories.StudentRepository;
-import sms.swp391.services.StudentService;
+        import lombok.RequiredArgsConstructor;
+        import org.apache.commons.lang3.RandomStringUtils;
+        import org.springframework.stereotype.Service;
+        import sms.swp391.models.dtos.enums.RoleEnum;
+        import sms.swp391.models.dtos.requests.StudentRequest;
+        import sms.swp391.models.dtos.respones.StudentResponse;
+        import sms.swp391.models.entities.ClassEntity;
+        import sms.swp391.models.entities.StudentEntity;
+        import sms.swp391.models.entities.UserEntity;
+        import sms.swp391.models.exception.ActionFailedException;
+        import sms.swp391.models.exception.NotFoundException;
+        import sms.swp391.repositories.ClassRepository;
+        import sms.swp391.repositories.StudentRepository;
+        import sms.swp391.repositories.UserRepository;
+        import sms.swp391.services.StudentService;
+        import sms.swp391.utils.StudentMapper;
+        import sms.swp391.models.dtos.enums.StatusEnum;
+        import sms.swp391.utils.UserMapper;
+        import sms.swp391.models.dtos.requests.StudentUpdateRequest;
 
-import java.util.List;
-import java.util.stream.Collectors;
+        import java.util.List;
+        import java.util.Optional;
+        import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
-public class StudentServiceImpl implements StudentService {
+        @Service
+        @RequiredArgsConstructor
+        public class StudentServiceImpl implements StudentService {
+            private final UserRepository userRepository;
+            private final StudentRepository studentRepository;
+            private final ClassRepository classRepository;
 
-    private final StudentRepository studentRepository;
+            @Override
+            public StudentResponse createStudent(StudentRequest request) {
+                try {
+                    if (studentRepository.findByStudentCode(request.getStudentCode()).isPresent()) {
+                        throw new ActionFailedException("Student code already exists");
+                    }
 
-    @Override
-    public StudentResponse createStudent(StudentEntity student) {
-        student.setStatus("ACTIVE");
-        return toResponse(studentRepository.save(student));
-    }
+                    String phone = request.getUserRegister().getPhoneNumber();
+                    Optional<UserEntity> existingUser = userRepository.findByPhoneNumber(phone);
+                    if (existingUser.isPresent()) {
+                        RoleEnum role = existingUser.get().getRoleName();
+                        if (role == RoleEnum.STUDENT || role == RoleEnum.PARENT) {
+                            throw new ActionFailedException("Phone number already used by another student or parent.");
+                        }
+                    }
+                    UserEntity user = UserMapper.toEntity(request.getUserRegister());
+                    user.setRoleName(RoleEnum.STUDENT);
+                    user.setStatus(StatusEnum.ACTIVE);
+                    user.setPassword(request.getUserRegister().getPassword());
+                    user.setFullname(request.getUserRegister().getFullname());
+                    user.setUsername(request.getUserRegister().getUsername());
+                    user.setGender(request.getUserRegister().getGender());
+                    user.setDob(request.getUserRegister().getDob());
+                    user.setEmail(request.getUserRegister().getEmail());
+                    user.setPhoneNumber(phone);
+                    user.setAddress(request.getUserRegister().getAddress());
+                    userRepository.save(user);
+                    UserEntity parent = null;
+                    if (request.getParentId() != null) {
+                        parent = userRepository.findById(request.getParentId())
+                                .orElseThrow(() -> new NotFoundException("Parent not found"));
+                    }
+                    ClassEntity classEntity = null;
+                    if (request.getClassId() != null) {
+                        classEntity = classRepository.findById(request.getClassId())
+                                .orElseThrow(() -> new NotFoundException("Class not found"));
+                    }
+                    StudentEntity student = StudentEntity.builder()
+                            .user(user)
+                            .classEntity(classEntity)
+                            .parent(parent)
+                            .studentCode(generateStudentCode())
+                            .bloodType(request.getBloodType())
+                            .geneticDiseases(request.getGeneticDiseases())
+                            .otherMedicalNotes(request.getOtherMedicalNotes())
+                            .emergencyContact(request.getEmergencyContact())
+                            .build();
 
-    @Override
-    public StudentResponse updateStudent(Long id, StudentEntity student) {
-        StudentEntity existing = studentRepository.findByIdAndStatusTrue(id)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        // update fields as needed
-        existing.setStudentCode(student.getStudentCode());
-        existing.setBloodType(student.getBloodType());
-        existing.setGeneticDiseases(student.getGeneticDiseases());
-        existing.setOtherMedicalNotes(student.getOtherMedicalNotes());
-        existing.setEmergencyContact(student.getEmergencyContact());
-        // ... update other fields as needed
-        return toResponse(studentRepository.save(existing));
-    }
+                    studentRepository.save(student);
 
-    @Override
-    public void deleteStudent(Long id) {
-        StudentEntity student = studentRepository.findByIdAndStatusTrue(id)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        student.setStatus("INACTIVE"); // or whatever status indicates deletion
-        studentRepository.save(student);
-    }
+                    return StudentMapper.toDTO(student);
 
-    @Override
-    public List<StudentResponse> getAllStudents() {
-        return studentRepository.findAllActiveStudents()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
+                } catch (Exception e) {
+                    throw new ActionFailedException("Failed to create student");
+                }
+            }
 
-    @Override
-    public StudentResponse getStudentById(Long id) {
-        StudentEntity student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        return toResponse(student);
-    }
+            @Override
+            public StudentResponse updateStudent(Long id, StudentUpdateRequest request) {
+                StudentEntity existing = studentRepository.findById(id)
+                        .orElseThrow(() -> new NotFoundException(
+                                String.format("Cannot find student with ID: %s", id)
+                        ));
+                // Update fields from request
+                if (request.getClassId() != null) {
+                    ClassEntity classEntity = classRepository.findById(request.getClassId())
+                            .orElseThrow(() -> new NotFoundException("Class not found"));
+                    existing.setClassEntity(classEntity);
+                }
+                if (request.getParentId() != null) {
+                    UserEntity parent = userRepository.findById(request.getParentId())
+                            .orElseThrow(() -> new NotFoundException("Parent not found"));
+                    existing.setParent(parent);
+                }
+                existing.setBloodType(request.getBloodType());
+                existing.setGeneticDiseases(request.getGeneticDiseases());
+                existing.setOtherMedicalNotes(request.getOtherMedicalNotes());
+                existing.setEmergencyContact(request.getEmergencyContact());
+                try {
+                    StudentEntity updated = studentRepository.save(existing);
+                    return StudentMapper.toDTO(updated);
+                } catch (Exception e) {
+                    throw new ActionFailedException(String.format("Failed to update student with ID: %s", id));
+                }
+            }
 
-    private StudentResponse toResponse(StudentEntity entity) {
-        // Map entity to response (implement as needed)
-        return StudentResponse.builder()
-                .id(entity.getId())
-                // map other fields
-                .studentCode(entity.getStudentCode())
-                .bloodType(entity.getBloodType())
-                .geneticDiseases(entity.getGeneticDiseases())
-                .otherMedicalNotes(entity.getOtherMedicalNotes())
-                .emergencyContact(entity.getEmergencyContact())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
-                .build();
-    }
+            // src/main/java/sms/swp391/services/impl/StudentServiceImpl.java
+            @Override
+            public List<StudentResponse> getAllStudents() {
+                try {
+                    List<StudentEntity> students = studentRepository.findAll();
+                    // Only include students whose user status is ACTIVE
+                    return students.stream()
+                            .filter(s -> s.getUser() != null &&
+                                         s.getUser().getStatus() != null &&
+                                         s.getUser().getStatus().name().equals("ACTIVE"))
+                            .map(StudentMapper::toDTO)
+                            .collect(Collectors.toList());
+                } catch (Exception e) {
+                    throw new ActionFailedException("Failed to get students");
+                }
+            }
 
-}
+            @Override
+            public StudentResponse getStudentById(Long id) {
+                try {
+                    StudentEntity student = studentRepository.findById(id)
+                            .orElseThrow(() -> new NotFoundException("Student not found"));
+                    // Only return if user status is ACTIVE
+                    if (student.getUser() == null ||
+                        student.getUser().getStatus() == null ||
+                        !student.getUser().getStatus().name().equals("ACTIVE")) {
+                        throw new NotFoundException("Student not found or not active");
+                    }
+                    return StudentMapper.toDTO(student);
+                } catch (Exception e) {
+                    throw new ActionFailedException(String.format("Failed to get student with ID: %s", id));
+                }
+            }
+
+            @Override
+            public void deleteStudent(Long id) {
+                StudentEntity student = studentRepository.findById(id)
+                        .orElseThrow(() -> new NotFoundException(
+                                String.format("Cannot find student with ID: %s", id)
+                        ));
+                try {
+                    if (student.getUser() != null) {
+                        student.getUser().setStatus(StatusEnum.DELETED);
+                        // Save the user entity to update status
+                        studentRepository.save(student); // If cascade is set, or use userRepository.save(student.getUser());
+                    }
+                } catch (Exception e) {
+                    throw new ActionFailedException(String.format("Failed to delete student with ID: %s", id));
+                }
+            }
+
+            private String generateStudentCode() {
+                String SC;
+                do {
+                    SC = "SMS"+RandomStringUtils.randomNumeric(6);
+                } while (studentRepository.existsByStudentCode(SC));
+                return SC;
+            }
+        }
