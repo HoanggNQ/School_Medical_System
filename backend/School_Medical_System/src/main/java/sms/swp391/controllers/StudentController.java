@@ -10,8 +10,10 @@ import sms.swp391.models.dtos.requests.StudentUpdateRequest;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.StudentResponse;
 import sms.swp391.services.StudentService;
+import sms.swp391.models.dtos.respones.StudentGetResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/student")
@@ -64,7 +66,7 @@ public class StudentController {
 
     @GetMapping("/getAll")
     public ResponseEntity<ResponseObject> getAllStudents() {
-        List<StudentResponse> students = studentService.getAllStudents();
+        List<StudentGetResponse> students = studentService.getAllStudents();
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("GET_LIST_SUCCESS")
@@ -78,7 +80,7 @@ public class StudentController {
 
     @GetMapping("/getById/{id}")
     public ResponseEntity<ResponseObject> getStudentById(@PathVariable Long id) {
-        StudentResponse response = studentService.getStudentById(id);
+        StudentGetResponse response = studentService.getStudentById(id);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("GET_SUCCESS")
@@ -88,5 +90,31 @@ public class StudentController {
                         .data(response)
                         .build()
         );
+    }
+
+    @GetMapping("/findFullNameByParent/{parentId}")
+    public ResponseEntity<ResponseObject> findFullNameByParent(@PathVariable Long parentId) {
+        List<String> fullnames = studentService.findFullNameByParent(parentId);
+        if (!fullnames.isEmpty()) {
+            return ResponseEntity.ok(
+                ResponseObject.builder()
+                    .code("GET_SUCCESS")
+                    .message("Found student fullnames")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(fullnames)
+                    .build()
+            );
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ResponseObject.builder()
+                    .code("NOT_FOUND")
+                    .message("No student found for this parent")
+                    .status(HttpStatus.NOT_FOUND)
+                    .isSuccess(false)
+                    .data(null)
+                    .build()
+            );
+        }
     }
 }

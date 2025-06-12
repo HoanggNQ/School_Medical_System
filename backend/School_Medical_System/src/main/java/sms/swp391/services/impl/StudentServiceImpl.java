@@ -19,6 +19,7 @@ package sms.swp391.services.impl;
         import sms.swp391.models.dtos.enums.StatusEnum;
         import sms.swp391.utils.UserMapper;
         import sms.swp391.models.dtos.requests.StudentUpdateRequest;
+        import sms.swp391.models.dtos.respones.StudentGetResponse;
 
         import java.util.List;
         import java.util.Optional;
@@ -117,17 +118,15 @@ package sms.swp391.services.impl;
                 }
             }
 
-            // src/main/java/sms/swp391/services/impl/StudentServiceImpl.java
             @Override
-            public List<StudentResponse> getAllStudents() {
+            public List<StudentGetResponse> getAllStudents() {
                 try {
                     List<StudentEntity> students = studentRepository.findAll();
-                    // Only include students whose user status is ACTIVE
                     return students.stream()
                             .filter(s -> s.getUser() != null &&
                                          s.getUser().getStatus() != null &&
                                          s.getUser().getStatus().name().equals("ACTIVE"))
-                            .map(StudentMapper::toDTO)
+                            .map(this::toStudentGetResponse)
                             .collect(Collectors.toList());
                 } catch (Exception e) {
                     throw new ActionFailedException("Failed to get students");
@@ -135,20 +134,38 @@ package sms.swp391.services.impl;
             }
 
             @Override
-            public StudentResponse getStudentById(Long id) {
+            public StudentGetResponse getStudentById(Long id) {
                 try {
                     StudentEntity student = studentRepository.findById(id)
                             .orElseThrow(() -> new NotFoundException("Student not found"));
-                    // Only return if user status is ACTIVE
                     if (student.getUser() == null ||
                         student.getUser().getStatus() == null ||
                         !student.getUser().getStatus().name().equals("ACTIVE")) {
                         throw new NotFoundException("Student not found or not active");
                     }
-                    return StudentMapper.toDTO(student);
+                    return toStudentGetResponse(student);
                 } catch (Exception e) {
                     throw new ActionFailedException(String.format("Failed to get student with ID: %s", id));
                 }
+            }
+
+            // Helper method
+            private StudentGetResponse toStudentGetResponse(StudentEntity student) {
+                UserEntity user = student.getUser();
+                return StudentGetResponse.builder()
+                        .userId(user.getUserId())
+                        .fullName(user.getFullname())
+                        .dob(user.getDob() != null ? user.getDob().toString() : null)
+                        .gender(user.getGender())
+                        .className(student.getClassEntity() != null ? student.getClassEntity().getClassName() : null)
+                        .phoneNumber(user.getPhoneNumber())
+                        .address(user.getAddress())
+                        .studentCode(student.getStudentCode())
+                        .bloodType(student.getBloodType())
+                        .geneticDiseases(student.getGeneticDiseases())
+                        .otherMedicalNotes(student.getOtherMedicalNotes())
+                        .emergencyContact(student.getEmergencyContact())
+                        .build();
             }
 
             @Override
@@ -174,5 +191,10 @@ package sms.swp391.services.impl;
                     SC = "SMS"+RandomStringUtils.randomNumeric(6);
                 } while (studentRepository.existsByStudentCode(SC));
                 return SC;
+            }
+
+            @Override
+            public List<String> findFullNameByParent(Long parentId) {
+                return studentRepository.findFullNameByParent(parentId);
             }
         }
