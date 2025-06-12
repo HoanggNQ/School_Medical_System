@@ -12,6 +12,7 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
 
     Optional<StudentEntity> findById(Long id);
     List<StudentEntity> findByClassEntity_Grade(Integer classEntityGrade);
-
+    Optional<StudentEntity> findByStudentCode(String studentCode);
+    boolean existsByStudentCode(String sc);
 
 }

@@ -24,6 +24,20 @@ public class UserMapper {
                 .address(entity.getAddress())
                 .build();
     }
+    public static UserEntity toEntity(UserRegisterDTO request) {
+        if (request == null) return null;
+
+        return UserEntity.builder()
+                .username(request.getUsername())
+                .fullname(request.getFullname())
+                .address(request.getAddress())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .dob(request.getDob())
+                .gender(request.getGender())
+                .password(request.getPassword()) // You should hash this elsewhere!
+                .build();
+    }
 
     public static UserEntity fromRegisterDTO(UserRegisterDTO dto) {
         if (dto == null) throw new ActionFailedException("User empty");
