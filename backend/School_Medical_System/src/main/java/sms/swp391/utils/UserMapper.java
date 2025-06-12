@@ -46,7 +46,6 @@ public class UserMapper {
                 .username(dto.getUsername())
                 .address(dto.getAddress())
                 .gender(dto.getGender())
-                .roleName(dto.getRoleName())
                 .phoneNumber(dto.getPhoneNumber())
                 .dob(dto.getDob())
                 .email(dto.getEmail())
