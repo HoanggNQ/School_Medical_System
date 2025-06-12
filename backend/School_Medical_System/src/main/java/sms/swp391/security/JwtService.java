@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import sms.swp391.models.entities.UserEntity;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
@@ -30,7 +31,7 @@ public class JwtService {
         this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
     }
 
-    public String generateToken(Authentication authentication) {
+    public String generateToken1(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
@@ -39,12 +40,33 @@ public class JwtService {
                 .signWith(key)
                 .compact();
     }
+    public String generateToken(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-    public String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails) {
+        if (userDetails instanceof UserEntity) {
+            UserEntity customUserDetails = (UserEntity) userDetails;
+            return Jwts.builder()
+                    .setSubject(userDetails.getUsername())
+                    .claim("userId", customUserDetails.getUserId())
+                    .claim("role", customUserDetails.getRoleName())
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_MS))
+                    .signWith(key)
+                    .compact();
+        }
+
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_MS))
+                .signWith(key)
+                .compact();
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_MS))
                 .signWith(key)
                 .compact();

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.entities.UserEntity;
 
 import java.util.Optional;
@@ -15,7 +16,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByUsername(String username);
     boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
 
     boolean existsByPhoneNumber(String phoneNumber);
 
@@ -25,8 +25,14 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "AND u.status = 'ACTIVE'")
     Page<UserEntity> searchUsers(@Param("keyword") String keyword, Pageable pageable);
 
+
     @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'STUDENT'")
     Optional<UserEntity> findByStudentIdAndRoleName(@Param("userId") Long userId);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.roleName = :role")
+    Page<UserEntity> searchUsersByRoleName(@Param("role") RoleEnum role, Pageable pageable);
+
+
 
     @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'PARENT'")
     Optional<UserEntity> findByParentIdAndRoleName(@Param("userId") Long userId);

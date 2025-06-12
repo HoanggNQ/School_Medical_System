@@ -1,58 +1,63 @@
 package sms.swp391.repositories;
 
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 import sms.swp391.models.entities.HealthDeclarationEntity;
-import sms.swp391.models.entities.HealthDeclarationDetailEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface HealthDeclarationRepository extends JpaRepository<HealthDeclarationEntity, Long> {
+public interface HealthDeclarationRepository extends JpaRepository<HealthDeclarationEntity, Long>, JpaSpecificationExecutor<HealthDeclarationEntity> {
 
-    // Find declarations by status
-    List<HealthDeclarationEntity> findByStatusOrderByDeclarationDateDesc(String status);
+    @Query("SELECT h FROM HealthDeclarationEntity h " +
+            "WHERE (:studentId IS NULL OR h.student.user.userId = :studentId) " )
+    List<HealthDeclarationEntity> findByStudent( @Param("studentId") Long studentId);
 
-    // Find declarations by student and status
-    List<HealthDeclarationEntity> findByStudentIdAndStatusOrderByDeclarationDateDesc(Long studentId, String status);
+    @Query("SELECT h FROM HealthDeclarationEntity h WHERE h.declaredBy.id = :userId")
+    List<HealthDeclarationEntity> findByDeclaredById(@Param("userId") Long userId);
 
-    // Check if declaration exists for student and academic year
+    Page<HealthDeclarationEntity> findByStatus(HealthDeclarationStatus status, Pageable pageable);
+    Page<HealthDeclarationEntity> findAll(Pageable pageable);
     boolean existsByStudentIdAndAcademicYear(Long studentId, String academicYear);
 
-    // Find declaration with details
+    @Query("SELECT h FROM HealthDeclarationEntity h " +
+            "WHERE (:status IS NULL OR h.status = :status) " +
+            "AND (:studentId IS NULL OR h.student.user.userId = :studentId) " +
+            "AND (:declaredById IS NULL OR h.declaredBy.userId = :declaredById) " +
+            "AND (:academicYear IS NULL OR h.academicYear = :academicYear)")
+    Page<HealthDeclarationEntity> searchByFilters(
+            @Param("status") HealthDeclarationStatus status,
+            @Param("studentId") Long studentId,
+            @Param("declaredById") Long declaredById,
+            @Param("academicYear") String academicYear,
+            Pageable pageable
+    );
+
     @Query("SELECT d FROM HealthDeclarationEntity d " +
-            "LEFT JOIN FETCH d.healthDeclarationDetails " +
-            "LEFT JOIN FETCH d.student s " +
-            "LEFT JOIN FETCH s.user  " +
-            "LEFT JOIN FETCH d.declaredBy " +
-            "LEFT JOIN FETCH d.reviewedBy " +
+            "JOIN FETCH d.student s " +
+            "JOIN FETCH s.user " +
+            "JOIN FETCH d.declaredBy " +
             "WHERE d.id = :id")
     Optional<HealthDeclarationEntity> findByIdWithDetails(@Param("id") Long id);
 
-    // Find declarations by student with details
     @Query("SELECT d FROM HealthDeclarationEntity d " +
-            "LEFT JOIN FETCH d.healthDeclarationDetails " +
-            "LEFT JOIN FETCH d.student s " +
-            "LEFT JOIN FETCH s.user  " +
-            "LEFT JOIN FETCH d.declaredBy " +
-            "LEFT JOIN FETCH d.reviewedBy " +
-            "WHERE d.student.id = :studentId " +
+            "JOIN FETCH d.student s " +
+            "JOIN FETCH s.user " +
+            "JOIN FETCH d.declaredBy " +
+            "WHERE s.id = :studentId " +
             "ORDER BY d.declarationDate DESC")
     List<HealthDeclarationEntity> findByStudentIdWithDetails(@Param("studentId") Long studentId);
 
-    // Find declarations by declared user with details
     @Query("SELECT d FROM HealthDeclarationEntity d " +
-            "LEFT JOIN FETCH d.healthDeclarationDetails " +
-            "LEFT JOIN FETCH d.student s " +
-            "LEFT JOIN FETCH s.user  " +
-            "LEFT JOIN FETCH d.declaredBy " +
-            "LEFT JOIN FETCH d.reviewedBy " +
+            "JOIN FETCH d.student s " +
+            "JOIN FETCH s.user " +
+            "JOIN FETCH d.declaredBy " +
             "WHERE d.declaredBy.userId = :declaredById " +
             "ORDER BY d.declarationDate DESC")
     List<HealthDeclarationEntity> findByDeclaredByUserIdWithDetails(@Param("declaredById") Long declaredById);
 }
-
