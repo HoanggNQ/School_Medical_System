@@ -2,6 +2,9 @@ package sms.swp391.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +14,14 @@ import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.StudentResponse;
 import sms.swp391.services.StudentService;
 import sms.swp391.models.dtos.respones.StudentGetResponse;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import sms.swp391.models.dtos.respones.PaginatedStudentResponse;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/student")
@@ -65,15 +73,20 @@ public class StudentController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<ResponseObject> getAllStudents() {
-        List<StudentGetResponse> students = studentService.getAllStudents();
+    public ResponseEntity<ResponseObject> getAll(
+            @RequestParam(value = "search", required = false) String search,
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "fullname", direction = Sort.Direction.ASC)
+            }) Pageable pageable) {
+        PaginatedStudentResponse response = studentService.getAllStudents(search, pageable);
         return ResponseEntity.ok(
                 ResponseObject.builder()
-                        .code("GET_LIST_SUCCESS")
-                        .message("Get all students successfully")
+                        .code("GET_SUCCESS")
+                        .message("Get students successfully")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
-                        .data(students)
+                        .data(response)
                         .build()
         );
     }
