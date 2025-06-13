@@ -20,6 +20,11 @@ package sms.swp391.services.impl;
         import sms.swp391.utils.UserMapper;
         import sms.swp391.models.dtos.requests.StudentUpdateRequest;
         import sms.swp391.models.dtos.respones.StudentGetResponse;
+        import org.springframework.data.domain.Page;
+        import org.springframework.data.domain.Pageable;
+        import sms.swp391.models.dtos.respones.PaginatedStudentResponse;
+        import org.springframework.data.domain.Sort;
+        import org.springframework.data.domain.PageRequest;
 
         import java.util.List;
         import java.util.Optional;
@@ -119,18 +124,48 @@ package sms.swp391.services.impl;
             }
 
             @Override
-            public List<StudentGetResponse> getAllStudents() {
-                try {
-                    List<StudentEntity> students = studentRepository.findAll();
-                    return students.stream()
-                            .filter(s -> s.getUser() != null &&
-                                         s.getUser().getStatus() != null &&
-                                         s.getUser().getStatus().name().equals("ACTIVE"))
-                            .map(this::toStudentGetResponse)
-                            .collect(Collectors.toList());
-                } catch (Exception e) {
-                    throw new ActionFailedException("Failed to get students");
+            public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
+                Sort validatedSort = pageable.getSort().stream()
+                        .filter(order -> order.getProperty().equals("fullname"))
+                        .collect(Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                Sort::by
+                        ));
+
+                Pageable validatedPageable = PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        validatedSort
+                );
+
+                String sortProperty = validatedPageable.getSort().stream()
+                        .findFirst()
+                        .map(Sort.Order::getProperty)
+                        .orElse("fullname");
+                String sortDirection = validatedPageable.getSort().stream()
+                        .findFirst()
+                        .map(order -> order.getDirection().name().toLowerCase())
+                        .orElse("asc");
+
+                Page<StudentEntity> studentPage;
+                if (search == null || search.trim().isEmpty()) {
+                    studentPage = studentRepository.findAll(validatedPageable);
+                } else if ("fullname".equals(sortProperty)) {
+                    studentPage = studentRepository.searchStudentsSorted(search, sortDirection, validatedPageable);
+                } else {
+                    studentPage = studentRepository.searchStudents(search, validatedPageable);
                 }
+
+                List<StudentGetResponse> studentDTOs = studentPage.stream()
+                        .map(this::toStudentGetResponse)
+                        .toList();
+
+                return PaginatedStudentResponse.builder()
+                        .students(studentDTOs)
+                        .totalElements(studentPage.getTotalElements())
+                        .totalPages(studentPage.getTotalPages())
+                        .currentPage(studentPage.getNumber())
+                        .build();
             }
 
             @Override
@@ -197,4 +232,6 @@ package sms.swp391.services.impl;
             public List<String> findFullNameByParent(Long parentId) {
                 return studentRepository.findFullNameByParent(parentId);
             }
+
+
         }
