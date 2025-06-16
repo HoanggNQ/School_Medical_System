@@ -16,7 +16,12 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
 
     Optional<StudentEntity> findById(Long id);
 
-    List<StudentEntity> findByClassEntity_Grade(Integer classEntityGrade);
+    @Query("SELECT s FROM StudentEntity s " +
+            "JOIN FETCH s.parent p " +
+            "JOIN FETCH s.user u " +
+            "WHERE s.classEntity.grade = :grade")
+    List<StudentEntity> findByClassEntity_GradeWithUserAndParent(Integer grade);
+
 
     Optional<StudentEntity> findByStudentCode(String studentCode);
 
