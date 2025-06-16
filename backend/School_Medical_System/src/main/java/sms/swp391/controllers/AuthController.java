@@ -51,7 +51,7 @@ public class AuthController {
         }
 
     }
-    @PostMapping(value = "register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseObject> register(@RequestPart("user") UserRegisterDTO userRegisterDTO) {
         try {
             UserResponse userResponse = authService.registerUser(userRegisterDTO);

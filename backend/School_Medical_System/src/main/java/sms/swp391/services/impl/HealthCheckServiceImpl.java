@@ -72,7 +72,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         campaign.setStatus(CampaignStatus.IN_PROGRESS.name());
         campaignRepository.save(campaign);
 
-        List<StudentEntity> students = studentRepository.findByClassEntity_Grade(campaign.getTargetGrade());
+        List<StudentEntity> students = studentRepository.findByClassEntity_GradeWithUserAndParent(campaign.getTargetGrade());
 
         students.forEach(student -> {
             HealthCheckConsentEntity consent = HealthCheckConsentEntity.builder()
@@ -89,7 +89,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     new NotificationCreateDTO(
                             "Health Check Consent Request",
                             "Please consent for " + student.getUser().getFullname() +
-                                    "'s health check on " + campaign.getCheckDate()
+                                    "'s health check on " + campaign.getCheckDate(), campaign.getCreatedBy().getUserId()
                     )
             );
         });
@@ -181,7 +181,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             notificationService.createNotification(
                     new NotificationCreateDTO(
                             "Health Check Follow-up Required",
-                            "Please review the health check results for " + studentName // ✅ DÙNG TÊN
+                            "Please review the health check results for " + studentName ,checkedById
                     )
             );
         }
