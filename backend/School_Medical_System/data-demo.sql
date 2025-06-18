@@ -1,4 +1,4 @@
--- Insert Users
+
 INSERT INTO public."user" (user_id, fullname, username, password, role_name, status, phone)
 VALUES (1, 'Phụ huynh 1', 'ph1', '$2a$10$6N6jvBtisKk5qwenCNVIMugJ4JzcVCQSK3GPl13oh63hBFBVwRltm', 'PARENT', 'ACTIVE', '0900000001');
 INSERT INTO public."user" (user_id, fullname, username, password, role_name, status, phone)
@@ -34,10 +34,10 @@ VALUES (16, 'Y tá Trường', 'yta1', '$2a$10$6N6jvBtisKk5qwenCNVIMugJ4JzcVCQSK
 INSERT INTO public."user" (user_id, fullname, username, password, role_name, status, phone)
 VALUES (17, 'Admin', 'admin', '$2a$10$6N6jvBtisKk5qwenCNVIMugJ4JzcVCQSK3GPl13oh63hBFBVwRltm', 'ADMIN', 'ACTIVE', '0900000017');
 
--- Insert Classes
+
 INSERT INTO public.class (class_id, grade, class_name) VALUES (1, 5, '5A');
 
--- Insert Students
+
 INSERT INTO public.student (student_id, student_code, user_id, parent_id, class_id)
 VALUES (1, 'HS001', 6, 1, 1);
 INSERT INTO public.student (student_id, student_code, user_id, parent_id, class_id)
@@ -59,13 +59,13 @@ VALUES (9, 'HS009', 14, 4, 1);
 INSERT INTO public.student (student_id, student_code, user_id, parent_id, class_id)
 VALUES (10, 'HS010', 15, 5, 1);
 
--- Insert Health Check Campaigns
+
 INSERT INTO public.health_check_campaign (health_check_campaign_id, check_date, target_grade, status, name, location)
 VALUES (1, '2025-09-15', 5, 'SCHEDULED', 'Khám sức khỏe đầu năm', 'Phòng y tế trường');
 INSERT INTO public.health_check_campaign (health_check_campaign_id, check_date, target_grade, status, name, location)
 VALUES (2, '2026-03-15', 5, 'SCHEDULED', 'Khám sức khỏe cuối năm', 'Phòng y tế trường');
 
--- Insert Health Check Consents
+
 INSERT INTO public.health_check_consent (health_check_campaign_id, parent_id, student_id, academic_year, consent_status)
 VALUES (1, 1, 1, '2025-2026', 'APPROVED');
 INSERT INTO public.health_check_consent (health_check_campaign_id, parent_id, student_id, academic_year, consent_status)
@@ -107,7 +107,6 @@ VALUES (1, 5, 10, '2025-2026', 'APPROVED');
 INSERT INTO public.health_check_consent (health_check_campaign_id, parent_id, student_id, academic_year, consent_status)
 VALUES (2, 5, 10, '2025-2026', 'APPROVED');
 
--- Insert Health Check Results
 INSERT INTO public.health_check_result (
     check_date, checked_by, health_check_campaign_id, student_id, academic_year,
     height_cm, weight_kg, bmi, pulse, temperature, overall_health_rating)
@@ -209,13 +208,13 @@ INSERT INTO public.health_check_result (
 VALUES ('2025-09-15', 16, 2, 10, '2025-2026',
         132.3, 47.4, 27.1, 84, 37.2, 'TỐT');
 
--- Insert Vaccination Campaigns
+
 INSERT INTO public.vaccination_campaign (vaccination_campaign_id, start_date, end_date, target_grade, status, name, vaccine_type)
 VALUES (1, '2025-10-01', '2025-10-07', 5, 'SCHEDULED', 'Tiêm Sởi', 'Sởi');
 INSERT INTO public.vaccination_campaign (vaccination_campaign_id, start_date, end_date, target_grade, status, name, vaccine_type)
 VALUES (2, '2026-01-05', '2026-01-10', 5, 'SCHEDULED', 'Tiêm Rubella', 'Rubella');
 
--- Insert Vaccination Consents
+
 INSERT INTO public.vaccination_consent (vaccination_campaign_id, parent_id, student_id, academic_year, consent_status)
 VALUES (1, 1, 1, '2025-2026', 'APPROVED');
 INSERT INTO public.vaccination_consent (vaccination_campaign_id, parent_id, student_id, academic_year, consent_status)
@@ -257,7 +256,7 @@ VALUES (1, 5, 10, '2025-2026', 'APPROVED');
 INSERT INTO public.vaccination_consent (vaccination_campaign_id, parent_id, student_id, academic_year, consent_status)
 VALUES (2, 5, 10, '2025-2026', 'APPROVED');
 
--- Insert Vaccination Records
+
 INSERT INTO public.vaccination_record (
     administered_by, administration_date, student_id, vaccination_campaign_id, academic_year,
     vaccine_batch, vaccine_name)
@@ -339,7 +338,7 @@ INSERT INTO public.vaccination_record (
     vaccine_batch, vaccine_name)
 VALUES (16, '2025-10-05 08:00:00+07', 10, 2, '2025-2026', 'VC0210', 'Rubella');
 
--- Insert Medications
+
 INSERT INTO public.medication (medication_id, medication_name, dosage_form, category)
 VALUES (1, 'Paracetamol', 'Viên nén', 'Thông thường');
 INSERT INTO public.medication (medication_id, medication_name, dosage_form, category)
@@ -349,7 +348,7 @@ VALUES (3, 'Cotrim', 'Viên nén', 'Thông thường');
 INSERT INTO public.medication (medication_id, medication_name, dosage_form, category)
 VALUES (4, 'Vitamin C', 'Viên nén', 'Thông thường');
 
--- Insert Medication Requests & Details
+
 INSERT INTO public.medication_request (request_id, requested_by, student_id, academic_year, status)
 VALUES (1, 1, 1, '2025-2026', 'PENDING');
 INSERT INTO public.medication_request_detail (
@@ -430,9 +429,7 @@ VALUES (10, 1, 3, '2025-11-01', '2025-11-03', '1 viên', '2 lần/ngày');
 INSERT INTO public.medication_request_detail (
     request_id, medication_id, quantity, start_date, end_date, dosage, frequency)
 VALUES (10, 2, 3, '2025-11-01', '2025-11-03', '1 viên', '2 lần/ngày');
--- ==========================================
--- 🛠 FIX: Đồng bộ sequence sau khi chèn dữ liệu tay
--- ==========================================
+
 
 SELECT setval('user_user_id_seq', (SELECT MAX(user_id) FROM public."user"));
 SELECT setval('student_student_id_seq', (SELECT MAX(student_id) FROM public.student));
