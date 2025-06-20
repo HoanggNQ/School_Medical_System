@@ -11,9 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationCreateDTO {
-
-    private String content;
-
     private String title;
-
+    private String content;
+    private Long creatorId;
 }
+

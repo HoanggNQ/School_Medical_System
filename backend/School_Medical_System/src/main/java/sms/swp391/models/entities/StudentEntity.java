@@ -20,6 +20,7 @@ import java.util.*;
 @Table(name = "student")
 public class StudentEntity {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id", nullable = false)
