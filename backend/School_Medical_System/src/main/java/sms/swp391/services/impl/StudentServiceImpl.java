@@ -126,7 +126,7 @@ package sms.swp391.services.impl;
             @Override
             public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
                 Sort validatedSort = pageable.getSort().stream()
-                        .filter(order -> order.getProperty().equals("fullname"))
+                        .filter(order -> order.getProperty().equals("wwwww"))
                         .collect(Collectors.collectingAndThen(
                                 Collectors.toList(),
                                 Sort::by
@@ -229,9 +229,10 @@ package sms.swp391.services.impl;
             }
 
             @Override
-            public List<String> findFullNameByParent(Long parentId) {
-                return studentRepository.findFullNameByParent(parentId);
+            public List<StudentResponse> findStudentByParent(Long parentId) {
+                List<StudentEntity> students = studentRepository.findByParent_UserId(parentId);
+                return students.stream()
+                        .map(StudentMapper::toDTO)
+                        .toList();
             }
-
-
         }

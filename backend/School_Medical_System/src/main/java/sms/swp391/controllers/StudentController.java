@@ -105,17 +105,17 @@ public class StudentController {
         );
     }
 
-    @GetMapping("/findFullNameByParent/{parentId}")
-    public ResponseEntity<ResponseObject> findFullNameByParent(@PathVariable Long parentId) {
-        List<String> fullnames = studentService.findFullNameByParent(parentId);
-        if (!fullnames.isEmpty()) {
+    @GetMapping("/findStudentByParent/{parentId}")
+    public ResponseEntity<ResponseObject> findStudentByParent(@PathVariable Long parentId) {
+        List<StudentResponse> students = studentService.findStudentByParent(parentId);
+        if (!students.isEmpty()) {
             return ResponseEntity.ok(
                 ResponseObject.builder()
                     .code("GET_SUCCESS")
-                    .message("Found student fullnames")
+                    .message("Found students")
                     .status(HttpStatus.OK)
                     .isSuccess(true)
-                    .data(fullnames)
+                    .data(students)
                     .build()
             );
         } else {
