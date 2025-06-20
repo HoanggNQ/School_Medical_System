@@ -27,8 +27,7 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
 
     boolean existsByStudentCode(String sc);
 
-    @Query("SELECT s.user.fullname FROM StudentEntity s WHERE s.parent.userId = :parentID")
-    List<String> findFullNameByParent(@Param("parentID") Long parentID);
+    List<StudentEntity> findByParent_UserId(Long parentId);
 
 
     @Query("SELECT s FROM StudentEntity s WHERE " +
