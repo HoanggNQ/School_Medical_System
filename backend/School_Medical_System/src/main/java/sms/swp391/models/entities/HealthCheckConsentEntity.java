@@ -57,6 +57,5 @@ public class HealthCheckConsentEntity {
     @Column(name = "academic_year", nullable = false, length = 9)
     private String academicYear;
 
-    private String status;
 
 }

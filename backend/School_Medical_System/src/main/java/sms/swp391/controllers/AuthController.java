@@ -1,21 +1,24 @@
 package sms.swp391.controllers;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.LoginDTO;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.respones.JwtResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.exception.ActionFailedException;
+import sms.swp391.models.exception.AuthFailedException;
+import sms.swp391.models.exception.ConflictException;
 import sms.swp391.services.AuthService;
 import sms.swp391.services.OTPService;
-import sms.swp391.services.UserService;
 
 
 @RestController
@@ -24,7 +27,10 @@ import sms.swp391.services.UserService;
 public class AuthController {
     private final AuthService authService;
     private final OTPService otpService;
-
+    @Operation(
+            summary = "Login",
+            description = "Login by Email"
+    )
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> login(@RequestBody LoginDTO loginDto) {
         try {
@@ -38,20 +44,55 @@ public class AuthController {
                             .data(jwtResponse)
                             .build()
             );
+
+        } catch (AuthFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("INVALID_CREDENTIALS")
+                            .message(e.getMessage())  // "Invalid email or password"
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("INVALID_CREDENTIALS")
+                            .message("Invalid username or password")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+
+        } catch (ActionFailedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("ACTION_FAILED")
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .code("LOGIN_FAILED")
-                            .message("Failed to create user: " + e.getMessage())
+                            .message("Internal error: " + e.getMessage())
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .isSuccess(false)
                             .data(null)
                             .build()
             );
         }
-
     }
-    @PostMapping(value = "register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseObject> register(@RequestPart("user") UserRegisterDTO userRegisterDTO) {
         try {
             UserResponse userResponse = authService.registerUser(userRegisterDTO);
@@ -66,11 +107,34 @@ public class AuthController {
                             .data(userResponse)
                             .build()
             );
+
+        } catch (ConflictException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    ResponseObject.builder()
+                            .code("REGISTER_CONFLICT")
+                            .message(e.getMessage())
+                            .status(HttpStatus.CONFLICT)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+
+        } catch (ActionFailedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("REGISTER_FAILED")
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .code("REGISTER_FAILED")
-                            .message("Failed to create user: " + e.getMessage())
+                            .message("Internal error: " + e.getMessage())
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .isSuccess(false)
                             .data(null)
