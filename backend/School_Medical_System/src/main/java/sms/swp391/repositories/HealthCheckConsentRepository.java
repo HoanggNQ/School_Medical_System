@@ -12,10 +12,19 @@ import java.util.Optional;
 @Repository
 public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckConsentEntity, Long> {
 
-    List<HealthCheckConsentEntity> findByHealthCheckCampaignIdAndStatus(Long campaignId, String status);
+    List<HealthCheckConsentEntity> findByHealthCheckCampaignIdAndConsentStatus(Long campaignId, String status);
 
     Optional<HealthCheckConsentEntity> findByHealthCheckCampaignIdAndStudentId(Long campaignId, Long studentId);
 
-    @Query("SELECT h FROM HealthCheckConsentEntity h WHERE h.parent.userId = :parentId AND h.status = :status AND h.parent.roleName = 'PARENT'")
-    Optional<HealthCheckConsentEntity> findByParentAndStatus(@Param("parentId") Long parentId, @Param("status") String status);
+
+    @Query("""
+    SELECT c FROM HealthCheckConsentEntity c
+    JOIN FETCH c.student s
+    JOIN FETCH s.user su
+    JOIN FETCH c.parent p
+    WHERE p.userId = :parentId AND c.consentStatus = :status
+""")
+    List<HealthCheckConsentEntity> findByParentAndStatus(@Param("parentId") Long parentId,
+                                                         @Param("status") String status);
+
 }

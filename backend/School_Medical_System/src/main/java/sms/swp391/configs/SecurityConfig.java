@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/v1/user/list-user").hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/user/delete-user").hasAnyAuthority("ADMIN")
 
-                        .anyRequest().authenticated() // Các yêu cầu khác đều cần xác thực
+                        .anyRequest().permitAll() // Các yêu cầu khác đều cần xác thực
                 ).cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không lưu trạng thái phiên

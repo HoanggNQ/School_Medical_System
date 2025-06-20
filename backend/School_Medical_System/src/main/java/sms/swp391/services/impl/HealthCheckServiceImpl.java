@@ -104,9 +104,9 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public List<HealthCheckCampaignResponse> getAllCampaigns() {
-        return campaignRepository.findAll().stream()
+        return campaignRepository.getAllByHealthCheckCampaign().stream()
                 .map(HealthCheckCampaignMapper::toDTO)
-                .toList();
+                    .toList();
     }
 
     // Consent Methods
@@ -122,7 +122,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
         // Cập nhật từ request DTO (static method)
         HealthCheckConsentEntity updatedConsent = HealthCheckConsentMapper.fromRequestDTO(request);
-        consent.setStatus(updatedConsent.getStatus());
+        consent.setConsentStatus(updatedConsent.getConsentStatus());
         consent.setNotes(updatedConsent.getNotes());
         consent.setSpecialRequests(updatedConsent.getSpecialRequests());
         consent.setResponseDate(Instant.now());
@@ -132,7 +132,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public List<HealthCheckConsentResponse> getConsentsByCampaign(Long campaignId) {
-        return consentRepository.findByHealthCheckCampaignIdAndStatus(campaignId, "PENDING").stream()
+        return consentRepository.findByHealthCheckCampaignIdAndConsentStatus(campaignId, "PENDING").stream()
                 .map(HealthCheckConsentMapper::toDTO)
                 .toList();
     }
