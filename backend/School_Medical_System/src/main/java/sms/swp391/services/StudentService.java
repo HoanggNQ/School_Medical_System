@@ -17,6 +17,7 @@ public interface StudentService {
     StudentResponse updateStudent(Long id, StudentUpdateRequest request);
     void deleteStudent(Long id);
     StudentGetResponse getStudentById(Long id);
-    List<String> findFullNameByParent(Long parentId);
+    // In src/main/java/sms/swp391/services/StudentService.java
+    List<StudentResponse> findStudentByParent(Long parentId);
     PaginatedStudentResponse getAllStudents(String search, Pageable pageable);
 }
