@@ -18,11 +18,10 @@ public interface HealthDeclarationRepository extends JpaRepository<HealthDeclara
             "WHERE (:studentId IS NULL OR h.student.user.userId = :studentId) " )
     List<HealthDeclarationEntity> findByStudent( @Param("studentId") Long studentId);
 
-    @Query("SELECT h FROM HealthDeclarationEntity h WHERE h.declaredBy.id = :userId")
+    @Query("SELECT h FROM HealthDeclarationEntity h WHERE h.declaredBy.userId = :userId")
     List<HealthDeclarationEntity> findByDeclaredById(@Param("userId") Long userId);
 
     Page<HealthDeclarationEntity> findByStatus(HealthDeclarationStatus status, Pageable pageable);
-    Page<HealthDeclarationEntity> findAll(Pageable pageable);
     boolean existsByStudentIdAndAcademicYear(Long studentId, String academicYear);
 
     @Query("SELECT h FROM HealthDeclarationEntity h " +
