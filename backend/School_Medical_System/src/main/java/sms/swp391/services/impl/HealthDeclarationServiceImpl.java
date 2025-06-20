@@ -110,57 +110,36 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
     }
 
     @Override
-    public HealthDeclarationResponseDTO save(HealthDeclarationResponseDTO responseDTO) {
-        // Tìm student và user entities
-        StudentEntity student = studentRepository.findById(responseDTO.getStudentId())
-                .orElseThrow(() -> new NotFoundException("Student not found with id: " + responseDTO.getStudentId()));
+    public HealthDeclarationResponseDTO create(HealthDeclarationCreateDTO createDTO) {
+        StudentEntity student = studentRepository.findById(createDTO.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Student not found with id: " + createDTO.getStudentId()));
 
-        UserEntity declaredBy = userRepository.findById(responseDTO.getDeclaredById())
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + responseDTO.getDeclaredById()));
+        UserEntity declaredBy = userRepository.findById(createDTO.getDeclaredById())
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + createDTO.getDeclaredById()));
 
-        HealthDeclarationEntity entity;
-
-        if (responseDTO.getId() != null) {
-            // Update existing entity
-            entity = healthDeclarationRepository.findById(responseDTO.getId())
-                    .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + responseDTO.getId()));
-
-            // Convert ResponseDTO to UpdateDTO for mapping
-            HealthDeclarationUpdateDTO updateDTO = HealthDeclarationUpdateDTO.builder()
-                    .status(responseDTO.getStatus())
-                    .academicYear(responseDTO.getAcademicYear())
-                    .height(responseDTO.getHeight())
-                    .weight(responseDTO.getWeight())
-                    .bloodType(responseDTO.getBloodType())
-                    .allergies(responseDTO.getAllergies())
-                    .chronicDiseases(responseDTO.getChronicDiseases())
-                    .currentMedications(responseDTO.getCurrentMedications())
-                    .emergencyContactName(responseDTO.getEmergencyContactName())
-                    .emergencyContactPhone(responseDTO.getEmergencyContactPhone())
-                    .build();
-
-            HealthDeclarationMapper.updateEntityFromDTO(entity, updateDTO);
-        } else {
-            // Create new entity
-            HealthDeclarationCreateDTO createDTO = HealthDeclarationCreateDTO.builder()
-                    .status(responseDTO.getStatus())
-                    .academicYear(responseDTO.getAcademicYear())
-                    .height(responseDTO.getHeight())
-                    .weight(responseDTO.getWeight())
-                    .bloodType(responseDTO.getBloodType())
-                    .allergies(responseDTO.getAllergies())
-                    .chronicDiseases(responseDTO.getChronicDiseases())
-                    .currentMedications(responseDTO.getCurrentMedications())
-                    .emergencyContactName(responseDTO.getEmergencyContactName())
-                    .emergencyContactPhone(responseDTO.getEmergencyContactPhone())
-                    .build();
-
-            entity = HealthDeclarationMapper.fromRequestDTO(createDTO, student, declaredBy);
-        }
-
-        HealthDeclarationEntity savedEntity = healthDeclarationRepository.save(entity);
-        return HealthDeclarationMapper.toDTO(savedEntity);
+        HealthDeclarationEntity entity = HealthDeclarationMapper.fromRequestDTO(createDTO, student, declaredBy);
+        HealthDeclarationEntity saved = healthDeclarationRepository.save(entity);
+        return HealthDeclarationMapper.toDTO(saved);
     }
+
+    @Override
+    public HealthDeclarationResponseDTO update(Long id, HealthDeclarationUpdateDTO updateDTO) {
+        HealthDeclarationEntity entity = healthDeclarationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + id));
+
+        HealthDeclarationMapper.updateEntityFromDTO(entity, updateDTO);
+        HealthDeclarationEntity updated = healthDeclarationRepository.save(entity);
+        return HealthDeclarationMapper.toDTO(updated);
+    }
+    @Override
+    public HealthDeclarationResponseDTO updateStatus(Long id, HealthDeclarationStatus status) {
+        HealthDeclarationEntity entity = healthDeclarationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + id));
+        entity.setStatus(status);
+        HealthDeclarationEntity updated = healthDeclarationRepository.save(entity);
+        return HealthDeclarationMapper.toDTO(updated);
+    }
+
 
     @Override
     public void delete(Long id) {
