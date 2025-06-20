@@ -3,6 +3,8 @@ package sms.swp391.services;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
+import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
 import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
 
 import java.util.List;
@@ -34,7 +36,11 @@ public interface HealthDeclarationService {
 
     List<HealthDeclarationResponseDTO> getByDeclaredByUserIdWithDetails(Long declaredById);
 
-    HealthDeclarationResponseDTO save(HealthDeclarationResponseDTO ResponseDTO);
+    HealthDeclarationResponseDTO create(HealthDeclarationCreateDTO createDTO);
+
+    HealthDeclarationResponseDTO update(Long id, HealthDeclarationUpdateDTO updateDTO);
+
+    HealthDeclarationResponseDTO updateStatus(Long id, HealthDeclarationStatus status);
 
     void delete(Long id);
 }

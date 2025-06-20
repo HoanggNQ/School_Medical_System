@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
+import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
 import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.services.HealthDeclarationService;
@@ -280,10 +282,9 @@ public class HealthDeclarationController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody HealthDeclarationResponseDTO responseDTO) {
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody HealthDeclarationCreateDTO createDTO) {
         try {
-            responseDTO.setId(null); // Đảm bảo ID null cho tạo mới
-            HealthDeclarationResponseDTO created = healthDeclarationService.save(responseDTO);
+            HealthDeclarationResponseDTO created = healthDeclarationService.create(createDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ResponseObject.builder()
                             .code("CREATE_SUCCESS")
@@ -309,10 +310,9 @@ public class HealthDeclarationController {
     @PutMapping("/{id}")
     public ResponseEntity<ResponseObject> update(
             @PathVariable Long id,
-            @Valid @RequestBody HealthDeclarationResponseDTO responseDTO) {
+            @Valid @RequestBody HealthDeclarationUpdateDTO updateDTO) {
         try {
-            responseDTO.setId(id); // Đảm bảo ID khớp với path variable
-            HealthDeclarationResponseDTO updated = healthDeclarationService.save(responseDTO);
+            HealthDeclarationResponseDTO updated = healthDeclarationService.update(id,updateDTO);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("UPDATE_SUCCESS")
@@ -398,28 +398,13 @@ public class HealthDeclarationController {
         }
     }
 
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<ResponseObject> updateStatus(
             @PathVariable Long id,
             @RequestParam HealthDeclarationStatus status) {
         try {
-            Optional<HealthDeclarationResponseDTO> declaration = healthDeclarationService.getByIdWithDetails(id);
-            if (declaration.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder()
-                                .code("NOT_FOUND")
-                                .message("Health declaration not found with id: " + id)
-                                .status(HttpStatus.NOT_FOUND)
-                                .isSuccess(false)
-                                .data(null)
-                                .build()
-                );
-            }
-
-            HealthDeclarationResponseDTO dto = declaration.get();
-            dto.setStatus(status);
-            HealthDeclarationResponseDTO updated = healthDeclarationService.save(dto);
-
+            HealthDeclarationResponseDTO updated = healthDeclarationService.updateStatus(id, status);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("UPDATE_SUCCESS")
