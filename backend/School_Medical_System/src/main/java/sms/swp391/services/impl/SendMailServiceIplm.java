@@ -31,7 +31,8 @@ public class SendMailServiceIplm implements SendMailService {
     public void sendMail(MultipartFile[] files, String to, String[] cc, String subject, String body) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true); // true để bật multipart
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
             helper.setFrom(fromEmail);
             helper.setTo(to);
             if (cc != null && cc.length > 0) {

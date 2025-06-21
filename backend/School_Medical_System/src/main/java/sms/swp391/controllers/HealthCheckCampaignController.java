@@ -1,5 +1,6 @@
 package sms.swp391.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ public class HealthCheckCampaignController {
     private final HealthCheckService healthCheckService;
 
 
+    @Operation(summary = "Tạo chiến dịch khám sức khỏe", description = "Khởi tạo một chiến dịch khám sức khỏe mới với thông tin từ người tạo.")
 
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(
@@ -55,6 +57,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+    @Operation(summary = "Cập nhật chiến dịch khám", description = "Chỉnh sửa thông tin chiến dịch khám sức khỏe theo ID.")
 
     @PutMapping("/campaigns/{id}")
     public ResponseEntity<ResponseObject> updateCampaign(
@@ -92,6 +95,7 @@ public class HealthCheckCampaignController {
         }
     }
 
+    @Operation(summary = "Bắt đầu chiến dịch khám", description = "Đổi trạng thái chiến dịch sang 'đang diễn ra'.")
     @PostMapping("/campaigns/{id}/start")
     public ResponseEntity<ResponseObject> startCampaign(@PathVariable Long id) {
         try {
@@ -124,7 +128,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
-
+    @Operation(summary = "Lấy chiến dịch theo ID", description = "Trả về thông tin chiến dịch khám sức khỏe theo ID.")
     @GetMapping("/campaigns/{id}")
     public ResponseEntity<ResponseObject> getCampaignById(@PathVariable Long id) {
         try {
@@ -158,7 +162,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
-
+    @Operation(summary = "Lấy tất cả chiến dịch khám", description = "Trả về danh sách tất cả chiến dịch khám sức khỏe.")
     @GetMapping("/campaigns")
     public ResponseEntity<ResponseObject> getAllCampaigns() {
         try {
