@@ -21,7 +21,7 @@ public class HealthCheckConsentMapper {
                 .studentName(Optional.ofNullable(entity.getStudent()).map(StudentEntity::getUser).map(UserEntity::getFullname).orElse(null))
                 .parentId(entity.getParent().getUserId())
                 .parentName(entity.getParent().getUsername())
-                .status(entity.getStatus())
+                .status(entity.getConsentStatus())
                 .notes(entity.getNotes())
                 .specialRequests(entity.getSpecialRequests())
                 .responseDate(entity.getResponseDate())
@@ -33,7 +33,7 @@ public class HealthCheckConsentMapper {
         if (dto == null) return null;
 
         HealthCheckConsentEntity entity = new HealthCheckConsentEntity();
-        entity.setStatus(dto.getStatus());
+        entity.setConsentStatus(dto.getStatus());
         entity.setNotes(dto.getNotes());
         entity.setSpecialRequests(dto.getSpecialRequests());
         return entity;

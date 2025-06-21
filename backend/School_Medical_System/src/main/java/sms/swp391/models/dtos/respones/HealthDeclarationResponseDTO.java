@@ -14,6 +14,9 @@ public class HealthDeclarationResponseDTO {
     private Long id;
     private Long studentId;
     private Long declaredById;
+    private String studentName;
+    private String declaredByName;
+
     private Instant declarationDate;
     private HealthDeclarationStatus status;
     private String academicYear;
