@@ -1,6 +1,7 @@
 package sms.swp391.controllers;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HealthCheckResultController {
     private final HealthCheckService healthCheckService;
-
+    @Operation(summary = "Lưu kết quả khám sức khỏe", description = "Lưu kết quả khám sức khỏe cho học sinh kèm theo ID của người thực hiện.")
     @PostMapping("/results")
     public ResponseEntity<ResponseObject> saveResult(
             @RequestBody HealthCheckResultRequestDTO request,
@@ -64,6 +65,7 @@ public class HealthCheckResultController {
             );
         }
     }
+    @Operation(summary = "Lấy kết quả khám theo ID", description = "Trả về kết quả khám sức khỏe chi tiết theo ID.")
 
     @GetMapping("/results/{id}")
     public ResponseEntity<ResponseObject> getResultById(@PathVariable Long id) {
@@ -98,6 +100,7 @@ public class HealthCheckResultController {
             );
         }
     }
+    @Operation(summary = "Lấy danh sách kết quả theo chiến dịch", description = "Trả về danh sách các kết quả khám của một chiến dịch cụ thể.")
 
     @GetMapping("/campaigns/{campaignId}/results")
     public ResponseEntity<ResponseObject> getResultsByCampaign(@PathVariable Long campaignId) {
@@ -123,6 +126,7 @@ public class HealthCheckResultController {
             );
         }
     }
+    @Operation(summary = "Lấy danh sách kết quả theo học sinh", description = "Trả về tất cả kết quả khám sức khỏe của một học sinh theo ID.")
 
     @GetMapping("/students/{studentId}/results")
     public ResponseEntity<ResponseObject> getResultsByStudent(@PathVariable Long studentId) {
