@@ -34,50 +34,16 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<HealthDeclarationResponseDTO> getByStudentId(Long studentId) {
-        List<HealthDeclarationEntity> entities = healthDeclarationRepository.findByStudent(studentId);
-        return entities.stream()
-                .map(HealthDeclarationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<HealthDeclarationResponseDTO> getByDeclaredById(Long userId) {
-        List<HealthDeclarationEntity> entities = healthDeclarationRepository.findByDeclaredById(userId);
-        return entities.stream()
-                .map(HealthDeclarationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<HealthDeclarationResponseDTO> getByStatus(HealthDeclarationStatus status, Pageable pageable) {
-        Page<HealthDeclarationEntity> entities = healthDeclarationRepository.findByStatus(status, pageable);
-        return entities.map(HealthDeclarationMapper::toDTO);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<HealthDeclarationResponseDTO> getAll(Pageable pageable) {
-        Page<HealthDeclarationEntity> entities = healthDeclarationRepository.findAll(pageable);
-        return entities.map(HealthDeclarationMapper::toDTO);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByStudentIdAndAcademicYear(Long studentId, String academicYear) {
-        return healthDeclarationRepository.existsByStudentIdAndAcademicYear(studentId, academicYear);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Page<HealthDeclarationResponseDTO> searchByFilters(
             HealthDeclarationStatus status,
             Long studentId,
             Long declaredById,
             String academicYear,
             Pageable pageable) {
+
+        if (pageable == null) {
+            throw new IllegalArgumentException("Pageable cannot be null");
+        }
 
         Page<HealthDeclarationEntity> entities = healthDeclarationRepository.searchByFilters(
                 status, studentId, declaredById, academicYear, pageable);
@@ -87,14 +53,29 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
     @Override
     @Transactional(readOnly = true)
     public Optional<HealthDeclarationResponseDTO> getByIdWithDetails(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
+
         Optional<HealthDeclarationEntity> entity = healthDeclarationRepository.findByIdWithDetails(id);
+
+        if (entity.isEmpty()) {
+            throw new NotFoundException("Health Declaration Not Found with id: " + id);
+        }
+
         return entity.map(HealthDeclarationMapper::toDTO);
     }
+
 
     @Override
     @Transactional(readOnly = true)
     public List<HealthDeclarationResponseDTO> getByStudentIdWithDetails(Long studentId) {
+        if (studentId == null) {
+            throw new IllegalArgumentException("Student ID cannot be null");
+        }
+
         List<HealthDeclarationEntity> entities = healthDeclarationRepository.findByStudentIdWithDetails(studentId);
+        if (entities.isEmpty()) {throw new NotFoundException("Health Declaration Not Found with id: " + studentId);}
         return entities.stream()
                 .map(HealthDeclarationMapper::toDTO)
                 .collect(Collectors.toList());
@@ -103,70 +84,106 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
     @Override
     @Transactional(readOnly = true)
     public List<HealthDeclarationResponseDTO> getByDeclaredByUserIdWithDetails(Long declaredById) {
+        if (declaredById == null) {
+            throw new IllegalArgumentException("Declared by user ID cannot be null");
+        }
+
         List<HealthDeclarationEntity> entities = healthDeclarationRepository.findByDeclaredByUserIdWithDetails(declaredById);
+        if (entities.isEmpty()) {throw new NotFoundException("Health Declaration Not Found with id: " + declaredById);}
         return entities.stream()
                 .map(HealthDeclarationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public HealthDeclarationResponseDTO save(HealthDeclarationResponseDTO responseDTO) {
-        // Tìm student và user entities
-        StudentEntity student = studentRepository.findById(responseDTO.getStudentId())
-                .orElseThrow(() -> new NotFoundException("Student not found with id: " + responseDTO.getStudentId()));
-
-        UserEntity declaredBy = userRepository.findById(responseDTO.getDeclaredById())
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + responseDTO.getDeclaredById()));
-
-        HealthDeclarationEntity entity;
-
-        if (responseDTO.getId() != null) {
-            // Update existing entity
-            entity = healthDeclarationRepository.findById(responseDTO.getId())
-                    .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + responseDTO.getId()));
-
-            // Convert ResponseDTO to UpdateDTO for mapping
-            HealthDeclarationUpdateDTO updateDTO = HealthDeclarationUpdateDTO.builder()
-                    .status(responseDTO.getStatus())
-                    .academicYear(responseDTO.getAcademicYear())
-                    .height(responseDTO.getHeight())
-                    .weight(responseDTO.getWeight())
-                    .bloodType(responseDTO.getBloodType())
-                    .allergies(responseDTO.getAllergies())
-                    .chronicDiseases(responseDTO.getChronicDiseases())
-                    .currentMedications(responseDTO.getCurrentMedications())
-                    .emergencyContactName(responseDTO.getEmergencyContactName())
-                    .emergencyContactPhone(responseDTO.getEmergencyContactPhone())
-                    .build();
-
-            HealthDeclarationMapper.updateEntityFromDTO(entity, updateDTO);
-        } else {
-            // Create new entity
-            HealthDeclarationCreateDTO createDTO = HealthDeclarationCreateDTO.builder()
-                    .status(responseDTO.getStatus())
-                    .academicYear(responseDTO.getAcademicYear())
-                    .height(responseDTO.getHeight())
-                    .weight(responseDTO.getWeight())
-                    .bloodType(responseDTO.getBloodType())
-                    .allergies(responseDTO.getAllergies())
-                    .chronicDiseases(responseDTO.getChronicDiseases())
-                    .currentMedications(responseDTO.getCurrentMedications())
-                    .emergencyContactName(responseDTO.getEmergencyContactName())
-                    .emergencyContactPhone(responseDTO.getEmergencyContactPhone())
-                    .build();
-
-            entity = HealthDeclarationMapper.fromRequestDTO(createDTO, student, declaredBy);
+    @Transactional
+    public HealthDeclarationResponseDTO create(HealthDeclarationCreateDTO createDTO) {
+        if (createDTO == null) {
+            throw new IllegalArgumentException("Create DTO cannot be null");
         }
 
-        HealthDeclarationEntity savedEntity = healthDeclarationRepository.save(entity);
-        return HealthDeclarationMapper.toDTO(savedEntity);
+        // Validate required fields
+        if (createDTO.getStudentId() == null) {
+            throw new IllegalArgumentException("Student ID is required");
+        }
+        if (createDTO.getDeclaredById() == null) {
+            throw new IllegalArgumentException("Declared by user ID is required");
+        }
+        if (createDTO.getAcademicYear() == null || createDTO.getAcademicYear().trim().isEmpty()) {
+            throw new IllegalArgumentException("Academic year is required");
+        }
+
+        // Validate student exists
+        StudentEntity student = studentRepository.findById(createDTO.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Student not found with id: " + createDTO.getStudentId()));
+
+        // Validate declaring user exists
+        UserEntity declaredBy = userRepository.findById(createDTO.getDeclaredById())
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + createDTO.getDeclaredById()));
+
+        // Check if declaration already exists for this student and academic year
+        if (healthDeclarationRepository.existsByStudentIdAndAcademicYear(
+                createDTO.getStudentId(), createDTO.getAcademicYear())) {
+            throw new IllegalArgumentException(
+                    "Health declaration already exists for student " + createDTO.getStudentId() +
+                            " in academic year " + createDTO.getAcademicYear());
+        }
+
+        // Create new entity
+        HealthDeclarationEntity entity = HealthDeclarationMapper.fromCreateDTO(createDTO, student, declaredBy);
+        HealthDeclarationEntity saved = healthDeclarationRepository.save(entity);
+
+        return HealthDeclarationMapper.toDTO(saved);
     }
 
     @Override
-    public void delete(Long id) {
-        if (!healthDeclarationRepository.existsById(id)) {
-            throw new NotFoundException("Health declaration not found with id: " + id);
+    @Transactional
+    public HealthDeclarationResponseDTO update(Long id, HealthDeclarationUpdateDTO updateDTO) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
         }
-        healthDeclarationRepository.deleteById(id);
+        if (updateDTO == null) {
+            throw new IllegalArgumentException("Update DTO cannot be null");
+        }
+
+        HealthDeclarationEntity entity = healthDeclarationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + id));
+
+        HealthDeclarationMapper.updateEntityFromUpdateDTO(entity, updateDTO);
+        HealthDeclarationEntity updated = healthDeclarationRepository.save(entity);
+
+        return HealthDeclarationMapper.toDTO(updated);
+    }
+
+    @Override
+    @Transactional
+    public HealthDeclarationResponseDTO updateStatus(Long id, HealthDeclarationStatus status) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+
+        HealthDeclarationEntity entity = healthDeclarationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + id));
+
+        entity.setStatus(status);
+        HealthDeclarationEntity updated = healthDeclarationRepository.save(entity);
+
+        return HealthDeclarationMapper.toDTO(updated);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
+
+        HealthDeclarationEntity entity = healthDeclarationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + id));
+        entity.setStatus(HealthDeclarationStatus.REJECTED);
+        healthDeclarationRepository.save(entity);
     }
 }

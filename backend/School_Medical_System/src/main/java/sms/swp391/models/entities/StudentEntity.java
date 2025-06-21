@@ -49,7 +49,26 @@ public class StudentEntity {
 
     @Column(name = "genetic_diseases", columnDefinition = "TEXT")
     private String geneticDiseases;
+    @Column(name = "height")
+    private Float height;
 
+    @Column(name = "weight")
+    private Float weight;
+
+    @Column(name = "allergies")
+    private String allergies;
+
+    @Column(name = "chronic_diseases")
+    private String chronicDiseases;
+
+    @Column(name = "current_medications")
+    private String currentMedications;
+
+    @Column(name = "emergency_contact_name")
+    private String emergencyContactName;
+
+    @Column(name = "emergency_contact_phone")
+    private String emergencyContactPhone;
     @Column(name = "other_medical_notes", columnDefinition = "TEXT")
     private String otherMedicalNotes;
 

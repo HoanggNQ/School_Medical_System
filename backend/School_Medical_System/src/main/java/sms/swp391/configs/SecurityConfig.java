@@ -39,15 +39,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/user/change-password").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/user/forget-password").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/user/register").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/user/create").hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/user/create").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/user/choose-role").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/user/profile").authenticated()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/user/update").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/user/profile").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/user/update").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/user").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/user/list-user").hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/user/delete-user").hasAnyAuthority("ADMIN")
 
-                        .anyRequest().authenticated() // Các yêu cầu khác đều cần xác thực
+                        .anyRequest().permitAll() // Các yêu cầu khác đều cần xác thực
                 ).cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không lưu trạng thái phiên
