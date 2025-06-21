@@ -234,35 +234,6 @@ public class HealthDeclarationController {
         }
     }
 
-    @Operation(summary = "Kiểm tra khai báo y tế đã tồn tại", description = "Kiểm tra xem học sinh đã có khai báo y tế cho năm học cụ thể chưa.")
-    @GetMapping("/exists")
-    public ResponseEntity<ResponseObject> existsByStudentIdAndAcademicYear(
-            @RequestParam Long studentId,
-            @RequestParam String academicYear) {
-        try {
-            boolean exists = healthDeclarationService.existsByStudentIdAndAcademicYear(studentId, academicYear);
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("CHECK_SUCCESS")
-                            .message("Check health declaration existence successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(exists)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .code("CHECK_FAILED")
-                            .message("Failed to check health declaration existence: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-        }
-    }
-
     @Operation(summary = "Tìm kiếm khai báo y tế", description = "Lọc và phân trang danh sách khai báo y tế theo trạng thái, học sinh, người khai báo, và năm học.")
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchByFilters(
