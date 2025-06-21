@@ -6,34 +6,32 @@ import java.util.List;
 
 public interface HealthCheckService {
 
-    // Campaign Management
+
     HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById);
 
     HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request);
 
     void startCampaign(Long campaignId);
 
+    HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId);
+
+    HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById);
+
     HealthCheckCampaignResponse getCampaignById(Long id);
 
-    List<HealthCheckCampaignResponse> getAllCampaigns();
-
-    // Consent Management
-    HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId);
+    HealthCheckConsentResponse getConsentById(Long id);
 
     List<HealthCheckConsentResponse> getConsentsByCampaign(Long campaignId);
 
-    HealthCheckConsentResponse getConsentById(Long consentId);
-
     List<HealthCheckConsentResponse> getPendingConsentsByParent(Long parentId);
 
-    // Result Management
-    HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById);
+    List<HealthCheckConsentResponse> getPendingConsentsApprovedByParent(Long parentId);
 
-    HealthCheckResultResponse getResultById(Long resultId);
+    List<HealthCheckCampaignResponse> getAllCampaigns();
+
+    HealthCheckResultResponse getResultById(Long id);
 
     List<HealthCheckResultResponse> getResultsByCampaign(Long campaignId);
 
     List<HealthCheckResultResponse> getResultsByStudent(Long studentId);
-
-    List<HealthCheckResultResponse> getResultsRequiringFollowUp();
 }
