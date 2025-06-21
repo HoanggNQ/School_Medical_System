@@ -17,13 +17,13 @@ public class HealthCheckConsentMapper {
         return HealthCheckConsentResponse.builder()
                 .id(entity.getId())
                 .campaignId(entity.getHealthCheckCampaign().getId())
+                .consentId(entity.getId())
                 .studentId(entity.getStudent().getId())
                 .studentName(Optional.ofNullable(entity.getStudent()).map(StudentEntity::getUser).map(UserEntity::getFullname).orElse(null))
+                .className(entity.getStudent().getClassEntity().getClassName())
                 .parentId(entity.getParent().getUserId())
-                .parentName(entity.getParent().getUsername())
+                .parentName(entity.getParent().getFullname())
                 .status(entity.getConsentStatus())
-                .notes(entity.getNotes())
-                .specialRequests(entity.getSpecialRequests())
                 .responseDate(entity.getResponseDate())
                 .academicYear(entity.getAcademicYear())
                 .build();
@@ -34,8 +34,6 @@ public class HealthCheckConsentMapper {
 
         HealthCheckConsentEntity entity = new HealthCheckConsentEntity();
         entity.setConsentStatus(dto.getStatus());
-        entity.setNotes(dto.getNotes());
-        entity.setSpecialRequests(dto.getSpecialRequests());
         return entity;
     }
 }

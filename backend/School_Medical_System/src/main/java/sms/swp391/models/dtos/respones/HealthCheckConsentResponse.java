@@ -12,14 +12,14 @@ import java.time.Instant;
 public class HealthCheckConsentResponse {
     private Long id;
     private Long campaignId;
+    private Long consentId;
     private Long studentId;
     private String studentName;
+    private String className;
     private Long parentId;
     private int phoneNumber;
     private String parentName;
     private String status;
     private Instant responseDate;
-    private String notes;
-    private String specialRequests;
     private String academicYear;
 }

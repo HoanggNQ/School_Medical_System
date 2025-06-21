@@ -3,78 +3,73 @@ package sms.swp391.services.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sms.swp391.models.dtos.enums.CampaignStatus;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.respones.*;
 import sms.swp391.models.entities.*;
-import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.HealthCheckService;
-import sms.swp391.services.NotificationService;
+import sms.swp391.services.SendMailService;
 import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
 
 import java.time.Instant;
-import java.time.Year;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class HealthCheckServiceImpl implements HealthCheckService {
-
     private final HealthCheckCampaignRepository campaignRepository;
     private final HealthCheckConsentRepository consentRepository;
     private final HealthCheckResultRepository resultRepository;
-    private final StudentRepository studentRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
+    private final StudentRepository studentRepository;
+    private final SendMailService sendMailService;
 
-    // Campaign Methods
     @Override
-    @Transactional
     public HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById) {
         UserEntity creator = userRepository.findById(createdById)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + createdById));
 
         HealthCheckCampaignEntity campaign = HealthCheckCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
+        campaign.setStatus("PENDING");
         campaign.setCreatedAt(Instant.now());
-        campaign.setStatus(CampaignStatus.PLANNING.name());
 
-        return HealthCheckCampaignMapper.toDTO(campaignRepository.save(campaign));
+        HealthCheckCampaignEntity savedCampaign = campaignRepository.save(campaign);
+        return HealthCheckCampaignMapper.toDTO(savedCampaign);
     }
 
     @Override
-    @Transactional
     public HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
 
-        // Cập nhật entity từ request
-        HealthCheckCampaignEntity updatedCampaign = HealthCheckCampaignMapper.fromRequestDTO(request);
-        updatedCampaign.setId(campaign.getId());
-        updatedCampaign.setCreatedBy(campaign.getCreatedBy());
-        updatedCampaign.setCreatedAt(campaign.getCreatedAt());
-        updatedCampaign.setStatus(campaign.getStatus());
+        // Update fields
+        campaign.setName(request.getName());
+        campaign.setDescription(request.getDescription());
+        campaign.setCheckDate(request.getCheckDate());
+        campaign.setTargetGrade(request.getTargetGrade());
+        campaign.setLocation(request.getLocation());
+        campaign.setRequiredEquipment(request.getRequiredEquipment());
 
-        return HealthCheckCampaignMapper.toDTO(campaignRepository.save(updatedCampaign));
+        HealthCheckCampaignEntity updatedCampaign = campaignRepository.save(campaign);
+        return HealthCheckCampaignMapper.toDTO(updatedCampaign);
     }
 
     @Override
-    @Transactional
     public void startCampaign(Long campaignId) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
 
-        campaign.setStatus(CampaignStatus.IN_PROGRESS.name());
-        campaignRepository.save(campaign);
+        // Create consent requests for all students in target grade
+        List<StudentEntity> targetStudents = studentRepository.findByClassEntity_GradeWithUserAndParent(campaign.getTargetGrade());
 
-        List<StudentEntity> students = studentRepository.findByClassEntity_GradeWithUserAndParent(campaign.getTargetGrade());
-
-        students.forEach(student -> {
+        for (StudentEntity student : targetStudents) {
             HealthCheckConsentEntity consent = HealthCheckConsentEntity.builder()
                     .healthCheckCampaign(campaign)
                     .student(student)
@@ -85,140 +80,214 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
             consentRepository.save(consent);
 
-            notificationService.createNotification(
-                    new NotificationCreateDTO(
-                            "Health Check Consent Request",
-                            "Please consent for " + student.getUser().getFullname() +
-                                    "'s health check on " + campaign.getCheckDate(), campaign.getCreatedBy().getUserId()
-                    )
+            // Send email notification to parent
+            sendMailService.sendMail(
+                    null,
+                    student.getParent().getEmail(),
+                    null,
+                    "Medical Examination Consent Required",
+                    generateConsentEmailBody(campaign, student)
             );
-        });
+        }
+
+        campaign.setStatus("ACTIVE");
+        campaignRepository.save(campaign);
     }
 
     @Override
-    public HealthCheckCampaignResponse getCampaignById(Long id) {
-        return campaignRepository.findById(id)
-                .map(HealthCheckCampaignMapper::toDTO)
-                .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
-    }
-
-    @Override
-    public List<HealthCheckCampaignResponse> getAllCampaigns() {
-        return campaignRepository.getAllByHealthCheckCampaign().stream()
-                .map(HealthCheckCampaignMapper::toDTO)
-                    .toList();
-    }
-
-    // Consent Methods
-    @Override
-    @Transactional
     public HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId) {
         HealthCheckConsentEntity consent = consentRepository.findById(consentId)
                 .orElseThrow(() -> new NotFoundException("Consent not found with id: " + consentId));
 
         if (!consent.getParent().getUserId().equals(parentId)) {
-            throw new AuthFailedException("Only the parent can update this consent");
+            throw new BusinessException("Parent not authorized to update this consent");
         }
 
-        // Cập nhật từ request DTO (static method)
-        HealthCheckConsentEntity updatedConsent = HealthCheckConsentMapper.fromRequestDTO(request);
-        consent.setConsentStatus(updatedConsent.getConsentStatus());
-        consent.setNotes(updatedConsent.getNotes());
-        consent.setSpecialRequests(updatedConsent.getSpecialRequests());
+        consent.setConsentStatus(request.getStatus());
         consent.setResponseDate(Instant.now());
 
-        return HealthCheckConsentMapper.toDTO(consentRepository.save(consent));
+        HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
+        return HealthCheckConsentMapper.toDTO(updatedConsent);
     }
 
     @Override
-    public List<HealthCheckConsentResponse> getConsentsByCampaign(Long campaignId) {
-        return consentRepository.findByHealthCheckCampaignIdAndConsentStatus(campaignId, "PENDING").stream()
-                .map(HealthCheckConsentMapper::toDTO)
-                .toList();
-    }
-
-    @Override
-    public HealthCheckConsentResponse getConsentById(Long consentId) {
-        return consentRepository.findById(consentId)
-                .map(HealthCheckConsentMapper::toDTO)
-                .orElseThrow(() -> new NotFoundException("Consent not found with id: " + consentId));
-    }
-
-    @Override
-    public List<HealthCheckConsentResponse> getPendingConsentsByParent(Long parentId) {
-        return consentRepository.findByParentAndStatus(parentId, "PENDING").stream()
-                .map(HealthCheckConsentMapper::toDTO)
-                .toList();
-    }
-
-    // Result Methods
-    @Override
-    @Transactional
     public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
-        UserEntity checkedBy = userRepository.findById(checkedById)
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + checkedById));
+        // Verify campaign
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
+                .orElseThrow(() -> new NotFoundException("Campaign not found"));
 
-        // ✅ TÌM STUDENT và LẤY TÊN
+        // Get student first
         StudentEntity student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new NotFoundException("Student not found with id: " + request.getStudentId()));
+                .orElseThrow(() -> new NotFoundException("Student not found"));
 
-        String studentName = student.getUser().getFullname();
+        // Get checker
+        UserEntity checker = userRepository.findById(checkedById)
+                .orElseThrow(() -> new NotFoundException("Checker not found"));
 
-        consentRepository.findByHealthCheckCampaignIdAndStudentId(request.getCampaignId(), request.getStudentId())
-                .filter(c -> "APPROVED".equals(c.getConsentStatus()))
-                .orElseThrow(() -> BusinessException.builder()
-                        .message("Consent not approved for this student")
-                        .build());
+        // Verify consent after we have both campaign and student
+        HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
+        if (consent == null || !consent.getConsentStatus().equals("APPROVED")) {
+            throw new BusinessException("Parent consent not approved for this examination");
+        }
 
+        // Create and populate result
         HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(request);
-        result.setCheckedBy(checkedBy);
+        result.setHealthCheckCampaign(campaign);
+        result.setStudent(student);
+        result.setCheckedBy(checker);
         result.setCheckDate(Instant.now());
         result.setAcademicYear(getCurrentAcademicYear());
 
+        // Calculate BMI if height and weight are provided
+        if (request.getHeightCm() != null && request.getWeightKg() != null) {
+            result.setBmi(calculateBMI(request.getHeightCm(), request.getWeightKg()));
+        }
+
+        // Save result
         HealthCheckResultEntity savedResult = resultRepository.save(result);
 
-        if (Boolean.TRUE.equals(savedResult.getFollowUpRequired())) {
-            notificationService.createNotification(
-                    new NotificationCreateDTO(
-                            "Health Check Follow-up Required",
-                            "Please review the health check results for " + studentName ,checkedById
-                    )
+        // Send notification if follow-up is required
+        if (savedResult.getFollowUpRequired()) {
+            sendMailService.sendMail(
+                    null,
+                    student.getParent().getEmail(),
+                    null,
+                    "Medical Examination Results - Follow-up Required",
+                    generateResultEmailBody(savedResult)
             );
         }
+
         return HealthCheckResultMapper.toDTO(savedResult);
     }
 
     @Override
-    public HealthCheckResultResponse getResultById(Long resultId) {
-        return resultRepository.findById(resultId)
-                .map(HealthCheckResultMapper::toDTO)
-                .orElseThrow(() -> new NotFoundException("Result not found with id: " + resultId));
+    public HealthCheckCampaignResponse getCampaignById(Long id) {
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
+        return HealthCheckCampaignMapper.toDTO(campaign);
+    }
+
+    @Override
+    public HealthCheckConsentResponse getConsentById(Long id) {
+        HealthCheckConsentEntity consent = consentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Consent not found with id: " + id));
+        return HealthCheckConsentMapper.toDTO(consent);
+    }
+
+    @Override
+    public List<HealthCheckConsentResponse> getConsentsByCampaign(Long campaignId) {
+        List<HealthCheckConsentEntity> consents = consentRepository.findByHealthCheckCampaignId(campaignId);
+        return consents.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<HealthCheckConsentResponse> getPendingConsentsByParent(Long parentId) {
+        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "PENDING");
+        return consents.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+    }
+    @Override
+    public List<HealthCheckConsentResponse> getPendingConsentsApprovedByParent(Long parentId) {
+        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "APPROVED");
+        return consents.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+    }
+    @Override
+    public List<HealthCheckCampaignResponse> getAllCampaigns() {
+        List<HealthCheckCampaignEntity> campaigns = campaignRepository.findAll();
+        return campaigns.stream()
+                .map(HealthCheckCampaignMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public HealthCheckResultResponse getResultById(Long id) {
+        HealthCheckResultEntity result = resultRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Result not found with id: " + id));
+        return HealthCheckResultMapper.toDTO(result);
     }
 
     @Override
     public List<HealthCheckResultResponse> getResultsByCampaign(Long campaignId) {
-        return resultRepository.findByHealthCheckCampaignIdAndFollowUpRequired(campaignId, null).stream()
+        List<HealthCheckResultEntity> results = resultRepository.findByHealthCheckCampaign_Id(campaignId);
+        return results.stream()
                 .map(HealthCheckResultMapper::toDTO)
                 .toList();
     }
 
     @Override
     public List<HealthCheckResultResponse> getResultsByStudent(Long studentId) {
-        return resultRepository.findByStudentId(studentId).stream()
+        List<HealthCheckResultEntity> results = resultRepository.findByStudentId(studentId);
+        return results.stream()
                 .map(HealthCheckResultMapper::toDTO)
                 .toList();
     }
 
-    @Override
-    public List<HealthCheckResultResponse> getResultsRequiringFollowUp() {
-        return resultRepository.findByFollowUpRequired(true).stream()
-                .map(HealthCheckResultMapper::toDTO)
-                .toList();
-    }
 
-    // Utility
     private String getCurrentAcademicYear() {
-        int year = Year.now().getValue();
-        return year + "-" + (year + 1);
+        int currentYear = LocalDate.now().getYear();
+        return currentYear + "-" + (currentYear + 1);
     }
+
+
+    private String generateConsentEmailBody(HealthCheckCampaignEntity campaign, StudentEntity student) {
+        return String.format("""
+        <html>
+        <body>
+            Dear %s,<br><br>
+            
+            Your consent is required for %s's participation in the upcoming medical examination:<br><br>
+            
+            <strong>Campaign:</strong> %s<br>
+            <strong>Date:</strong> %s<br>
+            <strong>Location:</strong> %s<br><br>
+            
+            Please log in to the system to provide your consent and any special requirements.<br><br>
+            
+            Best regards,<br>
+            School Medical Team
+        </body>
+        </html>
+        """,
+                student.getParent().getFullname(),
+                student.getUser().getFullname(),
+                campaign.getName(),
+                campaign.getCheckDate(),
+                campaign.getLocation()
+        );
+    }
+    private String generateResultEmailBody(HealthCheckResultEntity result) {
+        return String.format("""
+        <html>
+        <body>
+            Dear Parent,<br><br>
+            
+            The medical examination results for %s require follow-up attention:<br><br>
+            
+            <strong>Recommendation:</strong> %s<br>
+            <strong>Follow-up Notes:</strong> %s<br><br>
+            
+            Please schedule a consultation at your earliest convenience.<br><br>
+            
+            Best regards,<br>
+            School Medical Team
+        </body>
+        </html>
+        """,
+                result.getStudent().getUser().getFullname(),
+                result.getRecommendation(),
+                result.getFollowUpNotes()
+        );
+    }
+
+
+    private java.math.BigDecimal calculateBMI(java.math.BigDecimal heightCm, java.math.BigDecimal weightKg) {
+        java.math.BigDecimal heightM = heightCm.divide(new java.math.BigDecimal("100"));
+        return weightKg.divide(heightM.multiply(heightM), 2, java.math.RoundingMode.HALF_UP);
+    }
+    
 }

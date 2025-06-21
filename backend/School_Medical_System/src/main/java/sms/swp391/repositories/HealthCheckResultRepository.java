@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Optional;
 @Repository
 public interface HealthCheckResultRepository extends JpaRepository<HealthCheckResultEntity, Long> {
-    List<HealthCheckResultEntity> findByHealthCheckCampaignIdAndFollowUpRequired(Long campaignId, Boolean followUpRequired);
-
-    Optional<HealthCheckResultEntity> findByFollowUpRequired(boolean b);
     List<HealthCheckResultEntity> findByStudentId(Long studentId);
-
-
+    List<HealthCheckResultEntity> findByHealthCheckCampaign_Id(Long healthCheckCampaignId);
 }
