@@ -12,16 +12,6 @@ import java.util.Optional;
 
 public interface HealthDeclarationService {
 
-    List<HealthDeclarationResponseDTO> getByStudentId(Long studentId);
-
-    List<HealthDeclarationResponseDTO> getByDeclaredById(Long userId);
-
-    Page<HealthDeclarationResponseDTO> getByStatus(HealthDeclarationStatus status, Pageable pageable);
-
-    Page<HealthDeclarationResponseDTO> getAll(Pageable pageable);
-
-    boolean existsByStudentIdAndAcademicYear(Long studentId, String academicYear);
-
     Page<HealthDeclarationResponseDTO> searchByFilters(
             HealthDeclarationStatus status,
             Long studentId,
