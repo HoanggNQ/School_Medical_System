@@ -3,6 +3,7 @@ package sms.swp391.services.impl;
         import lombok.RequiredArgsConstructor;
         import org.apache.commons.lang3.RandomStringUtils;
         import org.springframework.stereotype.Service;
+        import org.springframework.transaction.annotation.Transactional;
         import sms.swp391.models.dtos.enums.RoleEnum;
         import sms.swp391.models.dtos.requests.StudentRequest;
         import sms.swp391.models.dtos.respones.StudentResponse;
@@ -32,6 +33,8 @@ package sms.swp391.services.impl;
 
         @Service
         @RequiredArgsConstructor
+        @Transactional
+
         public class StudentServiceImpl implements StudentService {
             private final UserRepository userRepository;
             private final StudentRepository studentRepository;
@@ -227,12 +230,11 @@ package sms.swp391.services.impl;
                 } while (studentRepository.existsByStudentCode(SC));
                 return SC;
             }
-
             @Override
             public List<StudentResponse> findStudentByParent(Long parentId) {
                 List<StudentEntity> students = studentRepository.findByParent_UserId(parentId);
                 return students.stream()
-                        .map(StudentMapper::toDTO)
+                            .map(StudentMapper::toDTO)
                         .toList();
             }
         }
