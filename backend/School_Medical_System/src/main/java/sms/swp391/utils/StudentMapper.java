@@ -1,6 +1,7 @@
 package sms.swp391.utils;
 
 import sms.swp391.models.dtos.requests.StudentRequest;
+import sms.swp391.models.dtos.respones.StudentGetResponse;
 import sms.swp391.models.dtos.respones.StudentResponse;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.models.entities.StudentEntity;
@@ -36,6 +37,24 @@ public class StudentMapper {
                 .geneticDiseases(request.getGeneticDiseases())
                 .otherMedicalNotes(request.getOtherMedicalNotes())
                 .emergencyContact(request.getEmergencyContact())
+                .build();
+    }
+
+    public static StudentGetResponse toStudentGetResponse(StudentEntity student) {
+        UserEntity user = student.getUser();
+        return StudentGetResponse.builder()
+                .userId(user.getUserId())
+                .fullName(user.getFullname())
+                .dob(user.getDob() != null ? user.getDob().toString() : null)
+                .gender(user.getGender())
+                .className(student.getClassEntity() != null ? student.getClassEntity().getClassName() : null)
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .studentCode(student.getStudentCode())
+                .bloodType(student.getBloodType())
+                .geneticDiseases(student.getGeneticDiseases())
+                .otherMedicalNotes(student.getOtherMedicalNotes())
+                .emergencyContact(student.getEmergencyContact())
                 .build();
     }
 }
