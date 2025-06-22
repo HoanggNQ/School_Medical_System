@@ -1,7 +1,7 @@
 package sms.swp391.models.dtos.respones;
 import lombok.*;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDate;
 
 @Getter
@@ -19,5 +19,5 @@ public class HealthCheckCampaignResponse {
     private String location;
     private String requiredEquipment;
     private Long createdById;
-    private Instant createdAt;
+    private LocalDate createdAt;
 }

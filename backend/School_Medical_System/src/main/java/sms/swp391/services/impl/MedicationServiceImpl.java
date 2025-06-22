@@ -44,6 +44,13 @@ public class MedicationServiceImpl implements MedicationService {
                 .orElseThrow(() -> new NotFoundException("Medication not found with id: " + id));
         medicationRepository.delete(existing);
     }
+    @Override
+    public void updateQuantity(Long id, int quantity) {
+        MedicationEntity medication = medicationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Medication not found with id: " + id));
+        medication.setQuantity(quantity);
+        medicationRepository.save(medication);
+    }
 
     @Override
     public MedicationResponseDTO getById(Long id) {
@@ -52,15 +59,10 @@ public class MedicationServiceImpl implements MedicationService {
                 .orElseThrow(() -> new NotFoundException("Medication not found with id: " + id));
     }
 
-    @Override
-    public List<MedicationResponseDTO> getAll() {
-        return medicationRepository.findAll().stream()
-                .map(MedicationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
+
 
     @Override
     public Page<MedicationResponseDTO> getAll(Pageable pageable) {
-        return medicationRepository.findAll(pageable).map(MedicationMapper::toDTO);
+        return medicationRepository.getMedicationEntitiesByQuantity(pageable).map(MedicationMapper::toDTO);
     }
 }

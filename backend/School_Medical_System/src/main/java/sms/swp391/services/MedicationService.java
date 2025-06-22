@@ -15,6 +15,6 @@ public interface MedicationService {
     MedicationResponseDTO update(Long id, MedicationRequestDTO dto);
     void delete(Long id);
     MedicationResponseDTO getById(Long id);
-    List<MedicationResponseDTO> getAll();
     Page<MedicationResponseDTO> getAll(Pageable pageable);
+    void updateQuantity(Long id, int quantity);
 }

@@ -63,9 +63,8 @@ public class MedicationRequestDetailEntity {
     @Column(name = "attachment_url", length = Integer.MAX_VALUE)
     private String attachmentUrl;
 
-    @Column(name = "actual_administration")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> actualAdministration;
+    @Column(name = "provided_by_parent")
+    private Boolean providedByParent;
 
     @Size(max = 20)
     @Column(name = "status", length = 20)

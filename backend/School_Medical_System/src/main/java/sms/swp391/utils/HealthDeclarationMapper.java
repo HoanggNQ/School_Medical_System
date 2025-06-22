@@ -7,6 +7,8 @@ import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
 import sms.swp391.models.entities.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
+
 @RequiredArgsConstructor
 public class HealthDeclarationMapper {
 
@@ -43,7 +45,7 @@ public class HealthDeclarationMapper {
                 .declaredBy(declaredBy)
                 .status(dto.getStatus())
                 .academicYear(dto.getAcademicYear())
-                .declarationDate(Instant.now())
+                .declarationDate(LocalDate.now())
                 .build();
 
         // Update student health information

@@ -9,6 +9,7 @@ import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 @Getter
@@ -78,11 +79,11 @@ public class StudentEntity {
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private Instant createdAt;
+    private LocalDate createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDate updatedAt;
 
     // Relationships
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)

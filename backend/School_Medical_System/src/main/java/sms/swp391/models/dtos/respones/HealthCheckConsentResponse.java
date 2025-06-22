@@ -2,7 +2,7 @@ package sms.swp391.models.dtos.respones;
 
 import lombok.*;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -20,6 +20,6 @@ public class HealthCheckConsentResponse {
     private int phoneNumber;
     private String parentName;
     private String status;
-    private Instant responseDate;
+    private LocalDate responseDate;
     private String academicYear;
 }

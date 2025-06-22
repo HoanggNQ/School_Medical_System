@@ -8,6 +8,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity
@@ -43,7 +45,7 @@ public class VaccinationConsentEntity {
     private String consentStatus;
 
     @Column(name = "response_date")
-    private Instant responseDate;
+    private LocalDate responseDate;
 
     @Column(name = "notes", length = Integer.MAX_VALUE)
     private String notes;

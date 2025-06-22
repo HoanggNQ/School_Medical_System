@@ -3,7 +3,7 @@ package sms.swp391.models.dtos.respones;
 import lombok.*;
 import sms.swp391.models.dtos.enums.RoleEnum;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDate;
 
 /**
@@ -26,7 +26,7 @@ public class UserResponse  {
     RoleEnum roleName;
     String avatarUrl;
     String status;
-    Instant dateCreated;
-    Instant updatedAt;
+    LocalDate dateCreated;
+    LocalDate updatedAt;
 
 }

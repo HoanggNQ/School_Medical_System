@@ -11,7 +11,6 @@ import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 @AllArgsConstructor
 public class HealthDeclarationCreateDTO {
 
-    private Long id;
     @NotNull
     private Long studentId;
 
