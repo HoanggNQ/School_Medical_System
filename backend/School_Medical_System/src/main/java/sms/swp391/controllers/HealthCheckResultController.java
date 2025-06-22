@@ -16,7 +16,7 @@ import sms.swp391.services.HealthCheckService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/health-check-result")
+@RequestMapping("/api/v1/health-check-result")
 @RequiredArgsConstructor
 public class HealthCheckResultController {
     private final HealthCheckService healthCheckService;
@@ -115,12 +115,12 @@ public class HealthCheckResultController {
                             .data(responses)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .code("GET_RESULTS_FAILED")
                             .message("Failed to get results: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .status(HttpStatus.NOT_FOUND)
                             .isSuccess(false)
                             .build()
             );
@@ -141,12 +141,12 @@ public class HealthCheckResultController {
                             .data(responses)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .code("GET_RESULTS_FAILED")
                             .message("Failed to get results: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .status(HttpStatus.NOT_FOUND)
                             .isSuccess(false)
                             .build()
             );
