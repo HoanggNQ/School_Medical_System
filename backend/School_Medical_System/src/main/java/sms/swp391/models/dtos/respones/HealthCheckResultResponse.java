@@ -2,7 +2,7 @@ package sms.swp391.models.dtos.respones;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class HealthCheckResultResponse {
     private String studentName;
     private Long checkedById;
     private String checkedByName;
-    private Instant checkDate;
+    private LocalDate checkDate;
     private BigDecimal heightCm;
     private BigDecimal weightKg;
     private BigDecimal bmi;

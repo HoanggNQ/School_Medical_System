@@ -62,7 +62,7 @@ public class VaccinationCampaignEntity {
 
     @ColumnDefault("now()")
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDate createdAt;
 
     @OneToMany(mappedBy = "vaccinationCampaign")
     private Set<VaccinationConsentEntity> vaccinationConsents = new LinkedHashSet<>();

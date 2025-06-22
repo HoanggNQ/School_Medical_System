@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/medications")
+@RequestMapping("/api/v1/medications")
 @RequiredArgsConstructor
 public class MedicationController {
 
@@ -131,6 +131,11 @@ public class MedicationController {
             );
         }
     }
+    @PatchMapping("/{id}/quantity")
+    public ResponseEntity<Void> updateQuantity(@PathVariable Long id, @RequestParam int quantity) {
+        medicationService.updateQuantity(id, quantity);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping
     public ResponseEntity<ResponseObject> getAll(Pageable pageable) {
@@ -158,33 +163,7 @@ public class MedicationController {
         }
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<ResponseObject> getAllList() {
-        try {
-            List<MedicationResponseDTO> list = medicationService.getAll();
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("GET_ALL_MEDICATIONS_LIST_SUCCESS")
-                            .message("Medications list retrieved successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(list)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .code("GET_ALL_MEDICATIONS_LIST_FAILED")
-                            .message("Failed to get medications list: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-        }
-    }
-
-    @GetMapping("/export/excel")
+       @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportExcel() {
         try {
             List<MedicationEntity> list = medicationRepository.findAll();

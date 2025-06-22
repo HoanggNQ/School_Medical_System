@@ -7,6 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 @Getter
@@ -38,10 +40,10 @@ public class MedicationRequestEntity {
 
     @ColumnDefault("now()")
     @Column(name = "request_date")
-    private Instant requestDate;
+    private LocalDate requestDate;
 
     @Column(name = "review_date")
-    private Instant reviewDate;
+    private LocalDate reviewDate;
 
     @Size(max = 20)
     @NotNull
@@ -60,7 +62,8 @@ public class MedicationRequestEntity {
     @Column(name = "academic_year", nullable = false, length = 9)
     private String academicYear;
 
-    @OneToMany(mappedBy = "request")
-    private Set<MedicationRequestDetailEntity> medicationRequestDetails = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MedicationRequestDetailEntity> medicationRequestDetails = new HashSet<>();
+
 
 }
