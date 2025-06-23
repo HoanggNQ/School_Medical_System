@@ -18,8 +18,8 @@ public class StudentResponse {
     private String bloodType;
     private String geneticDiseases;
     private String otherMedicalNotes;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String currentMedications;

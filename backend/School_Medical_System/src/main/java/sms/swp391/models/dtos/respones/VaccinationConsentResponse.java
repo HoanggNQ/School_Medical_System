@@ -3,6 +3,7 @@ package sms.swp391.models.dtos.respones;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -18,7 +19,7 @@ public class VaccinationConsentResponse {
     private int phoneNumber;
     private String parentName;
     private String consentFormUrl;
-    private Instant responseDate;
+    private LocalDate responseDate;
     private String notes;
     private String academicYear;
     private String consentStatus;

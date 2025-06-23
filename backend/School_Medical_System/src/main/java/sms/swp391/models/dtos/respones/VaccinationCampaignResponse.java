@@ -20,5 +20,5 @@ public class VaccinationCampaignResponse {
     private String notes;
     private String vaccineType;
     private Long createdById;
-    private Instant createdAt;
+    private LocalDate createdAt;
 }
