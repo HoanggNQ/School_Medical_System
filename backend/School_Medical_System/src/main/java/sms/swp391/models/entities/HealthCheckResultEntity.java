@@ -1,5 +1,6 @@
 package sms.swp391.models.entities;
 
+import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,6 +9,8 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity
@@ -38,7 +41,7 @@ public class HealthCheckResultEntity {
 
     @NotNull
     @Column(name = "check_date", nullable = false)
-    private Instant checkDate;
+    private LocalDate checkDate;
 
     @Column(name = "height_cm", precision = 5, scale = 2)
     private BigDecimal heightCm;

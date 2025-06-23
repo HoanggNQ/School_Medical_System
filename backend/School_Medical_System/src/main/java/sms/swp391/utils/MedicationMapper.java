@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.MedicationRequestDTO;
 import sms.swp391.models.dtos.respones.MedicationResponseDTO;
 import sms.swp391.models.entities.MedicationEntity;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @RequiredArgsConstructor
 public class MedicationMapper {
@@ -41,7 +41,7 @@ public class MedicationMapper {
                 .medicationInformation(dto.getMedicationInformation())
                 .medicationImg(dto.getMedicationImg())
                 .manufacturer(dto.getManufacturer())
-                .createdAt(Instant.now())
+                .createdAt(LocalDate.now())
                 .build();
     }
 
@@ -57,6 +57,6 @@ public class MedicationMapper {
         entity.setMedicationInformation(dto.getMedicationInformation());
         entity.setMedicationImg(dto.getMedicationImg());
         entity.setManufacturer(dto.getManufacturer());
-        entity.setUpdatedAt(Instant.now());
+        entity.setUpdatedAt(LocalDate.now());
     }
 }

@@ -15,7 +15,7 @@ import sms.swp391.services.HealthCheckService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/health-check-consent")
+@RequestMapping("/api/v1/health-check-consent")
 @RequiredArgsConstructor
 public class HealthCheckConsentController {
     private final HealthCheckService healthCheckService;
