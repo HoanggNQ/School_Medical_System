@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.respones.HealthCheckCampaignResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthCheckService;
 
@@ -25,9 +27,9 @@ public class HealthCheckCampaignController {
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(
             @RequestBody HealthCheckCampaignRequestDTO request,
-            @RequestParam Long createdById) {
+            @AuthenticationPrincipal UserEntity createdById) {
         try {
-            HealthCheckCampaignResponse response = healthCheckService.createCampaign(request, createdById);
+            HealthCheckCampaignResponse response = healthCheckService.createCampaign(request, createdById.getUserId());
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("CREATE_CAMPAIGN_SUCCESS")

@@ -5,10 +5,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.respones.*;
 import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthCheckService;
@@ -24,9 +26,9 @@ public class HealthCheckResultController {
     @PostMapping("/results")
     public ResponseEntity<ResponseObject> saveResult(
             @RequestBody HealthCheckResultRequestDTO request,
-            @RequestParam Long checkedById) {
+            @AuthenticationPrincipal UserEntity checkedById) {
         try {
-            HealthCheckResultResponse response = healthCheckService.saveResult(request, checkedById);
+            HealthCheckResultResponse response = healthCheckService.saveResult(request, checkedById.getUserId());
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("SAVE_RESULT_SUCCESS")
