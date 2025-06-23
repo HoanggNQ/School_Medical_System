@@ -1,14 +1,12 @@
 package sms.swp391.models.entities;
 
-import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
@@ -40,7 +38,7 @@ public class HealthDeclarationEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private HealthDeclarationStatus status;
+    private MedicalStatus status;
 
     @Size(max = 9)
     @NotNull
