@@ -107,5 +107,12 @@ public class StudentEntity {
     @Builder.Default
     private Set<VaccinationRecordEntity> vaccinationRecords = new HashSet<>();
 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<MedicalEventEntity> medicalEvents = new HashSet<>();
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<HealthConsultationScheduleEntity> healthConsultationSchedules = new HashSet<>();
 
 }
