@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
 import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
@@ -35,7 +35,7 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
     @Override
     @Transactional(readOnly = true)
     public Page<HealthDeclarationResponseDTO> searchByFilters(
-            HealthDeclarationStatus status,
+            MedicalStatus status,
             Long studentId,
             Long declaredById,
             String academicYear,
@@ -157,7 +157,7 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
 
     @Override
     @Transactional
-    public HealthDeclarationResponseDTO updateStatus(Long id, HealthDeclarationStatus status) {
+    public HealthDeclarationResponseDTO updateStatus(Long id, MedicalStatus status) {
         if (id == null) {
             throw new IllegalArgumentException("ID cannot be null");
         }
@@ -183,7 +183,7 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
 
         HealthDeclarationEntity entity = healthDeclarationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Health declaration not found with id: " + id));
-        entity.setStatus(HealthDeclarationStatus.REJECTED);
+        entity.setStatus(MedicalStatus.REJECTED);
         healthDeclarationRepository.save(entity);
     }
 }

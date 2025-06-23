@@ -1,7 +1,7 @@
 package sms.swp391.repositories;
 
 import sms.swp391.models.entities.HealthDeclarationEntity;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +26,7 @@ public interface HealthDeclarationRepository extends JpaRepository<HealthDeclara
             "AND (:academicYear IS NULL OR h.academicYear = :academicYear)" +
             "AND h.status = 'PENDING' OR h.status = 'APPROVED'")
     Page<HealthDeclarationEntity> searchByFilters(
-            @Param("status") HealthDeclarationStatus status,
+            @Param("status") MedicalStatus status,
             @Param("studentId") Long studentId,
             @Param("declaredById") Long declaredById,
             @Param("academicYear") String academicYear,
