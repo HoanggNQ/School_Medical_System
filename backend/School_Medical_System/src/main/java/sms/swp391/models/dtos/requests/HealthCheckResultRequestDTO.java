@@ -3,6 +3,7 @@ package sms.swp391.models.dtos.requests;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -26,4 +27,6 @@ public class HealthCheckResultRequestDTO {
     private Boolean followUpRequired;
     private String followUpNotes;
     private String overallHealthRating;
+    private LocalDateTime scheduleTime;
+
 }
