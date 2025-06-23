@@ -28,6 +28,57 @@ public class SendMailServiceIplm implements SendMailService {
     private JavaMailSender mailSender;
 
     @Override
+    public void sendConsentRequestEmail(String toEmail, String parentName, String studentName, String campaignName, String date, String location) {
+        try {
+            Context context = new Context();
+            context.setVariable("parentName", parentName);
+            context.setVariable("studentName", studentName);
+            context.setVariable("campaignName", campaignName);
+            context.setVariable("date", date);
+            context.setVariable("location", location);
+
+            String content = templateEngine.process("ConsentRequestEmailTemplate", context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Medical Examination Consent Required");
+            helper.setText(content, true);
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error sending consent request email: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendConsultationScheduleEmail(String toEmail, String studentName, String scheduleTime, String reason) {
+        try {
+            Context context = new Context();
+            context.setVariable("studentName", studentName);
+            context.setVariable("scheduleTime", scheduleTime);
+            context.setVariable("reason", reason);
+
+            String content = templateEngine.process("HealthConsultationScheduleTemplate", context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Lịch tư vấn sức khỏe cho học sinh");
+            helper.setText(content, true);
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error sending consultation schedule email: " + e.getMessage());
+        }
+    }
+
+    @Override
     public void sendMail(MultipartFile[] files, String to, String[] cc, String subject, String body) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
