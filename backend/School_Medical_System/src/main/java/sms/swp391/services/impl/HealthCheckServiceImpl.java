@@ -15,7 +15,7 @@ import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckCampaignEntity campaign = HealthCheckCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
         campaign.setStatus("PENDING");
-        campaign.setCreatedAt(Instant.now());
+        campaign.setCreatedAt(LocalDate.now());
 
         HealthCheckCampaignEntity savedCampaign = campaignRepository.save(campaign);
         return HealthCheckCampaignMapper.toDTO(savedCampaign);
@@ -104,7 +104,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         }
 
         consent.setConsentStatus(request.getStatus());
-        consent.setResponseDate(Instant.now());
+        consent.setResponseDate(LocalDate.now());
 
         HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
         return HealthCheckConsentMapper.toDTO(updatedConsent);
@@ -135,7 +135,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         result.setHealthCheckCampaign(campaign);
         result.setStudent(student);
         result.setCheckedBy(checker);
-        result.setCheckDate(Instant.now());
+        result.setCheckDate(LocalDate.now());
         result.setAcademicYear(getCurrentAcademicYear());
 
         // Calculate BMI if height and weight are provided
@@ -222,6 +222,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     @Override
     public List<HealthCheckResultResponse> getResultsByStudent(Long studentId) {
         List<HealthCheckResultEntity> results = resultRepository.findByStudentId(studentId);
+        if (results.isEmpty()) throw  new NotFoundException("Result not found with id: " + studentId);
         return results.stream()
                 .map(HealthCheckResultMapper::toDTO)
                 .toList();
@@ -265,22 +266,45 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         <html>
         <body>
             Dear Parent,<br><br>
-            
-            The medical examination results for %s require follow-up attention:<br><br>
-            
+
+            The medical examination results for <strong>%s</strong> require follow-up attention:<br><br>
+
+            <strong>Check Date:</strong> %s<br>
+            <strong>Height:</strong> %scm<br>
+            <strong>Weight:</strong> %skg<br>
+            <strong>BMI:</strong> %.2f<br>
+            <strong>Vision (Left):</strong> %s<br>
+            <strong>Vision (Right):</strong> %s<br>
+            <strong>Hearing:</strong> %s<br>
+            <strong>Dental Health:</strong> %s<br>
+            <strong>Blood Pressure:</strong> %s<br>
+            <strong>Pulse:</strong> %d bpm<br>
+            <strong>Temperature:</strong> %.1f °C<br><br>
+
             <strong>Recommendation:</strong> %s<br>
             <strong>Follow-up Notes:</strong> %s<br><br>
-            
+
             Please schedule a consultation at your earliest convenience.<br><br>
-            
+
             Best regards,<br>
             School Medical Team
         </body>
         </html>
         """,
                 result.getStudent().getUser().getFullname(),
-                result.getRecommendation(),
-                result.getFollowUpNotes()
+                result.getCheckDate() != null ? result.getCheckDate().toString() : "N/A",
+                result.getHeightCm() != null ? result.getHeightCm().toString() : "N/A",
+                result.getWeightKg() != null ? result.getWeightKg().toString() : "N/A",
+                result.getBmi() != null ? result.getBmi() : 0.0,
+                result.getVisionLeft() != null ? result.getVisionLeft() : "N/A",
+                result.getVisionRight() != null ? result.getVisionRight() : "N/A",
+                result.getHearing() != null ? result.getHearing() : "N/A",
+                result.getDentalHealth() != null ? result.getDentalHealth() : "N/A",
+                result.getBloodPressure() != null ? result.getBloodPressure() : "N/A",
+                result.getPulse() != null ? result.getPulse() : 0,
+                result.getTemperature() != null ? result.getTemperature() : 0.0,
+                result.getRecommendation() != null ? result.getRecommendation() : "N/A",
+                result.getFollowUpNotes() != null ? result.getFollowUpNotes() : "N/A"
         );
     }
 

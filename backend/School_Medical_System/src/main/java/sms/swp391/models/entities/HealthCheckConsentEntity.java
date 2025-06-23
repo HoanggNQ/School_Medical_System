@@ -1,5 +1,6 @@
 package sms.swp391.models.entities;
 
+import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,6 +9,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -44,7 +46,7 @@ public class HealthCheckConsentEntity {
     private String consentStatus;
 
     @Column(name = "response_date")
-    private Instant responseDate;
+    private LocalDate responseDate;
 
     @Column(name = "notes", length = Integer.MAX_VALUE)
     private String notes;
