@@ -1,5 +1,6 @@
 package sms.swp391.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ public class ClassController {
 
     private final ClassService classService;
 
+    @Operation(summary = "Tạo class", description = "Khởi tạo một class.")
     @PostMapping("/create")
     public ResponseEntity<ResponseObject> createClass(@RequestBody ClassCreateDTO request) {
         ClassEntity entity = ClassEntity.builder()
@@ -38,6 +40,7 @@ public class ClassController {
         );
     }
 
+    @Operation(summary = "Cập nhật class", description = "Chỉnh sửa thông tin class.")
     @PutMapping("/update/{id}")
     public ResponseEntity<ResponseObject> updateClass(@PathVariable Long id, @RequestBody ClassCreateDTO request) {
         ClassEntity entity = ClassEntity.builder()
@@ -57,6 +60,7 @@ public class ClassController {
         );
     }
 
+    @Operation(summary = "Xóa một class", description = "Xóa class theo ID nếu totalStudent bằng 0.")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseObject> deleteClass(@PathVariable Long id) {
         classService.deleteClass(id);
@@ -71,6 +75,7 @@ public class ClassController {
         );
     }
 
+    @Operation(summary = "Lấy tất cả class", description = "Trả về danh sách các class")
     @GetMapping("/getAll")
     public ResponseEntity<ResponseObject> getAllClasses() {
         List<ClassResponse> classes = classService.getAllClasses();
@@ -85,6 +90,7 @@ public class ClassController {
         );
     }
 
+    @Operation(summary = "Lấy class theo id", description = "Trả về thông tin class theo id.")
     @GetMapping("/getById/{id}")
     public ResponseEntity<ResponseObject> getClassById(@PathVariable Long id) {
         ClassResponse response = classService.getClassById(id);

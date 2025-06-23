@@ -16,5 +16,11 @@ public class StudentUpdateRequest {
     private String bloodType;
     private String geneticDiseases;
     private String otherMedicalNotes;
-    private Map<String, String> emergencyContact;
+    private String emergencyContactName;
+    private String emergencyContactPhone;
+    private String currentMedications;
+    private String chronicDiseases;
+    private String allergies;
+    private Float height;
+    private Float weight;
 }
