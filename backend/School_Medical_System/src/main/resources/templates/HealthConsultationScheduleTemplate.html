@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch tư vấn sức khỏe</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0; }
+        .container { background-color: #fff; margin: 40px auto; padding: 20px; max-width: 600px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; }
+        p { color: #34495e; }
+        .time { font-size: 20px; font-weight: bold; color: #27ae60; margin: 10px 0; }
+        .footer { font-size: 12px; color: #999; margin-top: 30px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Thông báo lịch hẹn tư vấn sức khỏe</h2>
+    <p>Kính gửi quý phụ huynh,</p>
+    <p>Học sinh <strong th:text="${studentName}">Tên học sinh</strong> có dấu hiệu bất thường sau kiểm tra y tế.</p>
+    <p>Nhà trường đã sắp xếp buổi tư vấn y tế với lịch trình như sau:</p>
+    <p class="time" th:text="${scheduleTime}">00:00 01/01/2025</p>
+    <p>Lý do tư vấn: <strong th:text="${reason}">Chi tiết lý do</strong></p>
+    <p>Vui lòng có mặt đúng giờ tại phòng y tế để được hỗ trợ.</p>
+    <div class="footer">
+        <p>Trân trọng,<br>Hệ thống quản lý y tế học đường</p>
+    </div>
+</div>
+</body>
+</html>
