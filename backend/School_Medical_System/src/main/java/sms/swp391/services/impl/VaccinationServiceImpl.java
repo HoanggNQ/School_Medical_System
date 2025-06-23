@@ -18,6 +18,7 @@ import sms.swp391.utils.VaccinationConsentMapper;
 import sms.swp391.utils.VaccinationRecordMapper;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         VaccinationCampaignEntity campaign = VaccinationCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
-        campaign.setCreatedAt(Instant.now());
+        campaign.setCreatedAt(LocalDate.now());
         campaign.setStatus(CampaignStatus.PLANNING.name());
 
         return VaccinationCampaignMapper.toDTO(campaignRepository.save(campaign));
@@ -122,7 +123,7 @@ public class VaccinationServiceImpl implements VaccinationService {
         VaccinationConsentEntity updatedConsent = VaccinationConsentMapper.fromRequestDTO(request);
         consent.setNotes(updatedConsent.getNotes());
         consent.setConsentFormUrl(updatedConsent.getConsentFormUrl());
-        consent.setResponseDate(Instant.now());
+        consent.setResponseDate(LocalDate.now());
 
         return VaccinationConsentMapper.toDTO(consentRepository.save(consent));
     }
