@@ -18,7 +18,13 @@ public class StudentResponse {
     private String bloodType;
     private String geneticDiseases;
     private String otherMedicalNotes;
-    private Map<String, String> emergencyContact;
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String emergencyContactName;
+    private String emergencyContactPhone;
+    private String currentMedications;
+    private String chronicDiseases;
+    private String allergies;
+    private Float height;
+    private Float weight;
 }

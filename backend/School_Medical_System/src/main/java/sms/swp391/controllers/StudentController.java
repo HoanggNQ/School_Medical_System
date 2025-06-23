@@ -1,5 +1,6 @@
 package sms.swp391.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ public class StudentController {
 
     private final StudentService studentService;
 
+    @Operation(summary = "Tạo một học sinh", description = "Khởi tạo một học sinh mới đồng thời tạo người dùng mới")
     @PostMapping
     public ResponseEntity<ResponseObject> createStudent(@RequestBody @Valid StudentRequest request) {
         StudentResponse student = studentService.createStudent(request);
@@ -44,6 +46,7 @@ public class StudentController {
         );
     }
 
+    @Operation(summary = "Cập nhật hồ sơ học sinh", description = "Chỉnh sửa thông tin học sinh theo ID.")
     @PutMapping("/update/{id}")
     public ResponseEntity<ResponseObject> updateStudent(@PathVariable Long id, @RequestBody StudentUpdateRequest request) {
         StudentResponse response = studentService.updateStudent(id, request);
@@ -58,6 +61,7 @@ public class StudentController {
         );
     }
 
+    @Operation(summary = "Xóa học sinh", description = "Đổi trạng thái học sinh thành DELETED theo ID.")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseObject> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
@@ -72,6 +76,7 @@ public class StudentController {
         );
     }
 
+    @Operation(summary = "Lấy tất cả hồ sơ học sinh", description = "Trả về danh sách học sinh với phân trang và tìm kiếm.")
     @GetMapping("/getAll")
     public ResponseEntity<ResponseObject> getAll(
             @RequestParam(value = "search", required = false) String search,
@@ -91,6 +96,7 @@ public class StudentController {
         );
     }
 
+    @Operation(summary = "Lấy học sinh theo ID", description = "Trả về thông tin học sinh theo ID.")
     @GetMapping("/getById/{id}")
     public ResponseEntity<ResponseObject> getStudentById(@PathVariable Long id) {
         StudentGetResponse response = studentService.getStudentById(id);
@@ -105,6 +111,7 @@ public class StudentController {
         );
     }
 
+    @Operation(summary = "Tìm học sinh theo parent id", description = "Trả về thông tin học sinh theo parent id.")
     @GetMapping("/findStudentByParent/{parentId}")
     public ResponseEntity<ResponseObject> findStudentByParent(@PathVariable Long parentId) {
         List<StudentResponse> students = studentService.findStudentByParent(parentId);

@@ -20,12 +20,18 @@ public class StudentMapper {
                 .bloodType(entity.getBloodType())
                 .geneticDiseases(entity.getGeneticDiseases())
                 .otherMedicalNotes(entity.getOtherMedicalNotes())
-                .emergencyContact(entity.getEmergencyContact())
+                .emergencyContactPhone(entity.getEmergencyContactPhone())
+                .emergencyContactName(entity.getEmergencyContactName())
+                .currentMedications(entity.getCurrentMedications())
+                .chronicDiseases(entity.getChronicDiseases())
+                .allergies(entity.getAllergies())
+                .height(entity.getHeight())
+                .weight(entity.getWeight())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
-
+// cai này đang không dùng này
     public static StudentEntity fromRequest(StudentRequest request, UserEntity user, ClassEntity classEntity, UserEntity parent) {
         if (request == null) return null;
         return StudentEntity.builder()
@@ -36,7 +42,6 @@ public class StudentMapper {
                 .bloodType(request.getBloodType())
                 .geneticDiseases(request.getGeneticDiseases())
                 .otherMedicalNotes(request.getOtherMedicalNotes())
-                .emergencyContact(request.getEmergencyContact())
                 .build();
     }
 
@@ -54,7 +59,13 @@ public class StudentMapper {
                 .bloodType(student.getBloodType())
                 .geneticDiseases(student.getGeneticDiseases())
                 .otherMedicalNotes(student.getOtherMedicalNotes())
-                .emergencyContact(student.getEmergencyContact())
+                .emergencyContactPhone(student.getEmergencyContactPhone())
+                .emergencyContactName(student.getEmergencyContactName())
+                .currentMedications(student.getCurrentMedications())
+                .chronicDiseases(student.getChronicDiseases())
+                .allergies(student.getAllergies())
+                .height(student.getHeight())
+                .weight(student.getWeight())
                 .build();
     }
 }

@@ -81,10 +81,23 @@ public class StudentServiceImpl implements StudentService {
                     .bloodType(request.getBloodType())
                     .geneticDiseases(request.getGeneticDiseases())
                     .otherMedicalNotes(request.getOtherMedicalNotes())
-                    .emergencyContact(request.getEmergencyContact())
+                    .emergencyContactName(request.getEmergencyContactName())
+                    .emergencyContactPhone(request.getEmergencyContactPhone())
+                    .currentMedications(request.getCurrentMedications())
+                    .chronicDiseases(request.getChronicDiseases())
+                    .allergies(request.getAllergies())
+                    .height(request.getHeight())
+                    .weight(request.getWeight())
                     .build();
 
             studentRepository.save(student);
+
+            if (classEntity != null) {
+                int count = studentRepository.countActiveStudentsByClassId(classEntity.getId());
+                classEntity.setTotalstudent(count);
+                classRepository.save(classEntity);
+            }
+
             return StudentMapper.toDTO(student);
 
         } catch (Exception e) {
@@ -97,10 +110,12 @@ public class StudentServiceImpl implements StudentService {
         StudentEntity existing = studentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Cannot find student with ID: %s", id)));
 
+        ClassEntity oldClass = existing.getClassEntity();
+
         if (request.getClassId() != null) {
-            ClassEntity classEntity = classRepository.findById(request.getClassId())
+            ClassEntity newClass = classRepository.findById(request.getClassId())
                     .orElseThrow(() -> new NotFoundException("Class not found"));
-            existing.setClassEntity(classEntity);
+            existing.setClassEntity(newClass);
         }
 
         if (request.getParentId() != null) {
@@ -112,10 +127,34 @@ public class StudentServiceImpl implements StudentService {
         existing.setBloodType(request.getBloodType());
         existing.setGeneticDiseases(request.getGeneticDiseases());
         existing.setOtherMedicalNotes(request.getOtherMedicalNotes());
-        existing.setEmergencyContact(request.getEmergencyContact());
+        existing.setEmergencyContactName(request.getEmergencyContactName());
+        existing.setEmergencyContactPhone(request.getEmergencyContactPhone());
+        existing.setCurrentMedications(request.getCurrentMedications());
+        existing.setChronicDiseases(request.getChronicDiseases());
+        existing.setAllergies(request.getAllergies());
+        existing.setHeight(request.getHeight());
+        existing.setWeight(request.getWeight());
 
         try {
             StudentEntity updated = studentRepository.save(existing);
+
+            // Update totalstudent for old class if changed
+            if (oldClass != null && (existing.getClassEntity() == null || !oldClass.getId().equals(existing.getClassEntity().getId()))) {
+                classRepository.findById(oldClass.getId()).ifPresent(c -> {
+                    int count = studentRepository.countActiveStudentsByClassId(c.getId());
+                    c.setTotalstudent(count);
+                    classRepository.save(c);
+                });
+            }
+            // Update totalstudent for new class
+            if (existing.getClassEntity() != null) {
+                classRepository.findById(existing.getClassEntity().getId()).ifPresent(c -> {
+                    int count = studentRepository.countActiveStudentsByClassId(c.getId());
+                    c.setTotalstudent(count);
+                    classRepository.save(c);
+                });
+            }
+
             return StudentMapper.toDTO(updated);
         } catch (Exception e) {
             throw new ActionFailedException(String.format("Failed to update student with ID: %s", id));
@@ -124,9 +163,14 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
+        List<String> allowedSortFields = List.of("fullname", "studentCode", "className");
+
         Sort validatedSort = pageable.getSort().stream()
-                .filter(order -> order.getProperty().equals("wwwww"))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
+                .filter(order -> allowedSortFields.contains(order.getProperty()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
+                    if (list.isEmpty()) return Sort.by("fullname");
+                    return Sort.by(list);
+                }));
 
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
@@ -159,6 +203,44 @@ public class StudentServiceImpl implements StudentService {
                 .currentPage(studentPage.getNumber())
                 .build();
     }
+
+//    @Override
+//    public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
+//        Sort validatedSort = pageable.getSort().stream()
+//                .filter(order -> order.getProperty().equals("wwwww"))
+//                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
+//
+//        Pageable validatedPageable = PageRequest.of(
+//                pageable.getPageNumber(),
+//                pageable.getPageSize(),
+//                validatedSort
+//        );
+//
+//        String sortProperty = validatedPageable.getSort().stream()
+//                .findFirst().map(Sort.Order::getProperty).orElse("fullname");
+//        String sortDirection = validatedPageable.getSort().stream()
+//                .findFirst().map(order -> order.getDirection().name().toLowerCase()).orElse("asc");
+//
+//        Page<StudentEntity> studentPage;
+//        if (search == null || search.trim().isEmpty()) {
+//            studentPage = studentRepository.findAll(validatedPageable);
+//        } else if ("fullname".equals(sortProperty)) {
+//            studentPage = studentRepository.searchStudentsSorted(search, sortDirection, validatedPageable);
+//        } else {
+//            studentPage = studentRepository.searchStudents(search, validatedPageable);
+//        }
+//
+//        List<StudentGetResponse> studentDTOs = studentPage.stream()
+//                .map(StudentMapper::toStudentGetResponse)
+//                .toList();
+//
+//        return PaginatedStudentResponse.builder()
+//                .students(studentDTOs)
+//                .totalElements(studentPage.getTotalElements())
+//                .totalPages(studentPage.getTotalPages())
+//                .currentPage(studentPage.getNumber())
+//                .build();
+//    }
 
     @Override
     public StudentGetResponse getStudentById(Long id) {

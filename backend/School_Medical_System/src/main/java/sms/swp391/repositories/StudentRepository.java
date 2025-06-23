@@ -29,6 +29,8 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
 
     List<StudentEntity> findByParent_UserId(Long parentId);
 
+    @Query("SELECT COUNT(s) FROM StudentEntity s WHERE s.classEntity.id = :classId AND s.user.status = 'ACTIVE'")
+    int countActiveStudentsByClassId(@Param("classId") Long classId);
 
     @Query("SELECT s FROM StudentEntity s WHERE " +
            "LOWER(s.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
