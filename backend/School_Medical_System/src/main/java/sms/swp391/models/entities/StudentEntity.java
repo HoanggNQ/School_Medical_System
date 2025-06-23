@@ -73,10 +73,6 @@ public class StudentEntity {
     @Column(name = "other_medical_notes", columnDefinition = "TEXT")
     private String otherMedicalNotes;
 
-    @Column(name = "emergency_contact")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, String> emergencyContact;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;
