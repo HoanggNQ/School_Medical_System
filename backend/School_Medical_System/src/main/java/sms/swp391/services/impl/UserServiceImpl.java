@@ -196,7 +196,6 @@ public class UserServiceImpl implements UserService {
             throw new ValidationFailedException("New password and confirmation do not match");
         }
 
-        // ✅ Set và encode mật khẩu mới
         userEntity.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(userEntity);
 

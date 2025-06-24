@@ -20,13 +20,11 @@ import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.UserResponse;
-import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+
 
 @RequestMapping("/api/v1/user")
 @RestController
@@ -181,10 +179,7 @@ public class UserController {
 
     @PutMapping(path = "forget-password")
     public ResponseEntity<ResponseObject> forgetPass(@RequestParam String email) {
-        // Check if user exists
         UserResponse user = userService.checkUser(email);
-
-        // Generate OTP for password reset
         otpService.generateOTPCode(email, TemplateEnum.PASSWORD.toString());
 
         return ResponseEntity.ok(
