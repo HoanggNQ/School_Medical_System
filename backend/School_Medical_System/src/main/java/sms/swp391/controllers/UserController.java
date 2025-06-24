@@ -4,6 +4,7 @@ package sms.swp391.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,13 @@ import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RequestMapping("/api/v1/user")
 @RestController
@@ -31,7 +35,7 @@ public class UserController {
 
     private final UserService userService;
     private final OTPService otpService;
-
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     @PutMapping(path = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -146,25 +150,54 @@ public class UserController {
 
     @PutMapping(path = "change-password")
     public ResponseEntity<ResponseObject> changePassword(@RequestBody ChangePassworDTO changePassworDTO) {
-        // First validate the old password and apply the new one
-        UserResponse userResponse = userService.changPassword(
-                changePassworDTO.getEmail(),
-                changePassworDTO.getOldPassword(),
-                changePassworDTO.getNewPassword(),
-                changePassworDTO.getNewPasswordConfirm());
+        try {
+            UserResponse userResponse = userService.changPassword(
+                    changePassworDTO.getEmail(),
+                    changePassworDTO.getOldPassword(),
+                    changePassworDTO.getNewPassword(),
+                    changePassworDTO.getNewPasswordConfirm());
 
-        // Optionally: send OTP confirmation for sensitive changes
-        otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.PASSWORD.toString());
+            try {
+                otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.PASSWORD.toString());
+            } catch (ActionFailedException e) {
+                // Tính lại TTL
+                Long ttl = redisTemplate.getExpire(userResponse.getEmail(), TimeUnit.SECONDS);
+                return ResponseEntity.ok(
+                        ResponseObject.builder()
+                                .code("OTP_ALREADY_SENT")
+                                .message(e.getMessage())
+                                .status(HttpStatus.OK)
+                                .isSuccess(true)
+                                .data(Map.of(
+                                        "user", userResponse,
+                                        "resendAfter", ttl != null ? ttl : 0
+                                ))
+                                .build()
+                );
+            }
 
-        return ResponseEntity.ok(
-                ResponseObject.builder()
-                        .code("PASSWORD_CHANGED_OTP_SENT")
-                        .message("Password changed successfully. OTP sent to confirm change.")
-                        .status(HttpStatus.OK)
-                        .isSuccess(true)
-                        .data(userResponse)
-                        .build()
-        );
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("PASSWORD_CHANGED_OTP_SENT")
+                            .message("Password changed successfully. OTP sent to confirm change.")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(Map.of(
+                                    "user", userResponse,
+                                    "resendAfter", 180  // mặc định 3 phút
+                            ))
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("CHANGE_PASSWORD_FAILED")
+                            .message("Failed to change password: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
     }
 
     @PutMapping(path = "forget-password")

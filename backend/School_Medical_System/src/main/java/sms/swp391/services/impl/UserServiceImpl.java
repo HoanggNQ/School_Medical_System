@@ -17,6 +17,7 @@ import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
+import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 import sms.swp391.utils.UserMapper;
 
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
 
     private final UserRepository userRepository;
+    private final OTPService oTPService;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -180,7 +182,7 @@ public class UserServiceImpl implements UserService {
 
     }
     @Override
-    public UserResponse changPassword(String email,String oldPassword, String newPassword, String newPasswordConfirm) {
+    public UserResponse changPassword(String email, String oldPassword, String newPassword, String newPasswordConfirm) {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -193,6 +195,10 @@ public class UserServiceImpl implements UserService {
         if (!newPassword.equals(newPasswordConfirm)) {
             throw new ValidationFailedException("New password and confirmation do not match");
         }
+        
+        // Store encoded password in Redis via OTP service
+        oTPService.changePasswordOtp(email, newPassword);
+        
         return UserMapper.toDTO(userEntity);
     }
     @Override
