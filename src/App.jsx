@@ -227,10 +227,13 @@ function App() {
             <Route path="children-health" element={<ParentChildrenHealth />} />
             <Route path="vaccination-schedule" element={<ParentVaccinationSchedule />} />
             <Route path="notifications" element={<ParentNotifications />} />
+            {/* <Route path="notifications" element={<ParentNotifications />} /> */}
+
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="campaigns" element={<CampaignManagement />} />
+            {/* <Route path="campaigns" element={<CampaignManagement />} /> */}
           </Route>
         </Route>
       </Route>
