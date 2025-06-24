@@ -29,10 +29,13 @@ public class OtpServiceImpl implements OTPService {
     private Long timeOut = (long) 3.0;
     //  private Long timeOutPassword = (long) 3.0;
     private final RedisTemplate<String, Object> redisTemplate;
+
     @Override
     public void generateOTPCode(String email, String template) {
+        // Check if an OTP already exists
         String existingOtp = (String) redisTemplate.opsForHash().get(email, "otp");
         if (existingOtp != null) {
+            // Calculate remaining TTL
             Long timeToLive = redisTemplate.getExpire(email, TimeUnit.SECONDS);
             if (timeToLive != null && timeToLive > 0) {
                 long minutes = timeToLive / 60;
@@ -41,17 +44,17 @@ public class OtpServiceImpl implements OTPService {
                         String.format("OTP has already been sent. Please wait %d minute(s) and %d second(s) before requesting again.", minutes, seconds)
                 );
             } else {
+                // TTL is negative or not set – delete the key to reset
                 redisTemplate.delete(email);
             }
         }
-
+        // Generate and store a new OTP
         String value = generateRandomOTP();
-        redisTemplate.opsForHash().put(email, "otp", value);
-        redisTemplate.expire(email, timeOut, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(email, value, timeOut, TimeUnit.MINUTES);
 
+        // Send email
         mailSenderService.sendOtpEmail(email, value, template);
     }
-
 
 
 
