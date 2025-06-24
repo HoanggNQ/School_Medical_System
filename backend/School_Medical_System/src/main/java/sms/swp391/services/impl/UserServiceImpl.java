@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final OTPService oTPService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -186,8 +188,6 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
         if (!passwordEncoder.matches(oldPassword, userEntity.getPassword())) {
             throw new ValidationFailedException("Old password is incorrect");
         }
@@ -195,12 +195,14 @@ public class UserServiceImpl implements UserService {
         if (!newPassword.equals(newPasswordConfirm)) {
             throw new ValidationFailedException("New password and confirmation do not match");
         }
-        
-        // Store encoded password in Redis via OTP service
-        oTPService.changePasswordOtp(email, newPassword);
-        
+
+        // ✅ Set và encode mật khẩu mới
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+
         return UserMapper.toDTO(userEntity);
     }
+
     @Override
     public void setPassword(String email, String password) {
         UserEntity userEntity = userRepository.findByEmail(email)

@@ -9,9 +9,5 @@ public interface OTPService {
 
     void generateOTPCodeAgain(String identity,String template);
 
-    void changePasswordOtp(String email, String newPassword);
 
-    String verifyOtpSetPassword(OTPVerifyRequestDTO request);
-
-    void resendOTPSetPassword(String email);
 }
