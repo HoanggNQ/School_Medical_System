@@ -29,17 +29,6 @@ public class OTPVerifyController {
         }
     }
 
-    @PatchMapping("/verify-set-password")
-    public ResponseEntity<ResponseObject> verifyOTPSetPassword(@RequestBody OTPVerifyRequestDTO request) {
-        try {
-            String newPassword = otpService.verifyOtpSetPassword(request);
-            userService.setPassword(request.getEmail(), newPassword);
-            return buildSuccessResponse("Set new password successfully");
-        } catch (Exception e) {
-            return buildErrorResponse("Setting new password failed", e);
-        }
-    }
-
     @PatchMapping("/verify-set-password-forgot")
     public ResponseEntity<ResponseObject> verifyOTPSetPasswordForgot(
             @RequestBody OTPVerifyRequestDTO request,
@@ -71,16 +60,6 @@ public class OTPVerifyController {
             return buildSuccessResponse("OTP for password reset sent successfully");
         } catch (Exception e) {
             return buildErrorResponse("Resend OTP for password reset failed", e);
-        }
-    }
-
-    @PostMapping("/resend-set-password")
-    public ResponseEntity<ResponseObject> resendOtpForSetPassword(@RequestParam String email) {
-        try {
-            otpService.resendOTPSetPassword(email);
-            return buildSuccessResponse("OTP for setting password sent successfully");
-        } catch (Exception e) {
-            return buildErrorResponse("Resend OTP for setting password failed", e);
         }
     }
 

@@ -157,48 +157,27 @@ public class UserController {
                     changePassworDTO.getNewPassword(),
                     changePassworDTO.getNewPasswordConfirm());
 
-            try {
-                otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.PASSWORD.toString());
-            } catch (ActionFailedException e) {
-                // Tính lại TTL
-                Long ttl = redisTemplate.getExpire(userResponse.getEmail(), TimeUnit.SECONDS);
-                return ResponseEntity.ok(
-                        ResponseObject.builder()
-                                .code("OTP_ALREADY_SENT")
-                                .message(e.getMessage())
-                                .status(HttpStatus.OK)
-                                .isSuccess(true)
-                                .data(Map.of(
-                                        "user", userResponse,
-                                        "resendAfter", ttl != null ? ttl : 0
-                                ))
-                                .build()
-                );
-            }
-
             return ResponseEntity.ok(
                     ResponseObject.builder()
-                            .code("PASSWORD_CHANGED_OTP_SENT")
-                            .message("Password changed successfully. OTP sent to confirm change.")
+                            .code("PASSWORD_CHANGED_SUCCESS")
+                            .message("Password changed successfully.")
                             .status(HttpStatus.OK)
                             .isSuccess(true)
-                            .data(Map.of(
-                                    "user", userResponse,
-                                    "resendAfter", 180  // mặc định 3 phút
-                            ))
+                            .data(userResponse)
                             .build()
             );
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     ResponseObject.builder()
                             .code("CHANGE_PASSWORD_FAILED")
                             .message("Failed to change password: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .status(HttpStatus.BAD_REQUEST)
                             .isSuccess(false)
                             .build()
             );
         }
     }
+
 
     @PutMapping(path = "forget-password")
     public ResponseEntity<ResponseObject> forgetPass(@RequestParam String email) {
