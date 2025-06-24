@@ -67,7 +67,8 @@ public class ClassServiceImpl implements ClassService {
     public List<ClassResponse> getAllClasses() {
         try {
             List<ClassEntity> classes = classRepository.findAll();
-            classes.forEach(this::calculateActiveStudent);
+            // Bỏ dòng này nếu không muốn tính toán số sinh viên active
+            // classes.forEach(this::calculateActiveStudent);
             return classes.stream()
                     .map(ClassMapper::toDTO)
                     .collect(Collectors.toList());
@@ -81,13 +82,14 @@ public class ClassServiceImpl implements ClassService {
         try {
             ClassEntity classEntity = classRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException("Class not found"));
-            // Ensure students are loaded and counted
-            calculateActiveStudent(classEntity);
+            // Bỏ dòng này nếu không muốn tính toán số sinh viên active
+            // calculateActiveStudent(classEntity);
             return ClassMapper.toDTO(classEntity);
         } catch (Exception e) {
             throw new ActionFailedException(String.format("Failed to get class with ID: %s", id));
         }
     }
+
 
     private void calculateActiveStudent(ClassEntity classEntity) {
         if (classEntity.getStudents() != null) {
