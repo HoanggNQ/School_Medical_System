@@ -2,17 +2,21 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Heart, Syringe, Stethoscope, Pill } from "lucide-react"
+import { Heart, Syringe, Stethoscope, Pill, FileText } from "lucide-react"
 import ParentService from "../../api/services/parent.service"
 import HealthRecords from "./health-records"
 import VaccinationHistory from "./vaccination-history"
 import SendMedicine from "./send-medicine"
+import HealthDeclaration from "./health-declaration"
+import HealthDeclarationHistory from "./health-declaration-history"
 
 const StudentHealth = () => {
   const [students, setStudents] = useState([])
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [activeTab, setActiveTab] = useState("health-records")
   const [loading, setLoading] = useState(true)
+  const [showDeclarationForm, setShowDeclarationForm] = useState(false)
+  const [editingDeclaration, setEditingDeclaration] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -170,6 +174,19 @@ const StudentHealth = () => {
                   <span>Gửi thuốc</span>
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab("health-declaration")}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "health-declaration"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-5 h-5" />
+                  <span>Khai báo sức khỏe</span>
+                </div>
+              </button>
             </nav>
           </div>
         </motion.div>
@@ -187,6 +204,69 @@ const StudentHealth = () => {
             {activeTab === "vaccination" && <VaccinationHistory selectedStudent={selectedStudent} />}
 
             {activeTab === "send-medicine" && <SendMedicine selectedStudent={selectedStudent} />}
+
+            {activeTab === "health-declaration" && (
+              <div className="space-y-6">
+                {/* Toggle between form and history */}
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Khai báo sức khỏe</h3>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setShowDeclarationForm(false)
+                          setEditingDeclaration(null)
+                        }}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          !showDeclarationForm
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Lịch sử khai báo
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDeclarationForm(true)
+                          setEditingDeclaration(null)
+                        }}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          showDeclarationForm && !editingDeclaration
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Tạo khai báo mới
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {showDeclarationForm || editingDeclaration ? (
+                  <HealthDeclaration
+                    selectedStudent={selectedStudent}
+                    editingDeclaration={editingDeclaration}
+                    onSave={() => {
+                      setShowDeclarationForm(false)
+                      setEditingDeclaration(null)
+                    }}
+                    onCancel={() => {
+                      setShowDeclarationForm(false)
+                      setEditingDeclaration(null)
+                    }}
+                  />
+                ) : (
+                  <HealthDeclarationHistory
+                    selectedStudent={selectedStudent}
+                    onEdit={(declaration) => {
+                      setEditingDeclaration(declaration)
+                      setShowDeclarationForm(true)
+                    }}
+                  />
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </div>

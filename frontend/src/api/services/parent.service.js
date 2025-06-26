@@ -60,7 +60,34 @@ const ParentService = {
         } catch (error) {
             throw handleApiError(error);
         }
-    }
+    },
+
+    postHealthDeclaration: async (studentId, data) => {
+        try {
+            const response = await axiosInstance.post(API_ENDPOINTS.PARENT.POST_HEALTH_DECLARATION(studentId), data);
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    getHealthDeclaration: async (studentId) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_HEALTH_DECLARATION(studentId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    updateHealthDeclaration: async (id, data) => {
+        try {
+            const response = await axiosInstance.put(API_ENDPOINTS.PARENT.UPDATE_HEALTH_DECLARATION(id), data);
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 }
 
 export default ParentService;

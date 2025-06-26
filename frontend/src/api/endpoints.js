@@ -37,7 +37,9 @@ const API_ENDPOINTS = {
     GET_ALL_MEDICINE: `api/v1/medications`,
     POST_MEDICINE_REQUEST: '/api/v1/medication-requests',
     GET_STUDENT_VACCINATION: (studentId) => `/api/v1/vaccination/students/${studentId}/vaccinations`,
-
+    POST_HEALTH_DECLARATION: (studentId) => '/api/v1/health-declarations/' + studentId,
+    GET_HEALTH_DECLARATION: (studentId) => `/api/v1/health-declarations/student/${studentId}/details`,
+    UPDATE_HEALTH_DECLARATION: (id) => `/api/v1/health-declarations/${id}`,
   },
 
   STUDENT: {
