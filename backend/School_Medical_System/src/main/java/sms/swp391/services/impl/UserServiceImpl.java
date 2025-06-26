@@ -7,21 +7,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
+import sms.swp391.models.dtos.enums.TemplateEnum;
+import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
+import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 import sms.swp391.utils.UserMapper;
 
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +35,8 @@ public class UserServiceImpl implements UserService {
 
 
     private final UserRepository userRepository;
+    private final OTPService oTPService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -180,11 +187,9 @@ public class UserServiceImpl implements UserService {
 
     }
     @Override
-    public UserResponse changPassword(String email,String oldPassword, String newPassword, String newPasswordConfirm) {
+    public UserResponse changPassword(String email, String oldPassword, String newPassword, String newPasswordConfirm) {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         if (!passwordEncoder.matches(oldPassword, userEntity.getPassword())) {
             throw new ValidationFailedException("Old password is incorrect");
@@ -193,8 +198,13 @@ public class UserServiceImpl implements UserService {
         if (!newPassword.equals(newPasswordConfirm)) {
             throw new ValidationFailedException("New password and confirmation do not match");
         }
+
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+
         return UserMapper.toDTO(userEntity);
     }
+
     @Override
     public void setPassword(String email, String password) {
         UserEntity userEntity = userRepository.findByEmail(email)
@@ -235,6 +245,35 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public UserResponse createNurse(UserRegisterDTO userRegisterDTO) {
+        Optional<UserEntity> userEntity = userRepository.findByEmail(userRegisterDTO.getEmail());
+
+        if (userEntity.isPresent()) {
+            switch (userEntity.get().getStatus().toString()) {
+                case "ACTIVE" -> throw new ConflictException("Email already exists!");
+                case "BAN" -> throw new ActionFailedException("CAN_LOGIN", "Your account has been banned");
+                case "DELETED" -> throw new ActionFailedException("CAN_LOGIN", "Your account has been deleted");
+            }
+        }
+
+        if (userRepository.existsByUsername(userRegisterDTO.getUsername())) {
+            throw new ConflictException("Username already exists!");
+        }
+
+        if (userRepository.existsByPhoneNumber(userRegisterDTO.getPhoneNumber())) {
+            throw new ConflictException("Phone already exists!");
+        }
+
+        String password = passwordEncoder.encode(userRegisterDTO.getPassword());
+        UserEntity userCreate = UserMapper.fromRegisterDTO(userRegisterDTO);
+        userCreate.setStatus(StatusEnum.ACTIVE);
+        userCreate.setRoleName(RoleEnum.SCHOOL_NURSE);
+        userCreate.setPassword(password);
+        userRepository.save(userCreate);
+
+        return UserMapper.toDTO(userCreate);
+    }
     @Override
     public void chooseRole(String email, RoleEnum role) {
         UserEntity userEntity = userRepository.findByEmail(email)

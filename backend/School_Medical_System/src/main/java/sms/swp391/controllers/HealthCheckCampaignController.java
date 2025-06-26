@@ -189,4 +189,62 @@ public class HealthCheckCampaignController {
             );
         }
     }
+    @Operation(summary = "Kết thúc chiến dịch khám", description = "Đổi trạng thái chiến dịch sang 'đã ket thuc'.")
+    @PostMapping("/campaigns/{id}/end")
+    public ResponseEntity<ResponseObject> endCampaign(@PathVariable Long id) {
+        try {
+            healthCheckService.endCampaign(id);
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("END_CAMPAIGN_SUCCESS")
+                            .message("Campaign ended successfully")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .build()
+            );
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .code("CAMPAIGN_NOT_FOUND")
+                            .message(e.getMessage())
+                            .status(HttpStatus.NOT_FOUND)
+                            .isSuccess(false)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("START_CAMPAIGN_FAILED")
+                            .message("Failed to start campaign: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+    @Operation(summary = "Lấy tất cả chiến dịch khám đang bắt đầu", description = "Trả về danh sách tất cả chiến dịch khám sức khỏe.")
+    @GetMapping("/campaignsStart")
+    public ResponseEntity<ResponseObject> getAllCampaignsStart() {
+        try {
+            List<HealthCheckCampaignResponse> responses = healthCheckService.getAllCampaignsStart();
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("GET_ALL_CAMPAIGNS_SUCCESS")
+                            .message("Campaigns retrieved successfully")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(responses)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("GET_ALL_CAMPAIGNS_FAILED")
+                            .message("Failed to get campaigns: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
 }

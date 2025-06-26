@@ -58,23 +58,6 @@ public class OtpServiceImpl implements OTPService {
 
 
 
-    @Override
-    public void changePasswordOtp(String email,  String newPassword) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) {
-            String otpInRedis = (String) redisTemplate.opsForHash().get(email, "otp");
-            if (otpInRedis != null) {
-                throw new ActionFailedException("OTP has been sent. Please check your email !");
-            }
-        }
-        String template = TemplateEnum.PASSWORD.toString();
-        var otp = generateRandomOTP();
-        redisTemplate.opsForHash().put(email, "otp", otp);        // Lưu OTP vào field "otp"
-        String password = passwordEncoder.encode(newPassword);
-        redisTemplate.opsForHash().put(email, "password", password); // Lưu password vào field "password"
-        redisTemplate.expire(email, timeOut, TimeUnit.MINUTES);
-        mailSenderService.sendOtpEmail(email, otp,template);
-    }
-
 
     @Override
     public void generateOTPCodeAgain(String email, String template) {
@@ -118,49 +101,6 @@ public class OtpServiceImpl implements OTPService {
             throw new ValidationFailedException("The OTP doesn't match");
         }
         redisTemplate.delete(request.getEmail());
-    }
-
-    @Override
-    public String verifyOtpSetPassword(OTPVerifyRequestDTO request) {
-        String otpInRedis = (String) redisTemplate.opsForHash().get(request.getEmail(), "otp");
-        String password = (String) redisTemplate.opsForHash().get(request.getEmail(), "password");
-
-        if (otpInRedis == null) {
-            throw new ValidationFailedException("This OTP is not valid or has expired");
-        }
-        if (!otpInRedis.equals(request.getOtp())) {
-            throw new ValidationFailedException("The OTP does not match");
-        }
-        redisTemplate.delete(request.getEmail());
-        return password;
-    }
-
-    @Override
-    public void resendOTPSetPassword(String email) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) {
-            String otpInRedis = (String) redisTemplate.opsForHash().get(email, "otp");
-            if (otpInRedis != null) {
-                throw new ActionFailedException("OTP has been sent. Please check your email !");
-            }
-        }
-        UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
-                ()-> new NotFoundException("user not found")
-        );
-        if(userEntity.getStatus().equals(StatusEnum.DELETED)){
-            throw  new ActionFailedException("account has been deleted");
-        }
-        if(userEntity.getStatus().equals(StatusEnum.BAN)){
-            throw new ActionFailedException("account has been ban");
-        }
-        if(userEntity.getStatus().equals(StatusEnum.VERIFY)){
-            throw new ActionFailedException("account has been not verify");
-        }
-        var otpValue = generateRandomOTP();
-        String template = TemplateEnum.PASSWORD.toString();
-
-        redisTemplate.opsForHash().put(email, "otp", otpValue);
-        redisTemplate.expire(email, timeOut, TimeUnit.MINUTES);
-        mailSenderService.sendOtpEmail(email, otpValue, template);
     }
 
 

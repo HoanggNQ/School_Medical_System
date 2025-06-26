@@ -19,6 +19,7 @@ public class MedicationResponseDTO {
     private String medicationImg;
     private String activeIngredient;
     private String manufacturer;
+    private Integer quantity;
     private String createdAt;
     private String updatedAt;
 }

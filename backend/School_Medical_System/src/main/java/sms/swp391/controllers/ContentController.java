@@ -84,14 +84,15 @@ package sms.swp391.controllers;
             );
         }
 
-        @Operation(summary = "Lấy tất cả bài báo", description = "Trả về danh sách bài báo với phân trang và tìm kiếm.")
+        @Operation(summary = "Lấy tất cả bài báo", description = "Trả về danh sách bài báo với phân trang và tìm kiếm, sort mặc định là id." +
+                " Sort(cần nhập đúng) bao gồm title, id, contentCategoryEntity.id, contentCategoryEntity.contentcategoryName")
         @GetMapping("/getAll")
         public ResponseEntity<ResponseObject> getAll(
                 @RequestParam(value = "search", required = false) String search,
                 @ParameterObject
                 @PageableDefault(page = 0, size = 10)
                 @SortDefault.SortDefaults({
-                        @SortDefault(sort = "title", direction = Sort.Direction.ASC)
+                        @SortDefault(sort = "id", direction = Sort.Direction.ASC)
                 }) Pageable pageable) {
             PaginatedContentResponse contentResponse = contentService.getAllContents(search, pageable);
             return ResponseEntity.ok(

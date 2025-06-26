@@ -4,6 +4,7 @@ package sms.swp391.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -15,14 +16,18 @@ import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.ChangePassworDTO;
 import sms.swp391.models.dtos.requests.ChooseRoleRequestDTO;
+import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.exception.ActionFailedException;
+import sms.swp391.models.exception.ConflictException;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 
 import java.util.List;
+
 
 @RequestMapping("/api/v1/user")
 @RestController
@@ -31,7 +36,7 @@ public class UserController {
 
     private final UserService userService;
     private final OTPService otpService;
-
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     @PutMapping(path = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -146,33 +151,38 @@ public class UserController {
 
     @PutMapping(path = "change-password")
     public ResponseEntity<ResponseObject> changePassword(@RequestBody ChangePassworDTO changePassworDTO) {
-        // First validate the old password and apply the new one
-        UserResponse userResponse = userService.changPassword(
-                changePassworDTO.getEmail(),
-                changePassworDTO.getOldPassword(),
-                changePassworDTO.getNewPassword(),
-                changePassworDTO.getNewPasswordConfirm());
+        try {
+            UserResponse userResponse = userService.changPassword(
+                    changePassworDTO.getEmail(),
+                    changePassworDTO.getOldPassword(),
+                    changePassworDTO.getNewPassword(),
+                    changePassworDTO.getNewPasswordConfirm());
 
-        // Optionally: send OTP confirmation for sensitive changes
-        otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.PASSWORD.toString());
-
-        return ResponseEntity.ok(
-                ResponseObject.builder()
-                        .code("PASSWORD_CHANGED_OTP_SENT")
-                        .message("Password changed successfully. OTP sent to confirm change.")
-                        .status(HttpStatus.OK)
-                        .isSuccess(true)
-                        .data(userResponse)
-                        .build()
-        );
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("PASSWORD_CHANGED_SUCCESS")
+                            .message("Password changed successfully.")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(userResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("CHANGE_PASSWORD_FAILED")
+                            .message("Failed to change password: " + e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
     }
+
 
     @PutMapping(path = "forget-password")
     public ResponseEntity<ResponseObject> forgetPass(@RequestParam String email) {
-        // Check if user exists
         UserResponse user = userService.checkUser(email);
-
-        // Generate OTP for password reset
         otpService.generateOTPCode(email, TemplateEnum.PASSWORD.toString());
 
         return ResponseEntity.ok(
@@ -192,4 +202,53 @@ public class UserController {
         return ResponseEntity.ok("Role assigned successfully");
     }
 
+
+    @PostMapping("/createNurse")
+    public ResponseEntity<ResponseObject> createNurse(@RequestBody UserRegisterDTO request) {
+     try {
+         UserResponse user = userService.createNurse(request);
+         return ResponseEntity.ok(
+                 ResponseObject.builder()
+                         .code("CREATE OK")
+                         .message("CREATE OK")
+                         .status(HttpStatus.OK)
+                         .isSuccess(true)
+                         .data(user)
+                         .build()
+         );
+
+     }catch (ConflictException e) {
+         return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                 ResponseObject.builder()
+                         .code("CREATE_CONFLICT")
+                         .message(e.getMessage())
+                         .status(HttpStatus.CONFLICT)
+                         .isSuccess(false)
+                         .data(null)
+                         .build()
+         );
+
+     } catch (ActionFailedException e) {
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                 ResponseObject.builder()
+                         .code("CREATE_FAILED")
+                         .message(e.getMessage())
+                         .status(HttpStatus.BAD_REQUEST)
+                         .isSuccess(false)
+                         .data(null)
+                         .build()
+         );
+
+     } catch (Exception e) {
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                 ResponseObject.builder()
+                         .code("CREATE_FAILED")
+                         .message("Internal error: " + e.getMessage())
+                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                         .isSuccess(false)
+                         .data(null)
+                         .build()
+         );
+    }
+}
 }

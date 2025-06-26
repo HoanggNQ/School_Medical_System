@@ -6,11 +6,17 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import sms.swp391.models.dtos.enums.MedicalStatus;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "medical_event")
 public class MedicalEventEntity {
@@ -53,5 +59,4 @@ public class MedicalEventEntity {
 
     @Column(name = "follow_up_notes", length = Integer.MAX_VALUE)
     private String followUpNotes;
-
 }
