@@ -1,9 +1,6 @@
 package sms.swp391.services;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
@@ -34,7 +31,7 @@ public interface UserService {
     void setPassword(String email, String password);
 
     UserResponse checkUser(String email);
-
+    UserResponse createNurse(UserRegisterDTO userRegisterDTO);
     UserResponse setPasswordForget(String email, String newPassword, String newPasswordConfirm);
     void chooseRole(String email , RoleEnum role);
 }

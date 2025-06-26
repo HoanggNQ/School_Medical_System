@@ -69,7 +69,7 @@ public class ContentServiceImpl implements ContentService {
         Sort validatedSort = pageable.getSort().stream()
                 .filter(order -> {
                     String property = order.getProperty();
-                    return property.equals("title") || property.equals("id");
+                    return property.equals("title") || property.equals("id") || "contentCategoryEntity.id".equals(property) || "contentCategoryEntity.contentcategoryName".equals(property);
                 })
                 .collect(Collectors.collectingAndThen(
                         Collectors.toList(),

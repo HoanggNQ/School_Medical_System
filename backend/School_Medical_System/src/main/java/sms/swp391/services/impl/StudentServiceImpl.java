@@ -12,6 +12,7 @@ import sms.swp391.models.dtos.respones.PaginatedStudentResponse;
 import sms.swp391.models.dtos.respones.StudentGetResponse;
 import sms.swp391.models.dtos.respones.StudentResponse;
 import sms.swp391.models.entities.ClassEntity;
+import sms.swp391.models.entities.ContentEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
@@ -163,14 +164,31 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
-        List<String> allowedSortFields = List.of("fullname", "studentCode", "className");
-
         Sort validatedSort = pageable.getSort().stream()
-                .filter(order -> allowedSortFields.contains(order.getProperty()))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                    if (list.isEmpty()) return Sort.by("fullname");
-                    return Sort.by(list);
-                }));
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("studentCode") ||
+                            "createdAt".equals(property) ||
+                            "classEntity.id".equals(property) ||
+                            property.equals("id") ||
+                            "updatedAt".equals(property) ||
+                            "user.userId".equals(property) ||
+                            property.equals("bloodType") ||
+                            property.equals("geneticDiseases") ||
+                            property.equals("allergies") ||
+                            property.equals("chronicDiseases") ||
+                            "height".equals(property) ||
+                            "weight".equals(property) ||
+                            property.equals("user.fullname") ||
+                            property.equals("user.gender") ||
+                            property.equals("user.dob") ||
+                            property.equals("user.username") ||
+                            property.equals("classEntity.className");
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
 
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
@@ -178,18 +196,11 @@ public class StudentServiceImpl implements StudentService {
                 validatedSort
         );
 
-        String sortProperty = validatedPageable.getSort().stream()
-                .findFirst().map(Sort.Order::getProperty).orElse("fullname");
-        String sortDirection = validatedPageable.getSort().stream()
-                .findFirst().map(order -> order.getDirection().name().toLowerCase()).orElse("asc");
-
         Page<StudentEntity> studentPage;
-        if (search == null || search.trim().isEmpty()) {
-            studentPage = studentRepository.findAll(validatedPageable);
-        } else if ("fullname".equals(sortProperty)) {
-            studentPage = studentRepository.searchStudentsSorted(search, sortDirection, validatedPageable);
-        } else {
+        if (search != null && !search.isEmpty()) {
             studentPage = studentRepository.searchStudents(search, validatedPageable);
+        } else {
+            studentPage = studentRepository.findAll(validatedPageable);
         }
 
         List<StudentGetResponse> studentDTOs = studentPage.stream()
@@ -203,44 +214,6 @@ public class StudentServiceImpl implements StudentService {
                 .currentPage(studentPage.getNumber())
                 .build();
     }
-
-//    @Override
-//    public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
-//        Sort validatedSort = pageable.getSort().stream()
-//                .filter(order -> order.getProperty().equals("wwwww"))
-//                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
-//
-//        Pageable validatedPageable = PageRequest.of(
-//                pageable.getPageNumber(),
-//                pageable.getPageSize(),
-//                validatedSort
-//        );
-//
-//        String sortProperty = validatedPageable.getSort().stream()
-//                .findFirst().map(Sort.Order::getProperty).orElse("fullname");
-//        String sortDirection = validatedPageable.getSort().stream()
-//                .findFirst().map(order -> order.getDirection().name().toLowerCase()).orElse("asc");
-//
-//        Page<StudentEntity> studentPage;
-//        if (search == null || search.trim().isEmpty()) {
-//            studentPage = studentRepository.findAll(validatedPageable);
-//        } else if ("fullname".equals(sortProperty)) {
-//            studentPage = studentRepository.searchStudentsSorted(search, sortDirection, validatedPageable);
-//        } else {
-//            studentPage = studentRepository.searchStudents(search, validatedPageable);
-//        }
-//
-//        List<StudentGetResponse> studentDTOs = studentPage.stream()
-//                .map(StudentMapper::toStudentGetResponse)
-//                .toList();
-//
-//        return PaginatedStudentResponse.builder()
-//                .students(studentDTOs)
-//                .totalElements(studentPage.getTotalElements())
-//                .totalPages(studentPage.getTotalPages())
-//                .currentPage(studentPage.getNumber())
-//                .build();
-//    }
 
     @Override
     public StudentGetResponse getStudentById(Long id) {

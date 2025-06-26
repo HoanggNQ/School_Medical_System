@@ -3,6 +3,7 @@ package sms.swp391.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
@@ -76,13 +77,17 @@ public class StudentController {
         );
     }
 
-    @Operation(summary = "Lấy tất cả hồ sơ học sinh", description = "Trả về danh sách học sinh với phân trang và tìm kiếm.")
+    @Operation(summary = "Lấy tất cả hồ sơ học sinh ACTIVE", description = "Trả về danh sách học sinh với phân trang và tìm kiếm, sort mặc định là studentCode, sort(cần nhập đúng) bao gồm." +
+            " studentCode, createdAt, classEntity.id, id, updatedAt, user.userId, bloodType," +
+            " geneticDiseases, allergies, chronicDiseases, height, weight, user.fullname, " +
+            " user.gender, user.dob, user.username, classEntity.className")
     @GetMapping("/getAll")
     public ResponseEntity<ResponseObject> getAll(
             @RequestParam(value = "search", required = false) String search,
+            @ParameterObject
             @PageableDefault(page = 0, size = 10)
             @SortDefault.SortDefaults({
-                    @SortDefault(sort = "fullname", direction = Sort.Direction.ASC)
+                    @SortDefault(sort = "studentCode", direction = Sort.Direction.ASC)
             }) Pageable pageable) {
         PaginatedStudentResponse response = studentService.getAllStudents(search, pageable);
         return ResponseEntity.ok(
