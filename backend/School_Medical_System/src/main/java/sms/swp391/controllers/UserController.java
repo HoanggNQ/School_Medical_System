@@ -16,10 +16,13 @@ import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.ChangePassworDTO;
 import sms.swp391.models.dtos.requests.ChooseRoleRequestDTO;
+import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.respones.PaginatedUserResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
 import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.exception.ActionFailedException;
+import sms.swp391.models.exception.ConflictException;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 
@@ -199,4 +202,53 @@ public class UserController {
         return ResponseEntity.ok("Role assigned successfully");
     }
 
+
+    @PostMapping("/createNurse")
+    public ResponseEntity<ResponseObject> createNurse(@RequestBody UserRegisterDTO request) {
+     try {
+         UserResponse user = userService.createNurse(request);
+         return ResponseEntity.ok(
+                 ResponseObject.builder()
+                         .code("CREATE OK")
+                         .message("CREATE OK")
+                         .status(HttpStatus.OK)
+                         .isSuccess(true)
+                         .data(user)
+                         .build()
+         );
+
+     }catch (ConflictException e) {
+         return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                 ResponseObject.builder()
+                         .code("CREATE_CONFLICT")
+                         .message(e.getMessage())
+                         .status(HttpStatus.CONFLICT)
+                         .isSuccess(false)
+                         .data(null)
+                         .build()
+         );
+
+     } catch (ActionFailedException e) {
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                 ResponseObject.builder()
+                         .code("CREATE_FAILED")
+                         .message(e.getMessage())
+                         .status(HttpStatus.BAD_REQUEST)
+                         .isSuccess(false)
+                         .data(null)
+                         .build()
+         );
+
+     } catch (Exception e) {
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                 ResponseObject.builder()
+                         .code("CREATE_FAILED")
+                         .message("Internal error: " + e.getMessage())
+                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                         .isSuccess(false)
+                         .data(null)
+                         .build()
+         );
+    }
+}
 }
