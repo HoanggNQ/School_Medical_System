@@ -55,16 +55,18 @@ const AuthService = {
             throw handleApiError(error);
         }
     },
-
-
-    forgotPassword: async (email) => {
+    resendVerificationCode: async ({email, otp}) => {
         try {
-            const response = await axiosInstance.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+            const response = await axiosInstance.post(API_ENDPOINTS.AUTH.resendVerificationCode, { email });
             return response;
         } catch (error) {
-            throw error;
+            throw handleApiError(error);
         }
     },
+
+
+
+
 
     resetPassword: async (token, newPassword) => {
         try {

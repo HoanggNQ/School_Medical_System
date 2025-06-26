@@ -2,18 +2,18 @@ const API_ENDPOINTS = {
   AUTH: {
     LOGIN: 'api/v1/auth/login',
     REGISTER: 'api/v1/auth/register',
-    FORGOT_PASSWORD: 'api/v1/auth/forgot-password',
-    // FORGOT_PASSWORD: 'api/v1/user/forgot-password',
-
+    resendVerificationCode:"api/v1/otp/resend",
     RESET_PASSWORD: 'api/v1/auth/reset-password',
     LOGOUT: 'api/v1/auth/logout',
     VERIFY_EMAIL: 'api/v1/otp/verify',
   },
 
   USER: {
-    PROFILE: '/users/profile',
-    UPDATE_PROFILE: '/users/profile',
-    CHANGE_PASSWORD: '/users/change-password',
+     FORGOT_PASSWORD: 'api/v1/user/forgot-password',
+    PROFILE: 'api/v1/user/profile',
+    UPDATE_PROFILE: 'api/v1/user/update',
+    // cái update cần làm lại 
+    CHANGE_PASSWORD: 'api/v1/user/change-password',
     GET_ALL: 'api/v1/user',
     CREATE: 'api/v1/user',
     GET_BY_ID: (id) => `api/v1/user/${id}`,

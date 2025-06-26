@@ -11,7 +11,8 @@ import {
   Shield,
   UserCheck,
   Activity,
-  FlameKindling
+  FlameKindling,
+  User
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -22,7 +23,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const getMenuItems = () => {
     const baseItems = [
-      { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' }
+      { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+      { id: 'profile', label: 'Hồ sơ cá nhân', icon: User, path: '/profile' },
+      { id: 'change-password', label: 'Đổi mật khẩu', icon: Settings, path: '/change-password' }
     ];
 
     switch (user?.role) {
@@ -59,7 +62,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       case 'PARENT':
         return [
           ...baseItems,
-          { id: 'children-health', label: 'Sức khỏe con em', icon: Heart, path: '/children-health' },
+          { id: 'children-health', label: 'Sức khỏe con', icon: Heart, path: '/children-health' },
           { id: 'vaccination-schedule', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccination-schedule' },
           { id: 'notifications', label: 'Thông báo', icon: UserCheck, path: '/notifications' }
         ];

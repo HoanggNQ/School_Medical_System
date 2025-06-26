@@ -16,15 +16,22 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    setTimeout(() => {
+    try {
+      await UserService.forgotPassword(email); // email là state chứa giá trị input
       setSent(true);
       toast({
         title: "Email đã được gửi!",
         description: "Vui lòng kiểm tra email để đặt lại mật khẩu.",
       });
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: error.message || "Không thể gửi email. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   if (sent) {

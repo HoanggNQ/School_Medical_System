@@ -52,8 +52,9 @@ const VerificationForm = ({ email, onSwitchToLogin }) => {
     
     try {
       const response = await AuthService.verifyEmail({
-        email,
-        otp: verificationCode
+        otp: verificationCode,
+        email
+       
       });
       
       toast({
@@ -63,15 +64,22 @@ const VerificationForm = ({ email, onSwitchToLogin }) => {
       
       onSwitchToLogin();
     } catch (error) {
-      console.error(error);
+      console.error(error); // Xem toàn bộ object
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Có lỗi xảy ra";
+        console.error(backendMessage);
       toast({
         title: "Lỗi xác thực",
-        description: error.message || "Mã xác thực không đúng. Vui lòng thử lại.",
+        description: backendMessage,
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
+    
   };
 
   const handleResendCode = async () => {
@@ -85,6 +93,7 @@ const VerificationForm = ({ email, onSwitchToLogin }) => {
       });
     } catch (error) {
       console.error(error);
+
       toast({
         title: "Lỗi",
         description: "Không thể gửi lại mã. Vui lòng thử lại sau.",
