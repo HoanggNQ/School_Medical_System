@@ -37,6 +37,15 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     private final SendMailService sendMailService;
 
     @Override
+    public void endCampaign(Long campaignId) {
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
+
+        campaign.setStatus("CLOSE");
+        campaignRepository.save(campaign);
+    }
+
+    @Override
     public HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById) {
         UserEntity creator = userRepository.findById(createdById)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + createdById));
@@ -268,6 +277,13 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     @Override
     public List<HealthCheckCampaignResponse> getAllCampaigns() {
         List<HealthCheckCampaignEntity> campaigns = campaignRepository.findAll();
+        return campaigns.stream()
+                .map(HealthCheckCampaignMapper::toDTO)
+                .toList();
+    }
+    @Override
+    public List<HealthCheckCampaignResponse> getAllCampaignsStart() {
+        List<HealthCheckCampaignEntity> campaigns = campaignRepository.getAllByHealthCheckCampaign();
         return campaigns.stream()
                 .map(HealthCheckCampaignMapper::toDTO)
                 .toList();

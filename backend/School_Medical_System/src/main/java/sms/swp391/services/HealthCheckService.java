@@ -7,6 +7,8 @@ import java.util.List;
 public interface HealthCheckService {
 
 
+    void endCampaign(Long campaignId);
+
     HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById);
 
     HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request);
@@ -28,6 +30,8 @@ public interface HealthCheckService {
     List<HealthCheckConsentResponse> getPendingConsentsApprovedByParent(Long parentId);
 
     List<HealthCheckCampaignResponse> getAllCampaigns();
+
+    List<HealthCheckCampaignResponse> getAllCampaignsStart();
 
     HealthCheckResultResponse getResultById(Long id);
 
