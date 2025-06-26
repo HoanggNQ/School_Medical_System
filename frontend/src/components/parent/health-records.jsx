@@ -14,8 +14,104 @@ import {
   Heart,
   AlertCircle,
 } from "lucide-react"
+import { useState, useEffect } from "react"
+import ParentService from "../../api/services/parent.service"
 
-const HealthRecords = ({ selectedStudent, healthRecords, formatValue, formatDate, getStatusColor }) => {
+const HealthRecords = ({ selectedStudent }) => {
+  const [healthRecords, setHealthRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Helper functions - moved inside component
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A"
+    }
+    return String(value)
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A"
+    try {
+      return new Date(dateString).toLocaleDateString("vi-VN")
+    } catch {
+      return "N/A"
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "bình thường":
+      case "hoàn thành":
+        return "bg-green-100 text-green-800"
+      case "cần theo dõi":
+      case "cần tiêm mũi tiếp theo":
+        return "bg-yellow-100 text-yellow-800"
+      case "bất thường":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  useEffect(() => {
+    const fetchHealthData = async () => {
+      if (!selectedStudent?.id) return
+
+      try {
+        setLoading(true)
+        // Fetch real health check data from API
+        const studentHealthCheck = await ParentService.getStudentHealthCheck(selectedStudent.id)
+        console.log("Fetched student health check:", studentHealthCheck.data)
+
+        // Transform API data to match our display format
+        const transformedHealthRecords = studentHealthCheck.data.map((record) => ({
+          id: record.id,
+          date: record.checkDate,
+          type: `Khám sức khỏe năm học ${record.academicYear}`,
+          doctor: record.checkedByName,
+          height: `${record.heightCm} cm`,
+          weight: `${record.weightKg} kg`,
+          bloodPressure: record.bloodPressure || "N/A",
+          heartRate: record.pulse ? `${record.pulse} bpm` : "N/A",
+          temperature: record.temperature ? `${record.temperature}°C` : "N/A",
+          vision: `Trái: ${record.visionLeft || "N/A"}, Phải: ${record.visionRight || "N/A"}`,
+          bmi: record.bmi,
+          dentalHealth: record.dentalHealth,
+          hearing: record.hearing,
+          overallRating: record.overallHealthRating,
+          recommendation: record.recommendation,
+          followUpRequired: record.followUpRequired,
+          followUpNotes: record.followUpNotes,
+          otherNotes: record.otherNotes,
+          notes: record.otherNotes || "Không có ghi chú đặc biệt",
+          status: record.overallHealthRating || "Bình thường",
+        }))
+
+        setHealthRecords(transformedHealthRecords)
+      } catch (error) {
+        console.error("Error fetching health data:", error)
+        setHealthRecords([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchHealthData()
+  }, [selectedStudent?.id])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-600">Đang tải dữ liệu khám sức khỏe...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-lg p-6">

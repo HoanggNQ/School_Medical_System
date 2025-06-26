@@ -1,8 +1,9 @@
 package sms.swp391.models.dtos.enums;
 
 
-public enum HealthDeclarationStatus {
+public enum MedicalStatus {
     PENDING,
     APPROVED,
-    REJECTED
+    REJECTED,
+    DONE
 }

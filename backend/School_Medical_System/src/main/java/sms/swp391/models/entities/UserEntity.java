@@ -81,12 +81,6 @@ public class UserEntity implements UserDetails {
         return authorities;
     }
 
-
-    // Helper methods
-    public void addNotification(NotificationEntity notification) {
-        notifications.add(notification);
-        notification.setCreator(this);
-    }
     @Override
     public String getUsername() {
         return email;

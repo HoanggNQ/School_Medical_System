@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.HealthCheckConsentRequestDTO;
 import sms.swp391.models.dtos.respones.HealthCheckConsentResponse;
 import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthCheckService;
@@ -15,7 +17,7 @@ import sms.swp391.services.HealthCheckService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/health-check-consent")
+@RequestMapping("/api/v1/health-check-consent")
 @RequiredArgsConstructor
 public class HealthCheckConsentController {
     private final HealthCheckService healthCheckService;
@@ -25,9 +27,9 @@ public class HealthCheckConsentController {
     public ResponseEntity<ResponseObject> updateConsent(
             @PathVariable Long id,
             @RequestBody HealthCheckConsentRequestDTO request,
-            @RequestParam Long parentId) {
+            @AuthenticationPrincipal UserEntity parentId) {
         try {
-            HealthCheckConsentResponse response = healthCheckService.updateConsent(id, request, parentId);
+            HealthCheckConsentResponse response = healthCheckService.updateConsent(id, request, parentId.getUserId());
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("UPDATE_CONSENT_SUCCESS")

@@ -2,8 +2,106 @@
 
 import { motion } from "framer-motion"
 import { Syringe, Calendar, User, Shield, CheckCircle, AlertCircle, Clock } from "lucide-react"
+import { useState, useEffect } from "react"
 
-const VaccinationHistory = ({ selectedStudent, vaccinationHistory, formatValue, formatDate, getStatusColor }) => {
+const VaccinationHistory = ({ selectedStudent }) => {
+  const [vaccinationHistory, setVaccinationHistory] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Helper functions - moved inside component
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A"
+    }
+    return String(value)
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A"
+    try {
+      return new Date(dateString).toLocaleDateString("vi-VN")
+    } catch {
+      return "N/A"
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "bình thường":
+      case "hoàn thành":
+        return "bg-green-100 text-green-800"
+      case "cần theo dõi":
+      case "cần tiêm mũi tiếp theo":
+        return "bg-yellow-100 text-yellow-800"
+      case "bất thường":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  useEffect(() => {
+    const fetchVaccinationData = async () => {
+      if (!selectedStudent?.id) return
+
+      try {
+        setLoading(true)
+        // TODO: Replace with actual API call when available
+        // const vaccinationData = await ParentService.getStudentVaccination(selectedStudent.id)
+
+        // Keep mock data for now
+        const mockVaccinationHistory = [
+          {
+            id: 1,
+            vaccineName: "Vắc-xin COVID-19 (Pfizer)",
+            date: "2024-01-20",
+            dose: "Mũi 3",
+            batchNumber: "FF1234",
+            location: "Trung tâm Y tế Quận 1",
+            doctor: "BS. Lê Văn C",
+            nextDue: "2024-07-20",
+            status: "Hoàn thành",
+            sideEffects: "Không có",
+          },
+          {
+            id: 2,
+            vaccineName: "Vắc-xin Cúm mùa",
+            date: "2023-10-15",
+            dose: "Mũi hàng năm",
+            batchNumber: "FLU2023",
+            location: "Trường THCS ABC",
+            doctor: "BS. Phạm Thị D",
+            nextDue: "2024-10-15",
+            status: "Hoàn thành",
+            sideEffects: "Đau nhẹ tại chỗ tiêm",
+          },
+        ]
+
+        setVaccinationHistory(mockVaccinationHistory)
+      } catch (error) {
+        console.error("Error fetching vaccination data:", error)
+        setVaccinationHistory([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchVaccinationData()
+  }, [selectedStudent?.id])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-600">Đang tải lịch sử tiêm vắc-xin...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-lg p-6">

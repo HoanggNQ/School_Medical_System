@@ -11,9 +11,7 @@ import SendMedicine from "./send-medicine"
 const StudentHealth = () => {
   const [students, setStudents] = useState([])
   const [selectedStudent, setSelectedStudent] = useState(null)
-  const [activeTab, setActiveTab] = useState("health-records") // "health-records", "vaccination", or "send-medicine"
-  const [healthRecords, setHealthRecords] = useState([])
-  const [vaccinationHistory, setVaccinationHistory] = useState([])
+  const [activeTab, setActiveTab] = useState("health-records")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,8 +24,6 @@ const StudentHealth = () => {
 
         if (studentRes.data.length > 0) {
           setSelectedStudent(studentRes.data[0])
-          // Fetch health data for the first student
-          await fetchHealthData(studentRes.data[0].id)
         }
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -39,108 +35,12 @@ const StudentHealth = () => {
     fetchData()
   }, [])
 
-  const fetchHealthData = async (studentId) => {
-    try {
-      // Fetch real health check data from API
-      const studentHealthCheck = await ParentService.getStudentHealthCheck(studentId)
-      console.log("Fetched student health check:", studentHealthCheck.data)
-
-      // Transform API data to match our display format
-      const transformedHealthRecords = studentHealthCheck.data.map((record) => ({
-        id: record.id,
-        date: record.checkDate,
-        type: `Khám sức khỏe năm học ${record.academicYear}`,
-        doctor: record.checkedByName,
-        height: `${record.heightCm} cm`,
-        weight: `${record.weightKg} kg`,
-        bloodPressure: record.bloodPressure || "N/A",
-        heartRate: record.pulse ? `${record.pulse} bpm` : "N/A",
-        temperature: record.temperature ? `${record.temperature}°C` : "N/A",
-        vision: `Trái: ${record.visionLeft || "N/A"}, Phải: ${record.visionRight || "N/A"}`,
-        bmi: record.bmi,
-        dentalHealth: record.dentalHealth,
-        hearing: record.hearing,
-        overallRating: record.overallHealthRating,
-        recommendation: record.recommendation,
-        followUpRequired: record.followUpRequired,
-        followUpNotes: record.followUpNotes,
-        otherNotes: record.otherNotes,
-        notes: record.otherNotes || "Không có ghi chú đặc biệt",
-        status: record.overallHealthRating || "Bình thường",
-      }))
-
-      setHealthRecords(transformedHealthRecords)
-
-      // Keep mock data for vaccination history (unchanged)
-      const mockVaccinationHistory = [
-        {
-          id: 1,
-          vaccineName: "Vắc-xin COVID-19 (Pfizer)",
-          date: "2024-01-20",
-          dose: "Mũi 3",
-          batchNumber: "FF1234",
-          location: "Trung tâm Y tế Quận 1",
-          doctor: "BS. Lê Văn C",
-          nextDue: "2024-07-20",
-          status: "Hoàn thành",
-          sideEffects: "Không có",
-        },
-        {
-          id: 2,
-          vaccineName: "Vắc-xin Cúm mùa",
-          date: "2023-10-15",
-          dose: "Mũi hàng năm",
-          batchNumber: "FLU2023",
-          location: "Trường THCS ABC",
-          doctor: "BS. Phạm Thị D",
-          nextDue: "2024-10-15",
-          status: "Hoàn thành",
-          sideEffects: "Đau nhẹ tại chỗ tiêm",
-        },
-      ]
-
-      setVaccinationHistory(mockVaccinationHistory)
-    } catch (error) {
-      console.error("Error fetching health data:", error)
-      setHealthRecords([])
-      setVaccinationHistory([])
-    }
-  }
-
-  const handleStudentChange = async (student) => {
-    setSelectedStudent(student)
-    await fetchHealthData(student.id)
-  }
-
+  // Helper functions for parent component only
   const formatValue = (value) => {
     if (value === null || value === undefined || value === "") {
       return "N/A"
     }
     return String(value)
-  }
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A"
-    try {
-      return new Date(dateString).toLocaleDateString("vi-VN")
-    } catch {
-      return "N/A"
-    }
-  }
-
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "bình thường":
-      case "hoàn thành":
-        return "bg-green-100 text-green-800"
-      case "cần theo dõi":
-      case "cần tiêm mũi tiếp theo":
-        return "bg-yellow-100 text-yellow-800"
-      case "bất thường":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
   }
 
   const getInitials = (name) => {
@@ -200,7 +100,7 @@ const StudentHealth = () => {
               {students.map((student) => (
                 <button
                   key={student.id}
-                  onClick={() => handleStudentChange(student)}
+                  onClick={() => setSelectedStudent(student)}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     selectedStudent?.id === student.id
                       ? "border-blue-500 bg-blue-50"
@@ -282,29 +182,11 @@ const StudentHealth = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {activeTab === "health-records" && (
-              <HealthRecords
-                selectedStudent={selectedStudent}
-                healthRecords={healthRecords}
-                formatValue={formatValue}
-                formatDate={formatDate}
-                getStatusColor={getStatusColor}
-              />
-            )}
+            {activeTab === "health-records" && <HealthRecords selectedStudent={selectedStudent} />}
 
-            {activeTab === "vaccination" && (
-              <VaccinationHistory
-                selectedStudent={selectedStudent}
-                vaccinationHistory={vaccinationHistory}
-                formatValue={formatValue}
-                formatDate={formatDate}
-                getStatusColor={getStatusColor}
-              />
-            )}
+            {activeTab === "vaccination" && <VaccinationHistory selectedStudent={selectedStudent} />}
 
-            {activeTab === "send-medicine" && (
-              <SendMedicine selectedStudent={selectedStudent} formatValue={formatValue} />
-            )}
+            {activeTab === "send-medicine" && <SendMedicine selectedStudent={selectedStudent} />}
           </motion.div>
         )}
       </div>

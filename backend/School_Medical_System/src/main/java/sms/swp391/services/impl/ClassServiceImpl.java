@@ -1,5 +1,6 @@
 package sms.swp391.services.impl;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sms.swp391.models.dtos.respones.ClassResponse;
@@ -52,6 +53,9 @@ public class ClassServiceImpl implements ClassService {
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Cannot find class with ID: %s", id)
                 ));
+        if (classEntity.getTotalstudent() != 0) {
+            throw new ActionFailedException("Cannot delete class with students assigned");
+        }
         try {
             classRepository.delete(classEntity);
         } catch (Exception e) {
@@ -63,6 +67,8 @@ public class ClassServiceImpl implements ClassService {
     public List<ClassResponse> getAllClasses() {
         try {
             List<ClassEntity> classes = classRepository.findAll();
+            // Bỏ dòng này nếu không muốn tính toán số sinh viên active
+            // classes.forEach(this::calculateActiveStudent);
             return classes.stream()
                     .map(ClassMapper::toDTO)
                     .collect(Collectors.toList());
@@ -76,9 +82,30 @@ public class ClassServiceImpl implements ClassService {
         try {
             ClassEntity classEntity = classRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException("Class not found"));
+            // Bỏ dòng này nếu không muốn tính toán số sinh viên active
+            // calculateActiveStudent(classEntity);
             return ClassMapper.toDTO(classEntity);
         } catch (Exception e) {
             throw new ActionFailedException(String.format("Failed to get class with ID: %s", id));
         }
+    }
+
+
+    private void calculateActiveStudent(ClassEntity classEntity) {
+        if (classEntity.getStudents() != null) {
+            int count = (int) classEntity.getStudents().stream()
+                .filter(s -> s.getUser() != null && s.getUser().getStatus() != null && s.getUser().getStatus().name().equals("ACTIVE"))
+                .count();
+            classEntity.setTotalstudent(count);
+        } else {
+            classEntity.setTotalstudent(0);
+        }
+    }
+
+    @PostConstruct
+    public void updateAllClassTotalStudents() {
+        List<ClassEntity> classes = classRepository.findAllWithStudentsAndUser();
+        classes.forEach(this::calculateActiveStudent);
+        classRepository.saveAll(classes);
     }
 }

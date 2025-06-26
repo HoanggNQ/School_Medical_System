@@ -4,6 +4,7 @@ package sms.swp391.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import sms.swp391.services.UserService;
 
 import java.util.List;
 
+
 @RequestMapping("/api/v1/user")
 @RestController
 @AllArgsConstructor
@@ -31,7 +33,7 @@ public class UserController {
 
     private final UserService userService;
     private final OTPService otpService;
-
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     @PutMapping(path = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -146,33 +148,38 @@ public class UserController {
 
     @PutMapping(path = "change-password")
     public ResponseEntity<ResponseObject> changePassword(@RequestBody ChangePassworDTO changePassworDTO) {
-        // First validate the old password and apply the new one
-        UserResponse userResponse = userService.changPassword(
-                changePassworDTO.getEmail(),
-                changePassworDTO.getOldPassword(),
-                changePassworDTO.getNewPassword(),
-                changePassworDTO.getNewPasswordConfirm());
+        try {
+            UserResponse userResponse = userService.changPassword(
+                    changePassworDTO.getEmail(),
+                    changePassworDTO.getOldPassword(),
+                    changePassworDTO.getNewPassword(),
+                    changePassworDTO.getNewPasswordConfirm());
 
-        // Optionally: send OTP confirmation for sensitive changes
-        otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.PASSWORD.toString());
-
-        return ResponseEntity.ok(
-                ResponseObject.builder()
-                        .code("PASSWORD_CHANGED_OTP_SENT")
-                        .message("Password changed successfully. OTP sent to confirm change.")
-                        .status(HttpStatus.OK)
-                        .isSuccess(true)
-                        .data(userResponse)
-                        .build()
-        );
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("PASSWORD_CHANGED_SUCCESS")
+                            .message("Password changed successfully.")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(userResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("CHANGE_PASSWORD_FAILED")
+                            .message("Failed to change password: " + e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
     }
+
 
     @PutMapping(path = "forget-password")
     public ResponseEntity<ResponseObject> forgetPass(@RequestParam String email) {
-        // Check if user exists
         UserResponse user = userService.checkUser(email);
-
-        // Generate OTP for password reset
         otpService.generateOTPCode(email, TemplateEnum.PASSWORD.toString());
 
         return ResponseEntity.ok(

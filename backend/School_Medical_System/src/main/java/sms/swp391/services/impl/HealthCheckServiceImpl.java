@@ -3,6 +3,7 @@ package sms.swp391.services.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.respones.*;
 import sms.swp391.models.entities.*;
@@ -15,9 +16,13 @@ import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
 
-import java.time.Instant;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     private final HealthCheckCampaignRepository campaignRepository;
     private final HealthCheckConsentRepository consentRepository;
     private final HealthCheckResultRepository resultRepository;
+    private final HealthConsultationScheduleRepository consultationScheduleRepository;
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final SendMailService sendMailService;
@@ -38,7 +44,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckCampaignEntity campaign = HealthCheckCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
         campaign.setStatus("PENDING");
-        campaign.setCreatedAt(Instant.now());
+        campaign.setCreatedAt(LocalDate.now());
 
         HealthCheckCampaignEntity savedCampaign = campaignRepository.save(campaign);
         return HealthCheckCampaignMapper.toDTO(savedCampaign);
@@ -81,13 +87,15 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             consentRepository.save(consent);
 
             // Send email notification to parent
-            sendMailService.sendMail(
-                    null,
+            sendMailService.sendConsentRequestEmail(
                     student.getParent().getEmail(),
-                    null,
-                    "Medical Examination Consent Required",
-                    generateConsentEmailBody(campaign, student)
+                    student.getParent().getFullname(),
+                    student.getUser().getFullname(),
+                    campaign.getName(),
+                    campaign.getCheckDate().toString(),
+                    campaign.getLocation()
             );
+
         }
 
         campaign.setStatus("ACTIVE");
@@ -104,61 +112,122 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         }
 
         consent.setConsentStatus(request.getStatus());
-        consent.setResponseDate(Instant.now());
+        consent.setResponseDate(LocalDate.now());
 
         HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
         return HealthCheckConsentMapper.toDTO(updatedConsent);
     }
-
     @Override
     public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
-        // Verify campaign
+        // Lấy chiến dịch
         HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
 
-        // Get student first
+        // Lấy học sinh
         StudentEntity student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new NotFoundException("Student not found"));
 
-        // Get checker
+        // Lấy người kiểm tra
         UserEntity checker = userRepository.findById(checkedById)
                 .orElseThrow(() -> new NotFoundException("Checker not found"));
 
-        // Verify consent after we have both campaign and student
+        // Kiểm tra consent
         HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
         if (consent == null || !consent.getConsentStatus().equals("APPROVED")) {
             throw new BusinessException("Parent consent not approved for this examination");
         }
 
-        // Create and populate result
+        // Tạo kết quả
         HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(request);
         result.setHealthCheckCampaign(campaign);
         result.setStudent(student);
         result.setCheckedBy(checker);
-        result.setCheckDate(Instant.now());
+        result.setCheckDate(LocalDate.now());
         result.setAcademicYear(getCurrentAcademicYear());
 
-        // Calculate BMI if height and weight are provided
         if (request.getHeightCm() != null && request.getWeightKg() != null) {
             result.setBmi(calculateBMI(request.getHeightCm(), request.getWeightKg()));
         }
 
-        // Save result
+        // Lưu kết quả
         HealthCheckResultEntity savedResult = resultRepository.save(result);
 
-        // Send notification if follow-up is required
-        if (savedResult.getFollowUpRequired()) {
-            sendMailService.sendMail(
-                    null,
+        // Nếu cần theo dõi hoặc có bất thường
+        if (Boolean.TRUE.equals(savedResult.getFollowUpRequired()) || isAbnormal(savedResult)) {
+            // Xác định scheduleTime
+            LocalDateTime scheduleTime;
+            if (request.getScheduleTime() != null) {
+                scheduleTime = request.getScheduleTime(); // ✅ dùng thời gian được nhập trực tiếp
+            } else {
+                int daysLater = extractFollowUpDays(savedResult.getFollowUpNotes());
+                scheduleTime = LocalDate.now().plusDays(daysLater).atTime(8, 0); // Mặc định 08:00
+            }
+
+            // Tạo lịch tư vấn
+            HealthConsultationScheduleEntity schedule = HealthConsultationScheduleEntity.builder()
+                    .student(student)
+                    .result(savedResult)
+                    .reason("Kết quả kiểm tra y tế bất thường")
+                    .scheduleTime(scheduleTime)
+                    .status(MedicalStatus.PENDING)
+                    .build();
+
+            consultationScheduleRepository.save(schedule);
+
+            // Gửi mail
+            sendMailService.sendConsultationScheduleEmail(
                     student.getParent().getEmail(),
-                    null,
-                    "Medical Examination Results - Follow-up Required",
-                    generateResultEmailBody(savedResult)
+                    student.getUser().getFullname(),
+                    scheduleTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")),
+                    schedule.getReason()
             );
         }
 
         return HealthCheckResultMapper.toDTO(savedResult);
     }
+
+
+    private int extractFollowUpDays(String followUpNotes) {
+        if (followUpNotes == null) return 1;
+
+        Pattern pattern = Pattern.compile("(\\d+)\\s*ngày", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(followUpNotes);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return 1;
+    }
+
+    private boolean isAbnormal(HealthCheckResultEntity result) {
+        if (result.getTemperature() != null && result.getTemperature().compareTo(BigDecimal.valueOf(38.0)) > 0) {
+            return true;
+        }
+
+        if (result.getBloodPressure() != null && result.getBloodPressure().contains("/")) {
+            String[] parts = result.getBloodPressure().split("/");
+            try {
+                int systolic = Integer.parseInt(parts[0].trim());
+                int diastolic = Integer.parseInt(parts[1].trim());
+                if (systolic > 140 || diastolic > 90) {
+                    return true;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        try {
+            if (result.getVisionLeft() != null && Float.parseFloat(result.getVisionLeft()) < 5.0f) {
+                return true;
+            }
+            if (result.getVisionRight() != null && Float.parseFloat(result.getVisionRight()) < 5.0f) {
+                return true;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        return false;
+    }
+
 
     @Override
     public HealthCheckCampaignResponse getCampaignById(Long id) {
@@ -222,6 +291,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     @Override
     public List<HealthCheckResultResponse> getResultsByStudent(Long studentId) {
         List<HealthCheckResultEntity> results = resultRepository.findByStudentId(studentId);
+        if (results.isEmpty()) throw  new NotFoundException("Result not found with id: " + studentId);
         return results.stream()
                 .map(HealthCheckResultMapper::toDTO)
                 .toList();
@@ -231,57 +301,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     private String getCurrentAcademicYear() {
         int currentYear = LocalDate.now().getYear();
         return currentYear + "-" + (currentYear + 1);
-    }
-
-
-    private String generateConsentEmailBody(HealthCheckCampaignEntity campaign, StudentEntity student) {
-        return String.format("""
-        <html>
-        <body>
-            Dear %s,<br><br>
-            
-            Your consent is required for %s's participation in the upcoming medical examination:<br><br>
-            
-            <strong>Campaign:</strong> %s<br>
-            <strong>Date:</strong> %s<br>
-            <strong>Location:</strong> %s<br><br>
-            
-            Please log in to the system to provide your consent and any special requirements.<br><br>
-            
-            Best regards,<br>
-            School Medical Team
-        </body>
-        </html>
-        """,
-                student.getParent().getFullname(),
-                student.getUser().getFullname(),
-                campaign.getName(),
-                campaign.getCheckDate(),
-                campaign.getLocation()
-        );
-    }
-    private String generateResultEmailBody(HealthCheckResultEntity result) {
-        return String.format("""
-        <html>
-        <body>
-            Dear Parent,<br><br>
-            
-            The medical examination results for %s require follow-up attention:<br><br>
-            
-            <strong>Recommendation:</strong> %s<br>
-            <strong>Follow-up Notes:</strong> %s<br><br>
-            
-            Please schedule a consultation at your earliest convenience.<br><br>
-            
-            Best regards,<br>
-            School Medical Team
-        </body>
-        </html>
-        """,
-                result.getStudent().getUser().getFullname(),
-                result.getRecommendation(),
-                result.getFollowUpNotes()
-        );
     }
 
 

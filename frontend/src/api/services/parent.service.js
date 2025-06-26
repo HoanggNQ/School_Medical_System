@@ -34,9 +34,28 @@ const ParentService = {
         }
     },
 
+    getStudentVaccination: async (studentID) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_STUDENT_VACCINATION(studentID));
+            return response.data;
+        }
+        catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
     getAllMedicine: async () => {
         try {
             const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_ALL_MEDICINE);
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    postMedicineRequest: async (data) => {
+        try {
+            const response = await axiosInstance.post(API_ENDPOINTS.PARENT.POST_MEDICINE_REQUEST, data);
             return response.data;
         } catch (error) {
             throw handleApiError(error);

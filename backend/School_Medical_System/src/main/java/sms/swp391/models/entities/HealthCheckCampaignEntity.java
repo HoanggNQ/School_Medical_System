@@ -1,5 +1,6 @@
 package sms.swp391.models.entities;
 
+import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -57,7 +58,7 @@ public class HealthCheckCampaignEntity {
 
     @ColumnDefault("now()")
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDate createdAt;
 
     @OneToMany(mappedBy = "healthCheckCampaign")
     private Set<HealthCheckConsentEntity> healthCheckConsents = new LinkedHashSet<>();

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
@@ -17,6 +18,7 @@ import sms.swp391.models.dtos.respones.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
+import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 import sms.swp391.utils.UserMapper;
 
@@ -30,6 +32,8 @@ public class UserServiceImpl implements UserService {
 
 
     private final UserRepository userRepository;
+    private final OTPService oTPService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -180,11 +184,9 @@ public class UserServiceImpl implements UserService {
 
     }
     @Override
-    public UserResponse changPassword(String email,String oldPassword, String newPassword, String newPasswordConfirm) {
+    public UserResponse changPassword(String email, String oldPassword, String newPassword, String newPasswordConfirm) {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         if (!passwordEncoder.matches(oldPassword, userEntity.getPassword())) {
             throw new ValidationFailedException("Old password is incorrect");
@@ -193,8 +195,13 @@ public class UserServiceImpl implements UserService {
         if (!newPassword.equals(newPasswordConfirm)) {
             throw new ValidationFailedException("New password and confirmation do not match");
         }
+
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+
         return UserMapper.toDTO(userEntity);
     }
+
     @Override
     public void setPassword(String email, String password) {
         UserEntity userEntity = userRepository.findByEmail(email)

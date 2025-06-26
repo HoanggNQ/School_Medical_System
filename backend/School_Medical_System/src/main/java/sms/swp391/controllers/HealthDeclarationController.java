@@ -10,7 +10,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
 import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
@@ -237,7 +237,7 @@ public class HealthDeclarationController {
     @Operation(summary = "Tìm kiếm khai báo y tế", description = "Lọc và phân trang danh sách khai báo y tế theo trạng thái, học sinh, người khai báo, và năm học.")
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchByFilters(
-            @RequestParam(required = false) HealthDeclarationStatus status,
+            @RequestParam(required = false) MedicalStatus status,
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long declaredById,
             @RequestParam(required = false) String academicYear,
@@ -271,7 +271,7 @@ public class HealthDeclarationController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ResponseObject> updateStatus(
             @PathVariable Long id,
-            @RequestParam HealthDeclarationStatus status) {
+            @RequestParam MedicalStatus status) {
         try {
             HealthDeclarationResponseDTO updated = healthDeclarationService.updateStatus(id, status);
             return ResponseEntity.ok(

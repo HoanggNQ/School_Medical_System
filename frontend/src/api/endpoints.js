@@ -34,7 +34,10 @@ const API_ENDPOINTS = {
   PARENT: {
     GET_PARENT_PROFILE: '/api/v1/user/profile',
     GET_STUDENT_HEALTH_CHECK: (studentId) => `/api/v1/health-check-result/students/${studentId}/results`,
-    GET_ALL_MEDICINE: `api/v1/medications`
+    GET_ALL_MEDICINE: `api/v1/medications`,
+    POST_MEDICINE_REQUEST: '/api/v1/medication-requests',
+    GET_STUDENT_VACCINATION: (studentId) => `/api/v1/vaccination/students/${studentId}/vaccinations`,
+
   },
 
   STUDENT: {

@@ -2,7 +2,7 @@ package sms.swp391.models.dtos.requests;
 
 import lombok.*;
 import jakarta.validation.constraints.*;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 
 @Data
@@ -11,7 +11,6 @@ import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
 @AllArgsConstructor
 public class HealthDeclarationCreateDTO {
 
-    private Long id;
     @NotNull
     private Long studentId;
 
@@ -19,7 +18,7 @@ public class HealthDeclarationCreateDTO {
     private Long declaredById;
 
     @NotNull
-    private HealthDeclarationStatus status;
+    private MedicalStatus status;
 
     @NotNull
     private String academicYear;

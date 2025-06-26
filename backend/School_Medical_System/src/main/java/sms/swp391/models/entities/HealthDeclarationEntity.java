@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -34,11 +34,11 @@ public class HealthDeclarationEntity {
 
     @ColumnDefault("now()")
     @Column(name = "declaration_date")
-    private Instant declarationDate;
+    private LocalDate declarationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private HealthDeclarationStatus status;
+    private MedicalStatus status;
 
     @Size(max = 9)
     @NotNull

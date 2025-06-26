@@ -1,9 +1,9 @@
 package sms.swp391.models.dtos.respones;
 
 import lombok.*;
-import sms.swp391.models.dtos.enums.HealthDeclarationStatus;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -17,8 +17,8 @@ public class HealthDeclarationResponseDTO {
     private String studentName;
     private String declaredByName;
 
-    private Instant declarationDate;
-    private HealthDeclarationStatus status;
+    private LocalDate declarationDate;
+    private MedicalStatus status;
     private String academicYear;
     private Float height;
     private Float weight;

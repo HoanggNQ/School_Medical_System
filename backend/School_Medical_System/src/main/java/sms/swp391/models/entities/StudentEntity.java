@@ -9,6 +9,7 @@ import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 @Getter
@@ -72,17 +73,13 @@ public class StudentEntity {
     @Column(name = "other_medical_notes", columnDefinition = "TEXT")
     private String otherMedicalNotes;
 
-    @Column(name = "emergency_contact")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, String> emergencyContact;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private Instant createdAt;
+    private LocalDate createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDate updatedAt;
 
     // Relationships
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -110,5 +107,12 @@ public class StudentEntity {
     @Builder.Default
     private Set<VaccinationRecordEntity> vaccinationRecords = new HashSet<>();
 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<MedicalEventEntity> medicalEvents = new HashSet<>();
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<HealthConsultationScheduleEntity> healthConsultationSchedules = new HashSet<>();
 
 }

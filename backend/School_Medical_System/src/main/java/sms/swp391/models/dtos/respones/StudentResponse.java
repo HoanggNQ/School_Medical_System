@@ -1,7 +1,7 @@
 package sms.swp391.models.dtos.respones;
 
 import lombok.*;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
@@ -18,7 +18,13 @@ public class StudentResponse {
     private String bloodType;
     private String geneticDiseases;
     private String otherMedicalNotes;
-    private Map<String, String> emergencyContact;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
+    private String emergencyContactName;
+    private String emergencyContactPhone;
+    private String currentMedications;
+    private String chronicDiseases;
+    private String allergies;
+    private Float height;
+    private Float weight;
 }

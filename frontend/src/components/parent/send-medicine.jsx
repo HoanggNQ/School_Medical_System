@@ -1,52 +1,145 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Pill, Send, AlertCircle } from "lucide-react"
+import { Pill, Send, AlertCircle, Plus, X, Search } from "lucide-react"
+import ParentService from "../../api/services/parent.service"
 
-const SendMedicine = ({ selectedStudent, formatValue }) => {
+const SendMedicine = ({ selectedStudent }) => {
+  const [availableMedicines, setAvailableMedicines] = useState([])
+  const [selectedMedicines, setSelectedMedicines] = useState([])
   const [medicineForm, setMedicineForm] = useState({
-    medicineName: "",
-    dosage: "",
-    frequency: "",
-    duration: "",
-    startDate: "",
-    endDate: "",
-    instructions: "",
-    reason: "",
     notes: "",
+    priority: "MEDIUM",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showMedicineSelector, setShowMedicineSelector] = useState(false)
+
+  // Helper function
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A"
+    }
+    return String(value)
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return ""
+    return new Date(dateString).toISOString().split("T")[0]
+  }
 
   useEffect(() => {
-        console.log("Selected student:", selectedStudent)
-  },[])
-  const handleMedicineFormChange = (field, value) => {
+    const fetchMedicines = async () => {
+      try {
+        setLoading(true)
+        const medicineRes = await ParentService.getAllMedicine()
+        console.log("Fetched medicines:", medicineRes.data)
+
+        // Access the content array from the API response
+        const medicines = medicineRes.data?.content || []
+        setAvailableMedicines(medicines)
+      } catch (error) {
+        console.error("Error fetching medicines:", error)
+        setAvailableMedicines([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMedicines()
+  }, [])
+
+  const handleFormChange = (field, value) => {
     setMedicineForm((prev) => ({
       ...prev,
       [field]: value,
     }))
   }
 
-  const handleMedicineSubmit = async (e) => {
+  const addMedicine = (medicine) => {
+    const newMedication = {
+      medicationId: medicine.id,
+      medicineName: medicine.medicationName,
+      medicineCategory: medicine.category,
+      medicineDosageForm: medicine.dosageForm,
+      prescriptionRequired: medicine.prescriptionRequired,
+      activeIngredient: medicine.activeIngredient,
+      dosage: "",
+      frequency: "",
+      startDate: "",
+      endDate: "",
+      quantity: 1,
+      providedByParent: true,
+    }
+    setSelectedMedicines([...selectedMedicines, newMedication])
+    setShowMedicineSelector(false)
+    setSearchTerm("")
+  }
+
+  const removeMedicine = (index) => {
+    setSelectedMedicines(selectedMedicines.filter((_, i) => i !== index))
+  }
+
+  const updateMedicine = (index, field, value) => {
+    const updated = [...selectedMedicines]
+    updated[index] = { ...updated[index], [field]: value }
+    setSelectedMedicines(updated)
+  }
+
+  const filteredMedicines = availableMedicines.filter(
+    (medicine) =>
+      medicine.medicationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      medicine.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      medicine.dosageForm?.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (selectedMedicines.length === 0) {
+      alert("Vui lòng chọn ít nhất một loại thuốc")
+      return
+    }
+
+    // Validate required fields for each medicine
+    const invalidMedicines = selectedMedicines.filter(
+      (med) => !med.dosage || !med.frequency || !med.startDate || !med.quantity,
+    )
+
+    if (invalidMedicines.length > 0) {
+      alert("Vui lòng điền đầy đủ thông tin cho tất cả các loại thuốc")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
+      const requestData = {
+        studentId: selectedStudent.id,
+        notes: medicineForm.notes,
+        priority: medicineForm.priority,
+        medications: selectedMedicines.map((med) => ({
+          medicationId: med.medicationId,
+          dosage: med.dosage,
+          frequency: med.frequency,
+          startDate: med.startDate,
+          endDate: med.endDate || null,
+          quantity: Number.parseInt(med.quantity),
+          providedByParent: med.providedByParent,
+        })),
+      }
+
+      console.log("Submitting medicine request:", requestData)
+
       // Call API to submit medicine request
-      // const response = await ParentService.sendMedicineRequest(selectedStudent.id, medicineForm)
-      console.log("Medicine form submitted:", medicineForm)
+      const response = await ParentService.postMedicineRequest(requestData)
 
       // Reset form after successful submission
+      setSelectedMedicines([])
       setMedicineForm({
-        medicineName: "",
-        dosage: "",
-        frequency: "",
-        duration: "",
-        startDate: "",
-        endDate: "",
-        instructions: "",
-        reason: "",
         notes: "",
+        priority: "MEDIUM",
       })
 
       alert("Đã gửi yêu cầu thuốc thành công!")
@@ -56,6 +149,60 @@ const SendMedicine = ({ selectedStudent, formatValue }) => {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "HIGH":
+        return "bg-red-100 text-red-800"
+      case "MEDIUM":
+        return "bg-yellow-100 text-yellow-800"
+      case "LOW":
+        return "bg-green-100 text-green-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getPriorityLabel = (priority) => {
+    switch (priority) {
+      case "HIGH":
+        return "Cao"
+      case "MEDIUM":
+        return "Trung bình"
+      case "LOW":
+        return "Thấp"
+      default:
+        return "Trung bình"
+    }
+  }
+
+  const getPrescriptionBadge = (required) => {
+    if (required) {
+      return (
+        <span className="inline-flex px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+          Cần đơn thuốc
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+        Không cần đơn
+      </span>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+            <span className="ml-2 text-gray-600">Đang tải danh sách thuốc...</span>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -72,144 +219,302 @@ const SendMedicine = ({ selectedStudent, formatValue }) => {
           </div>
         </div>
 
-        <form onSubmit={handleMedicineSubmit} className="space-y-6">
-          {/* Medicine Information */}
-          <div className="bg-purple-50 p-6 rounded-lg">
-            <h4 className="text-lg font-semibold text-purple-900 mb-4">Thông tin thuốc</h4>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Priority and Notes */}
+          <div className="bg-blue-50 p-6 rounded-lg">
+            <h4 className="text-lg font-semibold text-blue-900 mb-4">Thông tin chung</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tên thuốc <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={medicineForm.medicineName}
-                  onChange={(e) => handleMedicineFormChange("medicineName", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Ví dụ: Paracetamol"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Liều lượng <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={medicineForm.dosage}
-                  onChange={(e) => handleMedicineFormChange("dosage", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Ví dụ: 500mg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tần suất sử dụng <span className="text-red-500">*</span>
+                  Mức độ ưu tiên <span className="text-red-500">*</span>
                 </label>
                 <select
                   required
-                  value={medicineForm.frequency}
-                  onChange={(e) => handleMedicineFormChange("frequency", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  value={medicineForm.priority}
+                  onChange={(e) => handleFormChange("priority", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Chọn tần suất</option>
-                  <option value="1-time-day">1 lần/ngày</option>
-                  <option value="2-times-day">2 lần/ngày</option>
-                  <option value="3-times-day">3 lần/ngày</option>
-                  <option value="as-needed">Khi cần thiết</option>
-                  <option value="other">Khác</option>
+                  <option value="LOW">Thấp</option>
+                  <option value="MEDIUM">Trung bình</option>
+                  <option value="HIGH">Cao</option>
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian sử dụng</label>
-                <input
-                  type="text"
-                  value={medicineForm.duration}
-                  onChange={(e) => handleMedicineFormChange("duration", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Ví dụ: 7 ngày"
-                />
+              <div className="flex items-center">
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(medicineForm.priority)}`}
+                >
+                  Mức độ: {getPriorityLabel(medicineForm.priority)}
+                </span>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú chung</label>
+              <textarea
+                rows={3}
+                value={medicineForm.notes}
+                onChange={(e) => handleFormChange("notes", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Ghi chú về tình trạng sức khỏe hoặc yêu cầu đặc biệt..."
+              />
             </div>
           </div>
 
-          {/* Date Range */}
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <h4 className="text-lg font-semibold text-blue-900 mb-4">Thời gian sử dụng</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ngày bắt đầu <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={medicineForm.startDate}
-                  onChange={(e) => handleMedicineFormChange("startDate", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
-                <input
-                  type="date"
-                  value={medicineForm.endDate}
-                  onChange={(e) => handleMedicineFormChange("endDate", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+          {/* Medicine Selection */}
+          <div className="bg-purple-50 p-6 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-purple-900">Chọn thuốc</h4>
+              <button
+                type="button"
+                onClick={() => setShowMedicineSelector(!showMedicineSelector)}
+                className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Thêm thuốc</span>
+              </button>
             </div>
+
+            {/* Medicine Selector Modal */}
+            {showMedicineSelector && (
+              <div className="mb-6 p-4 border border-purple-200 rounded-lg bg-white">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Search className="w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm thuốc theo tên, loại hoặc dạng bào chế..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMedicineSelector(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {filteredMedicines.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">
+                      {availableMedicines.length === 0
+                        ? "Không có thuốc nào trong hệ thống"
+                        : "Không tìm thấy thuốc nào"}
+                    </p>
+                  ) : (
+                    filteredMedicines.map((medicine) => (
+                      <div
+                        key={medicine.id}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                        onClick={() => addMedicine(medicine)}
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="font-medium text-gray-900">{medicine.medicationName}</h5>
+                            {getPrescriptionBadge(medicine.prescriptionRequired)}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                            <p>
+                              <span className="font-medium">Loại:</span> {formatValue(medicine.category)}
+                            </p>
+                            <p>
+                              <span className="font-medium">Dạng:</span> {formatValue(medicine.dosageForm)}
+                            </p>
+                          </div>
+                          {medicine.activeIngredient && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              <span className="font-medium">Hoạt chất:</span> {medicine.activeIngredient}
+                            </p>
+                          )}
+                        </div>
+                        <Plus className="w-5 h-5 text-purple-600 ml-3" />
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {availableMedicines.length > 0 && (
+                  <div className="mt-4 text-sm text-gray-500 text-center">
+                    Hiển thị {filteredMedicines.length} / {availableMedicines.length} thuốc
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Selected Medicines */}
+            {selectedMedicines.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Pill className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p>Chưa chọn thuốc nào</p>
+                <p className="text-sm">Nhấn "Thêm thuốc" để bắt đầu</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h5 className="font-medium text-purple-900">Thuốc đã chọn ({selectedMedicines.length})</h5>
+                {selectedMedicines.map((medicine, index) => (
+                  <div key={index} className="border border-purple-200 rounded-lg p-4 bg-white">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h6 className="font-medium text-gray-900">{medicine.medicineName}</h6>
+                          <div className="flex items-center space-x-2">
+                            {getPrescriptionBadge(medicine.prescriptionRequired)}
+                            <button
+                              type="button"
+                              onClick={() => removeMedicine(index)}
+                              className="p-1 text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                          <p>
+                            <span className="font-medium">Loại:</span> {formatValue(medicine.medicineCategory)}
+                          </p>
+                          <p>
+                            <span className="font-medium">Dạng:</span> {formatValue(medicine.medicineDosageForm)}
+                          </p>
+                        </div>
+                        {medicine.activeIngredient && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            <span className="font-medium">Hoạt chất:</span> {medicine.activeIngredient}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Liều lượng <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={medicine.dosage}
+                          onChange={(e) => updateMedicine(index, "dosage", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="Ví dụ: 500mg"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Tần suất <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          required
+                          value={medicine.frequency}
+                          onChange={(e) => updateMedicine(index, "frequency", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                          <option value="">Chọn tần suất</option>
+                          <option value="1-time-day">1 lần/ngày</option>
+                          <option value="2-times-day">2 lần/ngày</option>
+                          <option value="3-times-day">3 lần/ngày</option>
+                          <option value="as-needed">Khi cần thiết</option>
+                          <option value="other">Khác</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Số lượng <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          min="1"
+                          value={medicine.quantity}
+                          onChange={(e) => updateMedicine(index, "quantity", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="1"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Ngày bắt đầu <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={medicine.startDate}
+                          onChange={(e) => updateMedicine(index, "startDate", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc</label>
+                        <input
+                          type="date"
+                          value={medicine.endDate}
+                          onChange={(e) => updateMedicine(index, "endDate", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={medicine.providedByParent}
+                            onChange={(e) => updateMedicine(index, "providedByParent", e.target.checked)}
+                            className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                          />
+                          <span className="text-sm text-gray-700">Phụ huynh cung cấp</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Instructions and Reason */}
-          <div className="bg-green-50 p-6 rounded-lg">
-            <h4 className="text-lg font-semibold text-green-900 mb-4">Hướng dẫn và lý do</h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hướng dẫn sử dụng <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={medicineForm.instructions}
-                  onChange={(e) => handleMedicineFormChange("instructions", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Ví dụ: Uống sau ăn, với một cốc nước đầy"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lý do sử dụng <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={medicineForm.reason}
-                  onChange={(e) => handleMedicineFormChange("reason", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Ví dụ: Sốt, đau đầu"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú thêm</label>
-                <textarea
-                  rows={3}
-                  value={medicineForm.notes}
-                  onChange={(e) => handleMedicineFormChange("notes", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                  placeholder="Ghi chú thêm (nếu có)"
-                />
+          {/* Summary */}
+          {selectedMedicines.length > 0 && (
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Tóm tắt yêu cầu</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Học sinh:</p>
+                  <p className="font-medium">{formatValue(selectedStudent.user?.fullName)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Mức độ ưu tiên:</p>
+                  <span
+                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(medicineForm.priority)}`}
+                  >
+                    {getPriorityLabel(medicineForm.priority)}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Số loại thuốc:</p>
+                  <p className="font-medium">{selectedMedicines.length} loại</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Tổng số lượng:</p>
+                  <p className="font-medium">
+                    {selectedMedicines.reduce((total, med) => total + Number.parseInt(med.quantity || 0), 0)} viên/gói
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Thuốc cần đơn:</p>
+                  <p className="font-medium">
+                    {selectedMedicines.filter((med) => med.prescriptionRequired).length} loại
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Phụ huynh cung cấp:</p>
+                  <p className="font-medium">{selectedMedicines.filter((med) => med.providedByParent).length} loại</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Important Notice */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -219,9 +524,11 @@ const SendMedicine = ({ selectedStudent, formatValue }) => {
                 <h5 className="font-medium text-yellow-800 mb-1">Lưu ý quan trọng</h5>
                 <ul className="text-sm text-yellow-700 space-y-1">
                   <li>• Chỉ gửi thuốc khi thực sự cần thiết và theo chỉ định của bác sĩ</li>
+                  <li>• Thuốc có nhãn "Cần đơn thuốc" phải có đơn từ bác sĩ</li>
                   <li>• Đảm bảo thuốc còn hạn sử dụng và được bảo quản đúng cách</li>
                   <li>• Ghi rõ tên học sinh trên bao bì thuốc</li>
                   <li>• Nhà trường sẽ xem xét và phê duyệt yêu cầu trước khi thực hiện</li>
+                  <li>• Vui lòng kiểm tra kỹ thông tin trước khi gửi</li>
                 </ul>
               </div>
             </div>
@@ -231,26 +538,20 @@ const SendMedicine = ({ selectedStudent, formatValue }) => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                setSelectedMedicines([])
                 setMedicineForm({
-                  medicineName: "",
-                  dosage: "",
-                  frequency: "",
-                  duration: "",
-                  startDate: "",
-                  endDate: "",
-                  instructions: "",
-                  reason: "",
                   notes: "",
+                  priority: "MEDIUM",
                 })
-              }
+              }}
               className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              Xóa form
+              Xóa tất cả
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || selectedMedicines.length === 0}
               className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
             >
               {isSubmitting ? (
@@ -261,7 +562,7 @@ const SendMedicine = ({ selectedStudent, formatValue }) => {
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>Gửi yêu cầu</span>
+                  <span>Gửi yêu cầu ({selectedMedicines.length} thuốc)</span>
                 </>
               )}
             </button>
