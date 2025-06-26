@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface HealthCheckCampaignRepository extends JpaRepository<HealthCheckCampaignEntity, Long> {
-    @Query("SELECT h FROM HealthCheckCampaignEntity h ")
+    @Query("SELECT h FROM HealthCheckCampaignEntity h WHERE h.status = 'ACTIVE'")
     List<HealthCheckCampaignEntity> getAllByHealthCheckCampaign();
 }
