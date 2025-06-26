@@ -23,6 +23,7 @@ public class MedicationMapper {
                 .medicationInformation(entity.getMedicationInformation())
                 .medicationImg(entity.getMedicationImg())
                 .manufacturer(entity.getManufacturer())
+                .quantity(entity.getQuantity())
                 .createdAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null)
                 .updatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null)
                 .build();
@@ -41,6 +42,7 @@ public class MedicationMapper {
                 .medicationInformation(dto.getMedicationInformation())
                 .medicationImg(dto.getMedicationImg())
                 .manufacturer(dto.getManufacturer())
+                .quantity(dto.getQuantity())
                 .createdAt(LocalDate.now())
                 .build();
     }
@@ -57,6 +59,7 @@ public class MedicationMapper {
         entity.setMedicationInformation(dto.getMedicationInformation());
         entity.setMedicationImg(dto.getMedicationImg());
         entity.setManufacturer(dto.getManufacturer());
+        entity.setQuantity(dto.getQuantity());
         entity.setUpdatedAt(LocalDate.now());
     }
 }
