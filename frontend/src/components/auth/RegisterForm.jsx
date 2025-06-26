@@ -81,7 +81,8 @@ const RegisterForm = ({ onSwitchToLogin, onSwitchToVerification }) => {
       console.error(error);
       toast({
         title: "Lỗi đăng ký",
-        description: error.message || "Đăng ký thất bại. Vui lòng thử lại.",
+        description: error?.response?.data?.message ||
+        error?.message || "Đăng ký thất bại. Vui lòng thử lại.",
         variant: "destructive"
       });
     } finally {

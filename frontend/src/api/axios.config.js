@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_REACT_APP_API_URL;
+const baseURL = 'https://school-medical-system.onrender.com';
 
 const axiosInstance = axios.create({
   baseURL,

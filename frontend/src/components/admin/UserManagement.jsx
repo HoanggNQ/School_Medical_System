@@ -30,6 +30,7 @@ const UserManagement = () => {
     username: '',
     password: '',
     confirmPassword: ''
+    
   });
 
   const [users, setUsers] = useState([]);
@@ -55,6 +56,19 @@ const UserManagement = () => {
       setLoading(false);
     }
   };
+
+  // Filter users based on search term and role filter
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = 
+      user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phoneNumber?.includes(searchTerm);
+    
+    const matchesRole = filterRole === 'all' || user.roleName === filterRole;
+    
+    return matchesSearch && matchesRole;
+  });
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">
@@ -254,12 +268,12 @@ const UserManagement = () => {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Danh sách người dùng</CardTitle>
+            <CardTitle>Danh sách người dùng ({filteredUsers.length} người dùng)</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-80">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Tìm kiếm người dùng..."
+                  placeholder="Tìm kiếm theo tên, email, số điện thoại..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -271,7 +285,7 @@ const UserManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="all">Tất cả vai trò</SelectItem>
                   <SelectItem value="STUDENT">Học sinh</SelectItem>
                   <SelectItem value="PARENT">Phụ huynh</SelectItem>
                   <SelectItem value="SCHOOL_NURSE">Y tá</SelectItem>
@@ -296,51 +310,62 @@ const UserManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.fullName}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.dob}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.roleName === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                      user.roleName === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
-                        user.roleName === 'SCHOOL_NURSE' ? 'bg-green-100 text-green-800' :
-                          user.roleName === 'STUDENT' ? 'bg-blue-100 text-blue-800' :
-                            'bg-orange-100 text-orange-800'
-                      }`}>
-                      {user.roleName}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {user.phoneNumber && <span> {user.phoneNumber}</span>}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                      {userStatus[user.status]}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(user)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteUser(user.userId)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+              {filteredUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan="7" className="text-center py-8 text-gray-500">
+                    {searchTerm || filterRole !== 'all' 
+                      ? 'Không tìm thấy người dùng nào phù hợp với bộ lọc'
+                      : 'Không có người dùng nào'
+                    }
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredUsers.map((user) => (
+                  <TableRow key={user.userId}>
+                    <TableCell className="font-medium">{user.fullName || 'N/A'}</TableCell>
+                    <TableCell>{user.email || user.userName || 'N/A'}</TableCell>
+                    <TableCell>{user.dob || 'N/A'}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.roleName === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                        user.roleName === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
+                          user.roleName === 'SCHOOL_NURSE' ? 'bg-green-100 text-green-800' :
+                            user.roleName === 'STUDENT' ? 'bg-blue-100 text-blue-800' :
+                              'bg-orange-100 text-orange-800'
+                        }`}>
+                        {user.roleName}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {user.phoneNumber ? <span>{user.phoneNumber}</span> : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                        {userStatus[user.status] || user.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditModal(user)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.userId)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
