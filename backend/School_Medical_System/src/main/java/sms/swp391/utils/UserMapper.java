@@ -2,7 +2,7 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
-import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
 
@@ -19,6 +19,7 @@ public class UserMapper {
                 .dob(entity.getDob())
                 .email(entity.getEmail())
                 .fullName(entity.getFullname())
+                .avatarUrl(entity.getAvatarurl())
                 .status(entity.getStatus().toString())
                 .roleName(entity.getRoleName())
                 .address(entity.getAddress())
@@ -33,6 +34,7 @@ public class UserMapper {
                 .address(request.getAddress())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
+                .avatarurl(request.getAvatarUrl())
                 .dob(request.getDob())
                 .gender(request.getGender())
                 .password(request.getPassword()) // You should hash this elsewhere!
@@ -47,6 +49,7 @@ public class UserMapper {
                 .address(dto.getAddress())
                 .gender(dto.getGender())
                 .phoneNumber(dto.getPhoneNumber())
+                .avatarurl(dto.getAvatarUrl())
                 .dob(dto.getDob())
                 .email(dto.getEmail())
                 .fullname(dto.getFullname())

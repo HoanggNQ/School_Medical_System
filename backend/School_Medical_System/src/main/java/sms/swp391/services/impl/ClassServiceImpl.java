@@ -3,7 +3,7 @@ package sms.swp391.services.impl;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sms.swp391.models.dtos.respones.ClassResponse;
+import sms.swp391.models.dtos.responses.ClassResponse;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.NotFoundException;

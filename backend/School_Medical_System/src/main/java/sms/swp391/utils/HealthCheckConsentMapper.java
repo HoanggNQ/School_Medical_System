@@ -2,7 +2,7 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.HealthCheckConsentRequestDTO;
-import sms.swp391.models.dtos.respones.HealthCheckConsentResponse;
+import sms.swp391.models.dtos.responses.HealthCheckConsentResponse;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
 import sms.swp391.models.dtos.requests.MedicationRequestDetailDTO;
-import sms.swp391.models.dtos.respones.MedicationRequestResponseDTO;
+import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
 import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;

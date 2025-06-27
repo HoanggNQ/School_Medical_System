@@ -1,25 +1,23 @@
-package sms.swp391.models.dtos.respones;
+package sms.swp391.models.dtos.responses;
 
 import lombok.*;
-import java.time.LocalDate;
-import java.util.Map;
 
-@Getter
-@Setter
-@Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class StudentResponse {
-    private Long id;
-    private UserResponse user;      // All user attributes
-    private Long classId;
-    private UserResponse parent;    // All parent user attributes
+@Builder
+public class StudentGetResponse {
+    private Long userId;
+    private String fullName;
+    private String dob;
+    private String gender;
+    private String className;
+    private String phoneNumber;
+    private String address;
     private String studentCode;
     private String bloodType;
     private String geneticDiseases;
     private String otherMedicalNotes;
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String currentMedications;

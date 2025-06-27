@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
-import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
+import sms.swp391.models.dtos.responses.HealthDeclarationResponseDTO;
 import sms.swp391.models.entities.HealthDeclarationEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;

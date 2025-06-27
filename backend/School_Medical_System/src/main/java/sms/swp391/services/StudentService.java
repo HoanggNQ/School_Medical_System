@@ -1,14 +1,11 @@
 package sms.swp391.services;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.requests.StudentUpdateRequest;
-import sms.swp391.models.dtos.respones.StudentResponse;
-import sms.swp391.models.dtos.respones.StudentGetResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import sms.swp391.models.dtos.respones.PaginatedStudentResponse;
+import sms.swp391.models.dtos.responses.StudentResponse;
+import sms.swp391.models.dtos.responses.StudentGetResponse;
+import sms.swp391.models.dtos.responses.PaginatedStudentResponse;
 
 import java.util.List;
 

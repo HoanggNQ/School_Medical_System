@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
-import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
+import sms.swp391.models.dtos.responses.HealthDeclarationResponseDTO;
 
 import java.util.List;
 import java.util.Optional;

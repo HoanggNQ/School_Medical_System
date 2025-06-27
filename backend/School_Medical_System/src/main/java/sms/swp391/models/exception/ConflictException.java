@@ -1,7 +1,7 @@
 package sms.swp391.models.exception;
 
 import org.springframework.http.HttpStatus;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.ResponseObject;
 
 public class ConflictException extends SchoolMedicalSystemException {
     public ConflictException(String message) {

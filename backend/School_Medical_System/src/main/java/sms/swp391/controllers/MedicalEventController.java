@@ -11,13 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.MedicalEventRequestDTO;
-import sms.swp391.models.dtos.respones.MedicalEventResponse;
-import sms.swp391.models.dtos.respones.PaginatedContentResponse;
-import sms.swp391.models.dtos.respones.PaginatedMedicalEventResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.MedicalEventResponse;
+import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.services.MedicalEventService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/medical-event")

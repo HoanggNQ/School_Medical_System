@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
-import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.HealthDeclarationResponseDTO;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthDeclarationService;
 
