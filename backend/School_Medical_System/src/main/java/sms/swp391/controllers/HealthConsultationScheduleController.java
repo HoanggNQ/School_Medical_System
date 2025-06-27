@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthConsultationScheduleRequestDTO;
 import sms.swp391.models.dtos.responses.HealthConsultationScheduleResponseDTO;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.services.HealthConsultationScheduleService;
 
 import java.util.List;

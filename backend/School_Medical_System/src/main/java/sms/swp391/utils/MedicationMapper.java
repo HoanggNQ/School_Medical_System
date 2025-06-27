@@ -2,7 +2,7 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.MedicationRequestDTO;
-import sms.swp391.models.dtos.respones.MedicationResponseDTO;
+import sms.swp391.models.dtos.responses.MedicationResponseDTO;
 import sms.swp391.models.entities.MedicationEntity;
 import java.time.LocalDate;
 

@@ -1,7 +1,7 @@
 package sms.swp391.models.exception;
 
 
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.ResponseObject;
 
 public class SchoolMedicalSystemException extends RuntimeException {
     protected ResponseObject errorResponse;

@@ -2,11 +2,8 @@ package sms.swp391.services;
 
 import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.requests.MedicalEventRequestDTO;
-import sms.swp391.models.dtos.respones.MedicalEventResponse;
-import sms.swp391.models.dtos.respones.PaginatedContentResponse;
-import sms.swp391.models.dtos.respones.PaginatedMedicalEventResponse;
-
-import java.util.List;
+import sms.swp391.models.dtos.responses.MedicalEventResponse;
+import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
 
 public interface MedicalEventService {
     MedicalEventResponse create(MedicalEventRequestDTO request);

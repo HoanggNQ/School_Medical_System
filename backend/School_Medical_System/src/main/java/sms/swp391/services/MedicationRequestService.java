@@ -3,7 +3,7 @@ package sms.swp391.services;
 
 import jakarta.transaction.Transactional;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
-import sms.swp391.models.dtos.respones.MedicationRequestResponseDTO;
+import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
 import sms.swp391.models.entities.UserEntity;
 
 import java.util.List;

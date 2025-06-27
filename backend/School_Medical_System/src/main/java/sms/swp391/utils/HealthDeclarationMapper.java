@@ -3,10 +3,9 @@ package sms.swp391.utils;
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
-import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
+import sms.swp391.models.dtos.responses.HealthDeclarationResponseDTO;
 import sms.swp391.models.entities.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @RequiredArgsConstructor
