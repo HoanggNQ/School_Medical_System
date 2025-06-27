@@ -12,16 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.requests.StudentUpdateRequest;
-import sms.swp391.models.dtos.respones.ResponseObject;
-import sms.swp391.models.dtos.respones.StudentResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.models.dtos.responses.StudentResponse;
 import sms.swp391.services.StudentService;
-import sms.swp391.models.dtos.respones.StudentGetResponse;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.SortDefault;
+import sms.swp391.models.dtos.responses.StudentGetResponse;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Page;
-import sms.swp391.models.dtos.respones.PaginatedStudentResponse;
+import sms.swp391.models.dtos.responses.PaginatedStudentResponse;
 
 import java.util.List;
 

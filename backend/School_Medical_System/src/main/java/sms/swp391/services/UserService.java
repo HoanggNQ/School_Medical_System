@@ -5,8 +5,8 @@ import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
-import sms.swp391.models.dtos.respones.PaginatedUserResponse;
-import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.dtos.responses.PaginatedUserResponse;
+import sms.swp391.models.dtos.responses.UserResponse;
 
 import java.util.List;
 

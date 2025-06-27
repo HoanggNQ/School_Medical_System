@@ -1,6 +1,6 @@
 package sms.swp391.utils;
 
-import sms.swp391.models.dtos.respones.ClassResponse;
+import sms.swp391.models.dtos.responses.ClassResponse;
 import sms.swp391.models.entities.ClassEntity;
 
 public class ClassMapper {

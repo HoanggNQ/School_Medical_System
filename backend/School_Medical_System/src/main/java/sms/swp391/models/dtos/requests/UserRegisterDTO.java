@@ -34,6 +34,7 @@ public class UserRegisterDTO {
 
     @NotEmpty(message = "gender not null!!!")
     private String gender;
+    private String avatarUrl;
 
     @NotNull(message = "Dob not null!!!")
     @Past(message = "Dob must be in the past!!!")

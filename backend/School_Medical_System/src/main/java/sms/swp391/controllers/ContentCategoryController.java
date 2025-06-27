@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.ContentCategoryRequestDTO;
-import sms.swp391.models.dtos.respones.ContentCategoryResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.ContentCategoryResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.services.ContentCategoryService;
 
 import java.util.List;

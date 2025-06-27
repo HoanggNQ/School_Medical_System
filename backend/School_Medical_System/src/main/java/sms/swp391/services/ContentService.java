@@ -2,11 +2,10 @@
     package sms.swp391.services;
 
     import sms.swp391.models.dtos.requests.ContentRequest;
-    import sms.swp391.models.dtos.respones.ContentResponse;
-    import org.springframework.data.domain.Page;
+    import sms.swp391.models.dtos.responses.ContentResponse;
     import org.springframework.data.domain.Pageable;
-    import sms.swp391.models.dtos.respones.PaginatedContentResponse;
-    import sms.swp391.models.entities.ContentEntity;
+    import sms.swp391.models.dtos.responses.PaginatedContentResponse;
+
     import java.util.List;
 
     public interface ContentService {

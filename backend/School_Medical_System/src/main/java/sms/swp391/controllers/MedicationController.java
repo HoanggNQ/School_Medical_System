@@ -1,5 +1,6 @@
 package sms.swp391.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,13 +9,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.requests.MedicationRequestDTO;
-import sms.swp391.models.dtos.respones.MedicationResponseDTO;
+import sms.swp391.models.dtos.responses.MedicationResponseDTO;
 import sms.swp391.models.entities.MedicationEntity;
 import sms.swp391.repositories.MedicationRepository;
 import sms.swp391.services.MedicationService;
 import sms.swp391.utils.MedicationExcelExporter;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.ResponseObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,10 +30,12 @@ public class MedicationController {
     private final MedicationService medicationService;
     private final MedicationRepository medicationRepository;
 
-    @PostMapping
-    public ResponseEntity<ResponseObject> create(@RequestBody MedicationRequestDTO dto) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseObject> createMedication(
+            @RequestPart("medication") @Valid MedicationRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
-            MedicationResponseDTO created = medicationService.create(dto);
+            MedicationResponseDTO created = medicationService.create(dto,image);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("CREATE_MEDICATION_SUCCESS")
@@ -54,10 +58,13 @@ public class MedicationController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody MedicationRequestDTO dto) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseObject> updateMedication(
+            @PathVariable Long id,
+            @RequestPart("medication") @Valid MedicationRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
-            MedicationResponseDTO updated = medicationService.update(id, dto);
+            MedicationResponseDTO updated = medicationService.update(id, dto,image);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("UPDATE_MEDICATION_SUCCESS")
