@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.ClassCreateDTO;
-import sms.swp391.models.dtos.respones.ClassResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.ClassResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.services.ClassService;
 

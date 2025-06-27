@@ -7,13 +7,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.LoginDTO;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
-import sms.swp391.models.dtos.respones.JwtResponse;
-import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.dtos.responses.FileObjectResponse;
+import sms.swp391.models.dtos.responses.JwtResponse;
+import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.AuthFailedException;
@@ -22,6 +24,7 @@ import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.UserRepository;
 import sms.swp391.security.JwtService;
 import sms.swp391.services.AuthService;
+import sms.swp391.services.FileDatabaseService;
 import sms.swp391.services.OTPService;
 import sms.swp391.utils.UserMapper;
 
@@ -36,9 +39,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OTPService oTPService;
+    private final FileDatabaseService fileDatabaseService;
 
     @Override
-    public UserResponse registerUser(UserRegisterDTO userRegisterDTO) {
+    public UserResponse registerUser(UserRegisterDTO userRegisterDTO, MultipartFile avatar) {
         Optional<UserEntity> userEntity = userRepository.findByEmail(userRegisterDTO.getEmail());
 
         if (userEntity.isPresent()) {
@@ -67,6 +71,10 @@ public class AuthServiceImpl implements AuthService {
         userCreate.setStatus(StatusEnum.VERIFY);
         userCreate.setRoleName(RoleEnum.PARENT);
         userCreate.setPassword(password);
+        if (avatar != null && !avatar.isEmpty()) {
+            FileObjectResponse foRes = fileDatabaseService.uploadFile(avatar);
+            userCreate.setAvatarurl(foRes.getUrl());
+        }
         userRepository.save(userCreate);
 
         return UserMapper.toDTO(userCreate);

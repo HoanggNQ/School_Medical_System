@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
-import sms.swp391.models.dtos.respones.VaccinationCampaignResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.VaccinationService;
 

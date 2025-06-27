@@ -1,7 +1,6 @@
 package sms.swp391.utils;
 
-import sms.swp391.models.dtos.requests.ContentRequest;
-import sms.swp391.models.dtos.respones.ContentResponse;
+import sms.swp391.models.dtos.responses.ContentResponse;
 import sms.swp391.models.entities.ContentEntity;
 
 public class ContentMapper {

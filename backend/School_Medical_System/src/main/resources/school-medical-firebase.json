@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "schoolmedicalsystemapplication",
+  "private_key_id": "d9d35b0d6cb98327aeedbd0bc11dda369b4322d5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC0tQtejE6c0QRw\nrFI2lVt//aeB/xdDt1LR1jZZtpt+GTxGejV5FQpzPUZvxUdbJqOgb7HjWL7Ern7J\now6Spyzx8TsqX0UhwBlcKqs1lPBktqxL/4/APsV/Zvz7YLAXQm69dIOMVEFlBvRd\nDG6MfzGGbMB2leArVlfsQKb82LaS5A/WbuJ1HUwJN5pAUQO9M01iLAHkfWoF2NAR\nCkmLTLjku7L/BQdhGIIcMEIpcj8SIaupZ/O1CEHn4oYz9x69SiGK+yVPh8/DPifE\nmnvFvAGozk4Tzp0RwLXpAcrx4Up36RpeHuu5gwoRAcbgKSFA7YuCA8zXePmvquEI\niqU5FMc9AgMBAAECggEAMp4h5KaNoKyFv1/tmX+FxVjScn33UM8JomCMEd4uOQit\nkxpJXzTPHA+WatmKTtSIcfjHjeS+bw5n0mhbvSWZ192YEprkHPuXvvLuyVACdFuc\n8J7R7+pFXRYGmA1x1doUdfosnQK+3KMxkNzaHH3GbB6LXMxHoiwJ7dIAVIQJxCQo\nbjD4aO3BkasPOGf8FrUuCEsKWaGztX1VSbhLrwZEkhv2bXBfYu1WF2jAM/z0UpaE\nDI3QwsGrypDjEe4hwfA7RPe6odFqQg6xain1COhl9N9gS5hkval5U6NeIsaEc2Vg\n9c0MRdwhAm59YrL/SjG9NIEl03vhC6Mm8CjTfvcwqwKBgQDaxqbwgvltapcmgmWZ\nJY+rodRxxpBDEEGt4qmq6skdXPE5e9NOjc8SLVxE42AomKiSijdxXJYcrOXWJvhT\nRqAVfBu5sQA7+j5ZjoxGxQjLX5RLnV+C1WxUVTF/aaG3RhUSU5T0kM1NEDzj6LCB\nzKhtbwXqfLqn56M5bronaMFvXwKBgQDTdDWL4cevPd9v+iVzGm2QD+mjMtYon4UJ\nIn6xpNSw3k6K7KwEbqz8NG5ZCYEUqTlNvH5sg2CWctlpScJIoNBdopLsHDQdJzwn\na8KtQSm07t0an4j1kqQJX0IcxZPSc5bnhnotrBxFyMBCYmtBqabqvQHhwoyOL1yJ\n1JGuC9y64wKBgCn4pHxN1EZehaL4rz8jSp3VzSkKvBBxpPgUHRLSOkUs2IZ7r/1J\nDWniU+pPaNpA904twBc6eP4FWY6tKUTorruQdM06HN5k0uNhip3lHRvPOWcMSQ+T\nnFXNhlJ4VHMRuecrK8+DnC9lpxjeQkaUmddszki/JxwhP1o8WPBIk5unAoGAfdHk\nGrvZ6bhTP3oE1pyfHN2bE/Sn4bwpmOnhoSqHNEbTTW7OXETOwbMhBfHV0Mlww4Sp\nZUA3NM5Z94BgDn9B/LVD3yJZEA/Mh1hjmlvvyS1oevL6t8TtvnXkDOKztsH4xQML\nqCmFGTD+1YFieMvN+ldEy2TL5b7gvVKy7HE6gikCgYAfVvCQF3NQNU1GO+QiwolQ\nZNSe3s0YPqoynzovU98suGgB2AFqNUEzFU3i9Ec+pQ/FAMIpdG1KQm4DP/VOqNC1\n+dh9NV9ehvkJ0YjzJyS6GENGf0eERdWLlkmezqYri+aguFHkyTgSl08UcA3GhvnL\nVyh8jb08hnqpy1PtHWaEqw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@schoolmedicalsystemapplication.iam.gserviceaccount.com",
+  "client_id": "114973957788255016043",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40schoolmedicalsystemapplication.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

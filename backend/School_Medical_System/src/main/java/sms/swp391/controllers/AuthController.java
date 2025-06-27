@@ -2,18 +2,20 @@ package sms.swp391.controllers;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.LoginDTO;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
-import sms.swp391.models.dtos.respones.JwtResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
-import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.dtos.responses.JwtResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.ConflictException;
@@ -92,10 +94,14 @@ public class AuthController {
     }
 
 
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseObject> register(@RequestPart("user") UserRegisterDTO userRegisterDTO) {
+    @PostMapping(
+            value = "/register",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseObject> register(
+            @RequestPart("user") @Valid UserRegisterDTO userRegisterDTO,
+            @RequestPart(value = "avatar", required = false) MultipartFile avatar) {
         try {
-            UserResponse userResponse = authService.registerUser(userRegisterDTO);
+            UserResponse userResponse = authService.registerUser(userRegisterDTO,avatar);
             otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.ACCOUNT.toString());
 
             return ResponseEntity.ok().body(
