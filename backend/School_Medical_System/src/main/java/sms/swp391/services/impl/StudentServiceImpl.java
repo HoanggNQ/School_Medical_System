@@ -13,6 +13,7 @@ import sms.swp391.models.dtos.responses.StudentGetResponse;
 import sms.swp391.models.dtos.responses.StudentResponse;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.models.entities.StudentEntity;
+import sms.swp391.models.entities.StudentHealthProfileEntity;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.NotFoundException;
@@ -78,17 +79,26 @@ public class StudentServiceImpl implements StudentService {
                     .classEntity(classEntity)
                     .parent(parent)
                     .studentCode(generateStudentCode())
+                    .emergencyContactName(request.getEmergencyContactName())
+                    .emergencyContactPhone(request.getEmergencyContactPhone())
+                    .build();
+
+// Tạo hồ sơ sức khỏe
+            StudentHealthProfileEntity profile = StudentHealthProfileEntity.builder()
+                    .student(student)
                     .bloodType(request.getBloodType())
                     .geneticDiseases(request.getGeneticDiseases())
                     .otherMedicalNotes(request.getOtherMedicalNotes())
-                    .emergencyContactName(request.getEmergencyContactName())
-                    .emergencyContactPhone(request.getEmergencyContactPhone())
                     .currentMedications(request.getCurrentMedications())
                     .chronicDiseases(request.getChronicDiseases())
                     .allergies(request.getAllergies())
                     .height(request.getHeight())
                     .weight(request.getWeight())
                     .build();
+
+            student.setHealthProfile(profile);
+            studentRepository.save(student);
+
 
             studentRepository.save(student);
 
@@ -124,16 +134,25 @@ public class StudentServiceImpl implements StudentService {
             existing.setParent(parent);
         }
 
-        existing.setBloodType(request.getBloodType());
-        existing.setGeneticDiseases(request.getGeneticDiseases());
-        existing.setOtherMedicalNotes(request.getOtherMedicalNotes());
+
         existing.setEmergencyContactName(request.getEmergencyContactName());
         existing.setEmergencyContactPhone(request.getEmergencyContactPhone());
-        existing.setCurrentMedications(request.getCurrentMedications());
-        existing.setChronicDiseases(request.getChronicDiseases());
-        existing.setAllergies(request.getAllergies());
-        existing.setHeight(request.getHeight());
-        existing.setWeight(request.getWeight());
+        StudentHealthProfileEntity profile = existing.getHealthProfile();
+        if (profile == null) {
+            profile = new StudentHealthProfileEntity();
+            profile.setStudent(existing);
+            existing.setHealthProfile(profile);
+        }
+
+        profile.setBloodType(request.getBloodType());
+        profile.setGeneticDiseases(request.getGeneticDiseases());
+        profile.setOtherMedicalNotes(request.getOtherMedicalNotes());
+        profile.setCurrentMedications(request.getCurrentMedications());
+        profile.setChronicDiseases(request.getChronicDiseases());
+        profile.setAllergies(request.getAllergies());
+        profile.setHeight(request.getHeight());
+        profile.setWeight(request.getWeight());
+
 
         try {
             StudentEntity updated = studentRepository.save(existing);

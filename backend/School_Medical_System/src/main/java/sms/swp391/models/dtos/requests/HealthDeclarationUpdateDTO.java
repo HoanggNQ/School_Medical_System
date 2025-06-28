@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,8 +21,8 @@ public class HealthDeclarationUpdateDTO {
     @Pattern(regexp = "\\d{4}-\\d{4}", message = "Academic year must be in format YYYY-YYYY")
     private String academicYear;
 
-    private Float height;
-    private Float weight;
+    private BigDecimal height;
+    private BigDecimal weight;
     private String bloodType;
     private String allergies;
     private String chronicDiseases;

@@ -3,6 +3,7 @@ package sms.swp391.models.dtos.responses;
 import lombok.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -20,8 +21,8 @@ public class HealthDeclarationResponseDTO {
     private LocalDate declarationDate;
     private MedicalStatus status;
     private String academicYear;
-    private Float height;
-    private Float weight;
+    private BigDecimal height;
+    private BigDecimal weight;
     private String bloodType;
     private String allergies;
     private String chronicDiseases;

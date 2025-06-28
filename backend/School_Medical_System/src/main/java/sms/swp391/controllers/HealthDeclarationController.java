@@ -15,6 +15,7 @@ import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
 import sms.swp391.models.dtos.responses.HealthDeclarationResponseDTO;
 import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.models.dtos.responses.StudentHealthProfileResponseDTO;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthDeclarationService;
 
@@ -232,6 +233,14 @@ public class HealthDeclarationController {
                             .build()
             );
         }
+    }
+
+    @Operation(summary = "Xem hồ sơ sức khỏe của học sinh ")
+
+    @GetMapping("/students/{studentId}/profile")
+    public ResponseEntity<StudentHealthProfileResponseDTO> getHealthProfile(@PathVariable Long studentId) {
+        StudentHealthProfileResponseDTO dto = healthDeclarationService.getStudentHealthProfile(studentId);
+        return ResponseEntity.ok(dto);
     }
 
     @Operation(summary = "Tìm kiếm khai báo y tế", description = "Lọc và phân trang danh sách khai báo y tế theo trạng thái, học sinh, người khai báo, và năm học.")
