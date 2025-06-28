@@ -200,7 +200,7 @@ public class StudentServiceImpl implements StudentService {
         if (search != null && !search.isEmpty()) {
             studentPage = studentRepository.searchStudents(search, validatedPageable);
         } else {
-            studentPage = studentRepository.findAll(validatedPageable);
+            studentPage = studentRepository.findAllActive(validatedPageable);
         }
 
         List<StudentGetResponse> studentDTOs = studentPage.stream()
