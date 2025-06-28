@@ -89,7 +89,7 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         return HealthConsultationScheduleResponseDTO.builder()
                 .id(entity.getId())
                 .studentName(entity.getStudent().getUser().getFullname())
-                .resultId(entity.getResult().getId())
+                .resultId(entity.getResult().getResultId())
                 .scheduleTime(entity.getScheduleTime())
                 .reason(entity.getReason())
                 .status(entity.getStatus())

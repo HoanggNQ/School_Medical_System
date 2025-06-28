@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sms.swp391.models.dtos.requests.NotificationCreateDTO;
 import sms.swp391.models.dtos.requests.NotificationUpdateDTO;
-import sms.swp391.models.dtos.respones.NotificationResponse;
+import sms.swp391.models.dtos.responses.NotificationResponse;
 import sms.swp391.models.entities.NotificationEntity;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.NotFoundException;

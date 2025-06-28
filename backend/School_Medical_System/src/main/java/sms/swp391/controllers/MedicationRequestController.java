@@ -6,11 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
-import sms.swp391.models.dtos.respones.MedicationRequestResponseDTO;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.services.MedicationRequestService;
 

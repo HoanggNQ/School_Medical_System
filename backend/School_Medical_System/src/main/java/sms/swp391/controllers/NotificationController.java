@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.NotificationCreateDTO;
 import sms.swp391.models.dtos.requests.NotificationUpdateDTO;
-import sms.swp391.models.dtos.respones.NotificationResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.NotificationResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.services.NotificationService;
 
 import java.util.List;

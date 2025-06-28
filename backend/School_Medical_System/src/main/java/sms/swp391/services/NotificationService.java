@@ -3,7 +3,7 @@ package sms.swp391.services;
 import org.springframework.stereotype.Service;
 import sms.swp391.models.dtos.requests.NotificationCreateDTO;
 import sms.swp391.models.dtos.requests.NotificationUpdateDTO;
-import sms.swp391.models.dtos.respones.NotificationResponse;
+import sms.swp391.models.dtos.responses.NotificationResponse;
 
 
 import java.util.List;

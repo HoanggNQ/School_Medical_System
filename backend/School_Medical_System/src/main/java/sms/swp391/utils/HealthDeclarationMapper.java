@@ -1,37 +1,59 @@
 package sms.swp391.utils;
 
-import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.HealthDeclarationCreateDTO;
 import sms.swp391.models.dtos.requests.HealthDeclarationUpdateDTO;
-import sms.swp391.models.dtos.respones.HealthDeclarationResponseDTO;
+import sms.swp391.models.dtos.responses.HealthDeclarationResponseDTO;
+import sms.swp391.models.dtos.responses.StudentHealthProfileResponseDTO;
 import sms.swp391.models.entities.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
-@RequiredArgsConstructor
 public class HealthDeclarationMapper {
-
+    public static StudentHealthProfileResponseDTO toDTOProfile(StudentHealthProfileEntity entity) {
+        if (entity == null) return null;
+        StudentHealthProfileResponseDTO dto = new StudentHealthProfileResponseDTO();
+        dto.setStudentId(entity.getStudent().getHealthProfile().getStudentId());
+        dto.setHeightCm(entity.getHeight());
+        dto.setWeightKg(entity.getWeight());
+        dto.setBmi(entity.getBmi());
+        dto.setVisionLeft(entity.getVisionLeft());
+        dto.setVisionRight(entity.getVisionRight());
+        dto.setHearing(entity.getHearing());
+        dto.setDentalHealth(entity.getDentalHealth());
+        dto.setBloodPressure(entity.getBloodPressure());
+        dto.setPulse(entity.getPulse());
+        dto.setTemperature(entity.getTemperature());
+        dto.setBloodType(entity.getBloodType());
+        dto.setGeneticDiseases(entity.getGeneticDiseases());
+        dto.setAllergies(entity.getAllergies());
+        dto.setChronicDiseases(entity.getChronicDiseases());
+        dto.setCurrentMedications(entity.getCurrentMedications());
+        dto.setOtherMedicalNotes(entity.getOtherMedicalNotes());
+        return dto;
+    }
     public static HealthDeclarationResponseDTO toDTO(HealthDeclarationEntity entity) {
         if (entity == null) return null;
 
+        StudentEntity student = entity.getStudent();
+        StudentHealthProfileEntity profile = student.getHealthProfile();
+
         return HealthDeclarationResponseDTO.builder()
                 .id(entity.getId())
-                .studentId(entity.getStudent().getId())
+                .studentId(student.getId())
                 .declaredById(entity.getDeclaredBy().getUserId())
-                .studentName(entity.getStudent().getUser().getFullname())
+                .studentName(student.getUser().getFullname())
                 .declaredByName(entity.getDeclaredBy().getFullname())
                 .declarationDate(entity.getDeclarationDate())
                 .status(entity.getStatus())
                 .academicYear(entity.getAcademicYear())
-                .height(entity.getStudent().getHeight())
-                .weight(entity.getStudent().getWeight())
-                .bloodType(entity.getStudent().getBloodType())
-                .allergies(entity.getStudent().getAllergies())
-                .chronicDiseases(entity.getStudent().getChronicDiseases())
-                .currentMedications(entity.getStudent().getCurrentMedications())
-                .emergencyContactName(entity.getStudent().getEmergencyContactName())
-                .emergencyContactPhone(entity.getStudent().getEmergencyContactPhone())
+                .height(profile != null ? profile.getHeight() : null)
+                .weight(profile != null ? profile.getWeight() : null)
+                .bloodType(profile != null ? profile.getBloodType() : null)
+                .allergies(profile != null ? profile.getAllergies() : null)
+                .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
+                .currentMedications(profile != null ? profile.getCurrentMedications() : null)
+                .emergencyContactName(student.getEmergencyContactName())
+                .emergencyContactPhone(student.getEmergencyContactPhone())
                 .build();
     }
 
@@ -40,99 +62,73 @@ public class HealthDeclarationMapper {
                                                         UserEntity declaredBy) {
         if (dto == null) return null;
 
-        HealthDeclarationEntity entity = HealthDeclarationEntity.builder()
+        updateStudentHealthInfo(student, dto);
+
+        return HealthDeclarationEntity.builder()
                 .student(student)
                 .declaredBy(declaredBy)
-                .status(dto.getStatus())
                 .academicYear(dto.getAcademicYear())
                 .declarationDate(LocalDate.now())
                 .build();
-
-        // Update student health information
-        updateStudentHealthInfo(student, dto);
-
-        return entity;
     }
 
-    public static void updateEntityFromCreateDTO(HealthDeclarationEntity entity, HealthDeclarationCreateDTO dto) {
+    public static void updateEntityFromCreateDTO(HealthDeclarationEntity entity,
+                                                 HealthDeclarationCreateDTO dto) {
         if (entity == null || dto == null) return;
 
-        entity.setStatus(dto.getStatus());
         entity.setAcademicYear(dto.getAcademicYear());
-
-        // Update student health information
-        if (entity.getStudent() != null) {
-            updateStudentHealthInfo(entity.getStudent(), dto);
-        }
+        updateStudentHealthInfo(entity.getStudent(), dto);
     }
 
-    public static void updateEntityFromUpdateDTO(HealthDeclarationEntity entity, HealthDeclarationUpdateDTO dto) {
+    public static void updateEntityFromUpdateDTO(HealthDeclarationEntity entity,
+                                                 HealthDeclarationUpdateDTO dto) {
         if (entity == null || dto == null) return;
 
-        if (dto.getStatus() != null) {
-            entity.setStatus(dto.getStatus());
-        }
-        if (dto.getAcademicYear() != null) {
-            entity.setAcademicYear(dto.getAcademicYear());
-        }
+        if (dto.getStatus() != null) entity.setStatus(dto.getStatus());
+        if (dto.getAcademicYear() != null) entity.setAcademicYear(dto.getAcademicYear());
 
-        // Update student health information if provided
-        if (entity.getStudent() != null) {
-            updateStudentHealthInfoFromUpdateDTO(entity.getStudent(), dto);
-        }
+        updateStudentHealthInfoFromUpdateDTO(entity.getStudent(), dto);
     }
 
-    private static void updateStudentHealthInfo(StudentEntity student, HealthDeclarationCreateDTO dto) {
-        if (dto.getWeight() != null) {
-            student.setWeight(dto.getWeight());
-        }
-        if (dto.getHeight() != null) {
-            student.setHeight(dto.getHeight());
-        }
-        if (dto.getBloodType() != null) {
-            student.setBloodType(dto.getBloodType());
-        }
-        if (dto.getAllergies() != null) {
-            student.setAllergies(dto.getAllergies());
-        }
-        if (dto.getChronicDiseases() != null) {
-            student.setChronicDiseases(dto.getChronicDiseases());
-        }
-        if (dto.getCurrentMedications() != null) {
-            student.setCurrentMedications(dto.getCurrentMedications());
-        }
-        if (dto.getEmergencyContactName() != null) {
-            student.setEmergencyContactName(dto.getEmergencyContactName());
-        }
-        if (dto.getEmergencyContactPhone() != null) {
-            student.setEmergencyContactPhone(dto.getEmergencyContactPhone());
-        }
+    private static void updateStudentHealthInfo(StudentEntity student,
+                                                HealthDeclarationCreateDTO dto) {
+        StudentHealthProfileEntity profile = getOrCreateProfile(student);
+
+        if (dto.getWeight() != null) profile.setWeight(dto.getWeight());
+        if (dto.getHeight() != null) profile.setHeight(dto.getHeight());
+        if (dto.getBloodType() != null) profile.setBloodType(dto.getBloodType());
+        if (dto.getAllergies() != null) profile.setAllergies(dto.getAllergies());
+        if (dto.getChronicDiseases() != null) profile.setChronicDiseases(dto.getChronicDiseases());
+        if (dto.getCurrentMedications() != null) profile.setCurrentMedications(dto.getCurrentMedications());
+
+        student.setEmergencyContactName(dto.getEmergencyContactName());
+        student.setEmergencyContactPhone(dto.getEmergencyContactPhone());
     }
 
-    private static void updateStudentHealthInfoFromUpdateDTO(StudentEntity student, HealthDeclarationUpdateDTO dto) {
-        if (dto.getWeight() != null) {
-            student.setWeight(dto.getWeight());
-        }
-        if (dto.getHeight() != null) {
-            student.setHeight(dto.getHeight());
-        }
-        if (dto.getBloodType() != null) {
-            student.setBloodType(dto.getBloodType());
-        }
-        if (dto.getAllergies() != null) {
-            student.setAllergies(dto.getAllergies());
-        }
-        if (dto.getChronicDiseases() != null) {
-            student.setChronicDiseases(dto.getChronicDiseases());
-        }
-        if (dto.getCurrentMedications() != null) {
-            student.setCurrentMedications(dto.getCurrentMedications());
-        }
-        if (dto.getEmergencyContactName() != null) {
+    private static void updateStudentHealthInfoFromUpdateDTO(StudentEntity student,
+                                                             HealthDeclarationUpdateDTO dto) {
+        StudentHealthProfileEntity profile = getOrCreateProfile(student);
+
+        if (dto.getWeight() != null) profile.setWeight(dto.getWeight());
+        if (dto.getHeight() != null) profile.setHeight(dto.getHeight());
+        if (dto.getBloodType() != null) profile.setBloodType(dto.getBloodType());
+        if (dto.getAllergies() != null) profile.setAllergies(dto.getAllergies());
+        if (dto.getChronicDiseases() != null) profile.setChronicDiseases(dto.getChronicDiseases());
+        if (dto.getCurrentMedications() != null) profile.setCurrentMedications(dto.getCurrentMedications());
+
+        if (dto.getEmergencyContactName() != null)
             student.setEmergencyContactName(dto.getEmergencyContactName());
-        }
-        if (dto.getEmergencyContactPhone() != null) {
+        if (dto.getEmergencyContactPhone() != null)
             student.setEmergencyContactPhone(dto.getEmergencyContactPhone());
+    }
+
+    private static StudentHealthProfileEntity getOrCreateProfile(StudentEntity student) {
+        StudentHealthProfileEntity profile = student.getHealthProfile();
+        if (profile == null) {
+            profile = new StudentHealthProfileEntity();
+            profile.setStudent(student);
+            student.setHealthProfile(profile);
         }
+        return profile;
     }
 }

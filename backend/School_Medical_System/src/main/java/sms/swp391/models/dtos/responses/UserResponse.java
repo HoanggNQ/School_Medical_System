@@ -1,9 +1,8 @@
-package sms.swp391.models.dtos.respones;
+package sms.swp391.models.dtos.responses;
 
 import lombok.*;
 import sms.swp391.models.dtos.enums.RoleEnum;
 
-import java.time.LocalDate;
 import java.time.LocalDate;
 
 /**

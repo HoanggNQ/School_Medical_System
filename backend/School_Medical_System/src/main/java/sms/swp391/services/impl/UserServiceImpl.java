@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
-import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.requests.UserUpdateDTO;
-import sms.swp391.models.dtos.respones.PaginatedUserResponse;
-import sms.swp391.models.dtos.respones.UserResponse;
+import sms.swp391.models.dtos.responses.PaginatedUserResponse;
+import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
+import sms.swp391.services.FileDatabaseService;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 import sms.swp391.utils.UserMapper;
@@ -37,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final OTPService oTPService;
     private final PasswordEncoder passwordEncoder;
+    private final FileDatabaseService fileDatabaseService;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -180,7 +181,10 @@ public class UserServiceImpl implements UserService {
         userEntity.setAddress(updateUserDTO.getAddress());
         userEntity.setGender(updateUserDTO.getGender());
         userEntity.setFullname(updateUserDTO.getName());
-
+        if (image != null && !image.isEmpty()) {
+            var imageUrl = fileDatabaseService.uploadFile(image);
+            userEntity.setAvatarurl(imageUrl.getUrl());
+        }
         var item = userRepository.save(userEntity);
         UserResponse userResponse = UserMapper.toDTO(item);
             return userResponse;

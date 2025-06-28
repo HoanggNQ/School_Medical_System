@@ -1,7 +1,7 @@
 package sms.swp391.services;
 
 import sms.swp391.models.dtos.requests.*;
-import sms.swp391.models.dtos.respones.*;
+import sms.swp391.models.dtos.responses.*;
 import java.util.List;
 
 public interface VaccinationService {

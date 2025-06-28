@@ -1,7 +1,7 @@
 package sms.swp391.utils;
 
 import sms.swp391.models.dtos.requests.MedicalEventRequestDTO;
-import sms.swp391.models.dtos.respones.MedicalEventResponse;
+import sms.swp391.models.dtos.responses.MedicalEventResponse;
 import sms.swp391.models.entities.MedicalEventEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;
