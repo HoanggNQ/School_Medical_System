@@ -16,7 +16,7 @@ public class VaccinationRecordResponse {
     private String studentName;
     private Long administrationById;
     private String administrationByName;
-    private Instant administrationDate;
+    private LocalDate administrationDate;
     private String academicYear;
     private LocalDate expirationDate;
     private Boolean followUpRequired;

@@ -7,6 +7,8 @@ import java.util.List;
 public interface VaccinationService {
 
     // Campaign Management
+    void endCampaign(Long campaignId);
+
     VaccinationCampaignResponse createCampaign(VaccinationCampaignRequestDTO request, Long createdById);
 
     VaccinationCampaignResponse updateCampaign(Long id, VaccinationCampaignRequestDTO request);
@@ -17,6 +19,8 @@ public interface VaccinationService {
 
     List<VaccinationCampaignResponse> getAllCampaigns();
 
+    List<VaccinationCampaignResponse> getAllCampaignsStart();
+
     // Consent Management
     VaccinationConsentResponse updateConsent(Long consentId, VaccinationConsentRequestDTO request, Long parentId);
 
@@ -25,6 +29,8 @@ public interface VaccinationService {
     VaccinationConsentResponse getConsentById(Long consentId);
 
     List<VaccinationConsentResponse> getPendingConsentsByParent(Long parentId);
+
+    List<VaccinationConsentResponse> getPendingConsentsApprovedByParent(Long parentId);
 
     // Record Management
     VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request, Long checkedById);
@@ -35,5 +41,5 @@ public interface VaccinationService {
 
     List<VaccinationRecordResponse> getRecordsByStudent(Long studentId);
 
-    List<VaccinationRecordResponse> getRecordsRequiringFollowUp();
+
 }

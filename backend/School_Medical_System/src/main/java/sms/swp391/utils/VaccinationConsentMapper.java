@@ -32,8 +32,7 @@ public class VaccinationConsentMapper {
         if (dto == null) return null;
 
         VaccinationConsentEntity entity = new VaccinationConsentEntity();
-        entity.setNotes(dto.getNotes());
-        entity.setConsentFormUrl(dto.getConsentFormUrl());
+        entity.setConsentStatus(dto.getConsentStatus());
         return entity;
     }
 }
