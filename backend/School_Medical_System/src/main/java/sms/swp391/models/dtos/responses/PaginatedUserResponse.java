@@ -1,6 +1,7 @@
-package sms.swp391.models.dtos.respones;
+package sms.swp391.models.dtos.responses;
 
 import lombok.*;
+
 import java.util.List;
 
 @Getter
@@ -8,8 +9,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaginatedStudentResponse {
-    private List<StudentGetResponse> students;
+public class PaginatedUserResponse {
+    private List<UserResponse> users;
     private long totalElements;
     private int totalPages;
     private int currentPage;

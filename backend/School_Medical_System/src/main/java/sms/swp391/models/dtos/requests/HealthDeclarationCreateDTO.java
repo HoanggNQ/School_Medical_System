@@ -4,27 +4,22 @@ import lombok.*;
 import jakarta.validation.constraints.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
+import java.math.BigDecimal;
+
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class HealthDeclarationCreateDTO {
-
     @NotNull
     private Long studentId;
-
     @NotNull
     private Long declaredById;
-
-    @NotNull
-    private MedicalStatus status;
-
     @NotNull
     private String academicYear;
-
-    private Float height;
-    private Float weight;
+    private BigDecimal height;
+    private BigDecimal weight;
     private String bloodType;
     private String allergies;
     private String chronicDiseases;

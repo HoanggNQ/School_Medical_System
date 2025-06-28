@@ -2,7 +2,7 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
-import sms.swp391.models.dtos.respones.VaccinationCampaignResponse;
+import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
 import sms.swp391.models.entities.VaccinationCampaignEntity;
 
 @RequiredArgsConstructor

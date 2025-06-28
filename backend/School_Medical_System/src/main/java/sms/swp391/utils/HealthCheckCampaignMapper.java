@@ -2,7 +2,7 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
-import sms.swp391.models.dtos.respones.HealthCheckCampaignResponse;
+import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 import sms.swp391.models.entities.HealthCheckCampaignEntity;
 
 @RequiredArgsConstructor

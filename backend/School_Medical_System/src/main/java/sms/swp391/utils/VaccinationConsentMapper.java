@@ -2,7 +2,7 @@ package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
 import sms.swp391.models.dtos.requests.VaccinationConsentRequestDTO;
-import sms.swp391.models.dtos.respones.VaccinationConsentResponse;
+import sms.swp391.models.dtos.responses.VaccinationConsentResponse;
 import sms.swp391.models.entities.VaccinationConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;

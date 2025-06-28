@@ -1,7 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
-import sms.swp391.models.dtos.respones.NotificationResponse;
+import sms.swp391.models.dtos.responses.NotificationResponse;
 import sms.swp391.models.entities.NotificationEntity;
 @RequiredArgsConstructor
 public class NotificationMapper {

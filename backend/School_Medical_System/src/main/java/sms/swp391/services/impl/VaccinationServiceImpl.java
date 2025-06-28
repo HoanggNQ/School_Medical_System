@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.CampaignStatus;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.*;
-import sms.swp391.models.dtos.respones.*;
+import sms.swp391.models.dtos.responses.*;
 import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.BusinessException;

@@ -6,14 +6,14 @@ package sms.swp391.controllers;
     import org.springframework.http.ResponseEntity;
     import org.springframework.web.bind.annotation.*;
     import sms.swp391.models.dtos.requests.ContentRequest;
-    import sms.swp391.models.dtos.respones.ContentResponse;
-    import sms.swp391.models.dtos.respones.ResponseObject;
+    import sms.swp391.models.dtos.responses.ContentResponse;
+    import sms.swp391.models.dtos.responses.ResponseObject;
     import sms.swp391.services.ContentService;
     import org.springframework.data.domain.Pageable;
     import org.springframework.data.web.PageableDefault;
     import org.springframework.data.web.SortDefault;
     import org.springframework.data.domain.Sort;
-    import sms.swp391.models.dtos.respones.PaginatedContentResponse;
+    import sms.swp391.models.dtos.responses.PaginatedContentResponse;
     import org.springdoc.core.annotations.ParameterObject;
 
     import java.util.List;

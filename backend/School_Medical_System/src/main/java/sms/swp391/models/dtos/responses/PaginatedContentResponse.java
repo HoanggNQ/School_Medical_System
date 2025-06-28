@@ -1,4 +1,4 @@
-package sms.swp391.models.dtos.respones;
+package sms.swp391.models.dtos.responses;
 
 import lombok.*;
 
@@ -9,8 +9,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaginatedUserResponse {
-    private List<UserResponse> users;
+public class PaginatedContentResponse {
+    private List<ContentResponse> contents;
     private long totalElements;
     private int totalPages;
     private int currentPage;

@@ -2,6 +2,8 @@ package sms.swp391.models.dtos.requests;
 
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.Map;
 @Data
 @Getter
@@ -22,6 +24,6 @@ public class StudentRequest {
     private String currentMedications;
     private String chronicDiseases;
     private String allergies;
-    private Float height;
-    private Float weight;
+    private BigDecimal height;
+    private BigDecimal weight;
 }

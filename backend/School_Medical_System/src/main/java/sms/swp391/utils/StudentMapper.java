@@ -1,52 +1,77 @@
 package sms.swp391.utils;
 
 import sms.swp391.models.dtos.requests.StudentRequest;
-import sms.swp391.models.dtos.respones.StudentGetResponse;
-import sms.swp391.models.dtos.respones.StudentResponse;
-import sms.swp391.models.entities.ClassEntity;
-import sms.swp391.models.entities.StudentEntity;
-import sms.swp391.models.entities.UserEntity;
+import sms.swp391.models.dtos.responses.StudentGetResponse;
+import sms.swp391.models.dtos.responses.StudentResponse;
+import sms.swp391.models.entities.*;
 
 public class StudentMapper {
 
     public static StudentResponse toDTO(StudentEntity entity) {
         if (entity == null) return null;
+
+        StudentHealthProfileEntity profile = entity.getHealthProfile();
+
         return StudentResponse.builder()
                 .id(entity.getId())
                 .user(UserMapper.toDTO(entity.getUser()))
                 .classId(entity.getClassEntity() != null ? entity.getClassEntity().getId() : null)
                 .parent(UserMapper.toDTO(entity.getParent()))
                 .studentCode(entity.getStudentCode())
-                .bloodType(entity.getBloodType())
-                .geneticDiseases(entity.getGeneticDiseases())
-                .otherMedicalNotes(entity.getOtherMedicalNotes())
+                /* profile */
+                .bloodType(profile != null ? profile.getBloodType() : null)
+                .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
+                .otherMedicalNotes(profile != null ? profile.getOtherMedicalNotes() : null)
+                .currentMedications(profile != null ? profile.getCurrentMedications() : null)
+                .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
+                .allergies(profile != null ? profile.getAllergies() : null)
+                .height(profile != null ? profile.getHeight() : null)
+                .weight(profile != null ? profile.getWeight() : null)
+                /* hành chính */
                 .emergencyContactPhone(entity.getEmergencyContactPhone())
                 .emergencyContactName(entity.getEmergencyContactName())
-                .currentMedications(entity.getCurrentMedications())
-                .chronicDiseases(entity.getChronicDiseases())
-                .allergies(entity.getAllergies())
-                .height(entity.getHeight())
-                .weight(entity.getWeight())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
-// cai này đang không dùng này
-    public static StudentEntity fromRequest(StudentRequest request, UserEntity user, ClassEntity classEntity, UserEntity parent) {
-        if (request == null) return null;
-        return StudentEntity.builder()
+
+    public static StudentEntity fromRequest(StudentRequest req,
+                                            UserEntity user,
+                                            ClassEntity clazz,
+                                            UserEntity parent) {
+        if (req == null) return null;
+
+        // 1. StudentEntity
+        StudentEntity student = StudentEntity.builder()
                 .user(user)
-                .classEntity(classEntity)
+                .classEntity(clazz)
                 .parent(parent)
-                .studentCode(request.getStudentCode())
-                .bloodType(request.getBloodType())
-                .geneticDiseases(request.getGeneticDiseases())
-                .otherMedicalNotes(request.getOtherMedicalNotes())
+                .studentCode(req.getStudentCode())
+                .emergencyContactName(req.getEmergencyContactName())
+                .emergencyContactPhone(req.getEmergencyContactPhone())
                 .build();
+
+        // 2. Health profile
+        StudentHealthProfileEntity profile = StudentHealthProfileEntity.builder()
+                .student(student)
+                .bloodType(req.getBloodType())
+                .geneticDiseases(req.getGeneticDiseases())
+                .otherMedicalNotes(req.getOtherMedicalNotes())
+                .currentMedications(req.getCurrentMedications())
+                .chronicDiseases(req.getChronicDiseases())
+                .allergies(req.getAllergies())
+                .height(req.getHeight())
+                .weight(req.getWeight())
+                .build();
+
+        student.setHealthProfile(profile);
+        return student;
     }
 
     public static StudentGetResponse toStudentGetResponse(StudentEntity student) {
         UserEntity user = student.getUser();
+        StudentHealthProfileEntity profile = student.getHealthProfile();
+
         return StudentGetResponse.builder()
                 .userId(user.getUserId())
                 .fullName(user.getFullname())
@@ -56,16 +81,16 @@ public class StudentMapper {
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
                 .studentCode(student.getStudentCode())
-                .bloodType(student.getBloodType())
-                .geneticDiseases(student.getGeneticDiseases())
-                .otherMedicalNotes(student.getOtherMedicalNotes())
+                .bloodType(profile != null ? profile.getBloodType() : null)
+                .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
+                .otherMedicalNotes(profile != null ? profile.getOtherMedicalNotes() : null)
+                .currentMedications(profile != null ? profile.getCurrentMedications() : null)
+                .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
+                .allergies(profile != null ? profile.getAllergies() : null)
+                .height(profile != null ? profile.getHeight() : null)
+                .weight(profile != null ? profile.getWeight() : null)
                 .emergencyContactPhone(student.getEmergencyContactPhone())
                 .emergencyContactName(student.getEmergencyContactName())
-                .currentMedications(student.getCurrentMedications())
-                .chronicDiseases(student.getChronicDiseases())
-                .allergies(student.getAllergies())
-                .height(student.getHeight())
-                .weight(student.getWeight())
                 .build();
     }
 }

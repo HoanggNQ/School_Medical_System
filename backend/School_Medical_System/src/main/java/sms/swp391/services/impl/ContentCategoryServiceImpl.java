@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.requests.ContentCategoryRequestDTO;
-import sms.swp391.models.dtos.respones.ContentCategoryResponse;
+import sms.swp391.models.dtos.responses.ContentCategoryResponse;
 import sms.swp391.models.entities.ContentCategoryEntity;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.ContentCategoryRepository;

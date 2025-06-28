@@ -1,16 +1,16 @@
 package sms.swp391.models.entities;
 
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.*;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -20,7 +20,6 @@ import java.util.*;
 @Entity
 @Table(name = "student")
 public class StudentEntity {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,53 +34,28 @@ public class StudentEntity {
     @JoinColumn(name = "class_id")
     private ClassEntity classEntity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private UserEntity parent;
 
-    @Size(max = 50)
     @NotNull
+    @Size(max = 50)
     @Column(name = "student_code", nullable = false, length = 50, unique = true)
     private String studentCode;
 
-    @Size(max = 10)
-    @Column(name = "blood_type", length = 10)
-    private String bloodType;
-
-    @Column(name = "genetic_diseases", columnDefinition = "TEXT")
-    private String geneticDiseases;
-    @Column(name = "height")
-    private Float height;
-
-    @Column(name = "weight")
-    private Float weight;
-
-    @Column(name = "allergies")
-    private String allergies;
-
-    @Column(name = "chronic_diseases")
-    private String chronicDiseases;
-
-    @Column(name = "current_medications")
-    private String currentMedications;
-
+    // ⚠️ Thông tin hành chính, KHÔNG xoá
     @Column(name = "emergency_contact_name")
     private String emergencyContactName;
 
     @Column(name = "emergency_contact_phone")
     private String emergencyContactPhone;
-    @Column(name = "other_medical_notes", columnDefinition = "TEXT")
-    private String otherMedicalNotes;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDate createdAt;
+    /** 1-1: Hồ sơ sức khỏe hiện tại */
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private StudentHealthProfileEntity healthProfile;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDate updatedAt;
+    /* ========== Quan hệ khác ========== */
 
-    // Relationships
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<HealthCheckConsentEntity> healthCheckConsents = new HashSet<>();
@@ -93,7 +67,6 @@ public class StudentEntity {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<HealthDeclarationEntity> healthDeclarations = new HashSet<>();
-
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -115,4 +88,12 @@ public class StudentEntity {
     @Builder.Default
     private Set<HealthConsultationScheduleEntity> healthConsultationSchedules = new HashSet<>();
 
+    /* ========== Timestamps ========== */
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDate createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDate updatedAt;
 }

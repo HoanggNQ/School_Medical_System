@@ -24,6 +24,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 import sms.swp391.security.CustomUserDetailsService;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 @Configuration
@@ -77,5 +81,36 @@ public class AppConfig {
         var template = new RedisTemplate<String, Object>();
         template.setConnectionFactory(redisConnectionFactory);
         return template;
+    }
+    @Bean
+    FirebaseApp firebaseApp() throws IOException {
+        Resource resource = new ClassPathResource("school-medical-firebase.json");
+
+        //  Mở  InputStream  để  đọc  file
+        try (InputStream serviceAccount = resource.getInputStream()) {
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+
+            return FirebaseApp.initializeApp(options);
+        }
+    }
+    @Bean
+    FirebaseAuth firebaseAuth() throws IOException {
+        return FirebaseAuth.getInstance(firebaseApp());
+    }
+    @Bean
+    public Cloudinary getCloudinary(){
+        try {
+            Map config = new HashMap();
+            config.put("cloud_name", "dxl2ukset");
+            config.put("api_key", "137921147676726");
+            config.put("api_secret", "NxeLPiG2deyb9tFp84gtljAC_eU");
+            config.put("secure", true);
+            return new Cloudinary(config);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
