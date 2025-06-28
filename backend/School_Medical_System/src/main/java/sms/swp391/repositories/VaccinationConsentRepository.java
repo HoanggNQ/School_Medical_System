@@ -1,20 +1,21 @@
 package sms.swp391.repositories;
 
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 import sms.swp391.models.entities.VaccinationConsentEntity;
+import sms.swp391.models.entities.StudentEntity;
 
 import java.util.List;
-import java.util.Optional;
 
-@Repository
 public interface VaccinationConsentRepository extends JpaRepository<VaccinationConsentEntity, Long> {
-    List<VaccinationConsentEntity> findByVaccinationCampaignIdAndConsentStatus(Long campaignId, String consentStatus);
 
-    Optional<VaccinationConsentEntity> findByVaccinationCampaignIdAndStudentId(Long campaignId, Long studentId);
+    // Find consent by campaign ID and student
+    VaccinationConsentEntity findByVaccinationCampaignIdAndStudent
+    (Long campaignId, StudentEntity student);
 
-    @Query("SELECT h FROM VaccinationConsentEntity h WHERE h.parent.userId = :parentId AND h.consentStatus = :status AND h.parent.roleName = 'PARENT'")
-    Optional<VaccinationConsentEntity> findByParentAndStatus(@Param("parentId") Long parentId, @Param("status") String status);
+    // Find all consents for a specific campaign
+    List<VaccinationConsentEntity> findByVaccinationCampaignId(Long campaignId);
+
+    // Find pending consents for a specific parent
+    List<VaccinationConsentEntity> findByParent_UserIdAndConsentStatus
+    (Long parentId, String status);
 }

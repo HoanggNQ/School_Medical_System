@@ -1,12 +1,15 @@
 package sms.swp391.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.*;
-import sms.swp391.models.dtos.responses.*;
-import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.models.dtos.respones.*;
+import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.VaccinationService;
@@ -19,12 +22,13 @@ import java.util.List;
 public class VaccinationRecordController {
     private final VaccinationService vaccinationService;
 
+    @Operation(summary = "Lưu kết quả tiêm vaccine", description = "Lưu kết quả tiêm vaccine cho học sinh kèm theo ID của người thực hiện.")
     @PostMapping("/records")
     public ResponseEntity<ResponseObject> saveRecord(
             @RequestBody VaccinationRecordRequestDTO request,
-            @RequestParam Long administeredById) {
+            @AuthenticationPrincipal UserEntity administeredById) {
         try {
-            VaccinationRecordResponse response = vaccinationService.saveRecord(request, administeredById);
+            VaccinationRecordResponse response = vaccinationService.saveRecord(request, administeredById.getUserId());
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("SAVE_RECORD_SUCCESS")
@@ -64,6 +68,7 @@ public class VaccinationRecordController {
         }
     }
 
+    @Operation(summary = "Lấy kết quả tiêm vaccine theo ID", description = "Trả về kết quả tiêm vaccine chi tiết theo ID.")
     @GetMapping("/records/{id}")
     public ResponseEntity<ResponseObject> getRecordById(@PathVariable Long id) {
         try {
@@ -98,6 +103,7 @@ public class VaccinationRecordController {
         }
     }
 
+    @Operation(summary = "Lấy danh sách kết quả theo chiến dịch", description = "Trả về danh sách các kết quả tiêm vaccine của một chiến dịch cụ thể.")
     @GetMapping("/campaigns/{campaignId}/records")
     public ResponseEntity<ResponseObject> getRecordsByCampaign(@PathVariable Long campaignId) {
         try {
@@ -123,6 +129,7 @@ public class VaccinationRecordController {
         }
     }
 
+    @Operation(summary = "Lấy danh sách kết quả theo học sinh", description = "Trả về tất cả kết quả tiêm vaccine của một học sinh theo ID.")
     @GetMapping("/students/{studentId}/records")
     public ResponseEntity<ResponseObject> getRecordsByStudent(@PathVariable Long studentId) {
         try {
@@ -148,28 +155,5 @@ public class VaccinationRecordController {
         }
     }
 
-    @GetMapping("/records/follow-up")
-    public ResponseEntity<ResponseObject> getRecordsRequiringFollowUp() {
-        try {
-            List<VaccinationRecordResponse> responses = vaccinationService.getRecordsRequiringFollowUp();
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("GET_FOLLOW_UP_RECORDS_SUCCESS")
-                            .message("Records requiring follow-up retrieved successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(responses)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .code("GET_FOLLOW_UP_RECORDS_FAILED")
-                            .message("Failed to get follow-up records: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .isSuccess(false)
-                            .build()
-            );
-        }
-    }
+
 }
