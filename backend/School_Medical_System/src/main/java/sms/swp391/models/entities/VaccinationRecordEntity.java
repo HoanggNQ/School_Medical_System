@@ -48,7 +48,7 @@ public class VaccinationRecordEntity {
 
     @NotNull
     @Column(name = "administration_date", nullable = false)
-    private Instant administrationDate;
+    private LocalDate administrationDate;
 
     @Column(name = "next_dose_date")
     private LocalDate nextDoseDate;

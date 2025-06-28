@@ -8,7 +8,5 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VaccinationConsentRequestDTO {
-    private String notes;
-    private String consentFormUrl;
     private String consentStatus;
 }
