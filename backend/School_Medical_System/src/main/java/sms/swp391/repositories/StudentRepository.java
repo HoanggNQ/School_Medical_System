@@ -44,4 +44,7 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
            "CASE WHEN :direction = 'asc' THEN s.user.fullname END ASC, " +
            "CASE WHEN :direction = 'desc' THEN s.user.fullname END DESC")
     Page<StudentEntity> searchStudentsSorted(@Param("keyword") String keyword, @Param("direction") String direction, Pageable pageable);
+
+    @Query("SELECT s FROM StudentEntity s WHERE s.user.status = 'ACTIVE'")
+    Page<StudentEntity> findAllActive(Pageable pageable);
 }
