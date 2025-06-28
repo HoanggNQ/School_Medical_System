@@ -2,6 +2,8 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,6 +25,6 @@ public class StudentGetResponse {
     private String currentMedications;
     private String chronicDiseases;
     private String allergies;
-    private Float height;
-    private Float weight;
+    private BigDecimal height;
+    private BigDecimal weight;
 }

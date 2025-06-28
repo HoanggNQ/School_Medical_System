@@ -6,7 +6,6 @@ import java.util.List;
 
 public interface HealthCheckService {
 
-
     void endCampaign(Long campaignId);
 
     HealthCheckCampaignResponse createCampaign(HealthCheckCampaignRequestDTO request, Long createdById);

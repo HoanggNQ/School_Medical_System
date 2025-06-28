@@ -64,7 +64,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
 
-        // Update fields
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
         campaign.setCheckDate(request.getCheckDate());
@@ -81,7 +80,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
 
-        // Create consent requests for all students in target grade
         List<StudentEntity> targetStudents = studentRepository.findByClassEntity_GradeWithUserAndParent(campaign.getTargetGrade());
 
         for (StudentEntity student : targetStudents) {
@@ -95,7 +93,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
             consentRepository.save(consent);
 
-            // Send email notification to parent
             sendMailService.sendConsentRequestEmail(
                     student.getParent().getEmail(),
                     student.getParent().getFullname(),
@@ -104,7 +101,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     campaign.getCheckDate().toString(),
                     campaign.getLocation()
             );
-
         }
 
         campaign.setStatus("ACTIVE");
@@ -126,27 +122,44 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
         return HealthCheckConsentMapper.toDTO(updatedConsent);
     }
+
     @Override
     public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
-        // Lấy chiến dịch
         HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
 
-        // Lấy học sinh
         StudentEntity student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new NotFoundException("Student not found"));
 
-        // Lấy người kiểm tra
         UserEntity checker = userRepository.findById(checkedById)
                 .orElseThrow(() -> new NotFoundException("Checker not found"));
 
-        // Kiểm tra consent
         HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
-        if (consent == null || !consent.getConsentStatus().equals("APPROVED")) {
+        if (consent == null || !"APPROVED".equals(consent.getConsentStatus())) {
             throw new BusinessException("Parent consent not approved for this examination");
         }
 
-        // Tạo kết quả
+        StudentHealthProfileEntity profile = student.getHealthProfile();
+        if (profile == null) {
+            profile = new StudentHealthProfileEntity();
+            profile.setStudent(student);
+            student.setHealthProfile(profile);
+        }
+
+        profile.setHeight(request.getHeightCm());
+        profile.setWeight(request.getWeightKg());
+        profile.setVisionLeft(request.getVisionLeft());
+        profile.setVisionRight(request.getVisionRight());
+        profile.setHearing(request.getHearing());
+        profile.setDentalHealth(request.getDentalHealth());
+        profile.setBloodPressure(request.getBloodPressure());
+        profile.setPulse(request.getPulse());
+        profile.setTemperature(request.getTemperature());
+
+        if (request.getHeightCm() != null && request.getWeightKg() != null) {
+            profile.setBmi(calculateBMI(request.getHeightCm(), request.getWeightKg()));
+        }
+
         HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(request);
         result.setHealthCheckCampaign(campaign);
         result.setStudent(student);
@@ -154,25 +167,18 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         result.setCheckDate(LocalDate.now());
         result.setAcademicYear(getCurrentAcademicYear());
 
-        if (request.getHeightCm() != null && request.getWeightKg() != null) {
-            result.setBmi(calculateBMI(request.getHeightCm(), request.getWeightKg()));
-        }
+        HealthCheckResultEntity savedResult = resultRepository.saveAndFlush(result);
+        studentRepository.save(student);
 
-        // Lưu kết quả
-        HealthCheckResultEntity savedResult = resultRepository.save(result);
-
-        // Nếu cần theo dõi hoặc có bất thường
         if (Boolean.TRUE.equals(savedResult.getFollowUpRequired()) || isAbnormal(savedResult)) {
-            // Xác định scheduleTime
             LocalDateTime scheduleTime;
             if (request.getScheduleTime() != null) {
-                scheduleTime = request.getScheduleTime(); // ✅ dùng thời gian được nhập trực tiếp
+                scheduleTime = request.getScheduleTime();
             } else {
                 int daysLater = extractFollowUpDays(savedResult.getFollowUpNotes());
-                scheduleTime = LocalDate.now().plusDays(daysLater).atTime(8, 0); // Mặc định 08:00
+                scheduleTime = LocalDate.now().plusDays(daysLater).atTime(8, 0);
             }
 
-            // Tạo lịch tư vấn
             HealthConsultationScheduleEntity schedule = HealthConsultationScheduleEntity.builder()
                     .student(student)
                     .result(savedResult)
@@ -183,7 +189,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
             consultationScheduleRepository.save(schedule);
 
-            // Gửi mail
             sendMailService.sendConsultationScheduleEmail(
                     student.getParent().getEmail(),
                     student.getUser().getFullname(),
@@ -194,7 +199,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
         return HealthCheckResultMapper.toDTO(savedResult);
     }
-
 
     private int extractFollowUpDays(String followUpNotes) {
         if (followUpNotes == null) return 1;
@@ -208,34 +212,29 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     }
 
     private boolean isAbnormal(HealthCheckResultEntity result) {
-        if (result.getTemperature() != null && result.getTemperature().compareTo(BigDecimal.valueOf(38.0)) > 0) {
-            return true;
-        }
+        StudentHealthProfileEntity p = result.getStudent().getHealthProfile();
+        if (p == null) return false;
 
-        if (result.getBloodPressure() != null && result.getBloodPressure().contains("/")) {
-            String[] parts = result.getBloodPressure().split("/");
+        if (p.getTemperature() != null && p.getTemperature().compareTo(BigDecimal.valueOf(38.0)) > 0)
+            return true;
+
+        if (p.getBloodPressure() != null && p.getBloodPressure().contains("/")) {
+            String[] parts = p.getBloodPressure().split("/");
             try {
-                int systolic = Integer.parseInt(parts[0].trim());
-                int diastolic = Integer.parseInt(parts[1].trim());
-                if (systolic > 140 || diastolic > 90) {
-                    return true;
-                }
-            } catch (NumberFormatException ignored) {
-            }
+                int sys = Integer.parseInt(parts[0].trim());
+                int dia = Integer.parseInt(parts[1].trim());
+                if (sys > 140 || dia > 90) return true;
+            } catch (NumberFormatException ignored) {}
         }
 
         try {
-            if (result.getVisionLeft() != null && Float.parseFloat(result.getVisionLeft()) < 5.0f) {
-                return true;
-            }
-            if (result.getVisionRight() != null && Float.parseFloat(result.getVisionRight()) < 5.0f) {
-                return true;
-            }
-        } catch (NumberFormatException ignored) {
-        }
+            if (p.getVisionLeft() != null && Float.parseFloat(p.getVisionLeft()) < 5.0f) return true;
+            if (p.getVisionRight() != null && Float.parseFloat(p.getVisionRight()) < 5.0f) return true;
+        } catch (NumberFormatException ignored) {}
 
         return false;
     }
+
 
 
     @Override
