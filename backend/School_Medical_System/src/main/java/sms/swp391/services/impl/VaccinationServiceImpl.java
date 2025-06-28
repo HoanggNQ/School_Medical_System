@@ -3,8 +3,6 @@ package sms.swp391.services.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sms.swp391.models.dtos.enums.CampaignStatus;
-import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import sms.swp391.models.entities.*;
@@ -16,15 +14,9 @@ import sms.swp391.services.SendMailService;
 import sms.swp391.services.VaccinationService;
 import sms.swp391.utils.*;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Year;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -110,7 +102,7 @@ public class VaccinationServiceImpl implements VaccinationService {
         campaign.setStatus("ACTIVE");
         campaignRepository.save(campaign);
     }
-/// ///
+
     @Override
     public VaccinationCampaignResponse getCampaignById(Long id) {
         VaccinationCampaignEntity campaign = campaignRepository.findById(id)
