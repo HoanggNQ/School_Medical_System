@@ -2,6 +2,7 @@ package sms.swp391.models.dtos.requests;
 
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,5 +21,6 @@ public class VaccinationRecordRequestDTO {
     private String vaccineName;
     private String followUpNotes;
     private String reactionNotes;
+    private LocalDateTime scheduleTime;
     // administarterdBy, administrationDtae, id, academicYear
 }
