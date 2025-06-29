@@ -70,6 +70,52 @@ public class MedicationRequestController {
             );
         }
     }
+    @Operation(summary = "Lấy danh sách yêu cầu thuốc đang từ chối", description = "Nhân viên y tế xem các yêu cầu thuốc từ chối.")
+    @GetMapping("/reject")
+    public ResponseEntity<ResponseObject> getRejectRequests() {
+        try {
+            List<MedicationRequestResponseDTO> pending = medicationRequestService.getRejectRequests();
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("FETCH_SUCCESS")
+                    .message("Fetched Reject requests successfully.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(pending)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("FETCH_FAILED")
+                            .message("Failed to fetch Reject requests: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+    @Operation(summary = "Lấy danh sách yêu cầu thuốc đã duyệt", description = "Nhân viên y tế xem các yêu cầu thuốc đã được duyệt.")
+    @GetMapping("/approve")
+    public ResponseEntity<ResponseObject> getApproveRequests() {
+        try {
+            List<MedicationRequestResponseDTO> pending = medicationRequestService.getApproveRequests();
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("FETCH_SUCCESS")
+                    .message("Fetched pending Approve successfully.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(pending)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("FETCH_FAILED")
+                            .message("Failed to fetch Approve requests: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
 
     @Operation(summary = "Phê duyệt yêu cầu thuốc", description = "Nhân viên y tế phê duyệt yêu cầu thuốc.")
     @PutMapping("/{id}/approve")
@@ -112,6 +158,30 @@ public class MedicationRequestController {
                     ResponseObject.builder()
                             .code("REJECT_FAILED")
                             .message("Failed to reject medication request: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
+    @Operation(summary = "Hoàn thành yêu cầu thuốc", description = "Nhân viên y tế dã Hoàn thành yêu cầu thuốc.")
+    @PutMapping("/{id}/done")
+    public ResponseEntity<ResponseObject> doneRequest(@PathVariable Long id,
+                                                        @AuthenticationPrincipal UserEntity currentUser) {
+        try {
+            medicationRequestService.doneRequest(id, currentUser.getUserId());
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("REQUEST_done")
+                    .message("Medication request done successfully.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("REJECT_done")
+                            .message("Failed to done medication request: " + e.getMessage())
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .isSuccess(false)
                             .build()
