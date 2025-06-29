@@ -153,7 +153,7 @@ public class MedicationController {
     public ResponseEntity<ResponseObject> getAll(
             @ParameterObject
             @PageableDefault(size = 10,
-                    sort = "name",
+                    sort = "medicationName",
                     direction = Sort.Direction.ASC) Pageable pageable) {
 
         Page<MedicationResponseDTO> page = medicationService.getAll(pageable);
