@@ -1,9 +1,13 @@
 package sms.swp391.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
@@ -17,6 +21,7 @@ import sms.swp391.repositories.MedicationRepository;
 import sms.swp391.services.MedicationService;
 import sms.swp391.utils.MedicationExcelExporter;
 import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.utils.PageUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -143,31 +148,24 @@ public class MedicationController {
         medicationService.updateQuantity(id, quantity);
         return ResponseEntity.ok().build();
     }
-
+    @Operation(summary = "Danh sách thuốc trong kho")
     @GetMapping
-    public ResponseEntity<ResponseObject> getAll(Pageable pageable) {
-        try {
-            Page<MedicationResponseDTO> page = medicationService.getAll(pageable);
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("GET_ALL_MEDICATIONS_SUCCESS")
-                            .message("Medications retrieved successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(page)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .code("GET_ALL_MEDICATIONS_FAILED")
-                            .message("Failed to get medications: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-        }
+    public ResponseEntity<ResponseObject> getAll(
+            @ParameterObject
+            @PageableDefault(size = 10,
+                    sort = "name",
+                    direction = Sort.Direction.ASC) Pageable pageable) {
+
+        Page<MedicationResponseDTO> page = medicationService.getAll(pageable);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_ALL_MEDICATIONS_SUCCESS")
+                        .message("Medications retrieved successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(PageUtils.toPagedResponse(page))
+                        .build());
     }
 
        @GetMapping("/export/excel")
