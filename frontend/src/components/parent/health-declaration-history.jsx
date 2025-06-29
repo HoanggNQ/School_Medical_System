@@ -108,7 +108,7 @@ const HealthDeclarationHistory = ({ selectedStudent, onEdit }) => {
 
       try {
         setLoading(true)
-        const response = await ParentService.getHealthDeclarations(selectedStudent.id)
+        const response = await ParentService.getHealthDeclaration(selectedStudent.id)
         console.log("Fetched health declarations:", response.data)
         setDeclarations(response.data || [])
       } catch (error) {

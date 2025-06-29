@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Syringe, Calendar, User, Shield, CheckCircle, AlertCircle, Clock } from "lucide-react"
 import { useState, useEffect } from "react"
+import ParentService from "../../api/services/parent.service"
 
 const VaccinationHistory = ({ selectedStudent }) => {
   const [vaccinationHistory, setVaccinationHistory] = useState([])
@@ -47,37 +48,9 @@ const VaccinationHistory = ({ selectedStudent }) => {
       try {
         setLoading(true)
         // TODO: Replace with actual API call when available
-        // const vaccinationData = await ParentService.getStudentVaccination(selectedStudent.id)
-
-        // Keep mock data for now
-        const mockVaccinationHistory = [
-          {
-            id: 1,
-            vaccineName: "Vắc-xin COVID-19 (Pfizer)",
-            date: "2024-01-20",
-            dose: "Mũi 3",
-            batchNumber: "FF1234",
-            location: "Trung tâm Y tế Quận 1",
-            doctor: "BS. Lê Văn C",
-            nextDue: "2024-07-20",
-            status: "Hoàn thành",
-            sideEffects: "Không có",
-          },
-          {
-            id: 2,
-            vaccineName: "Vắc-xin Cúm mùa",
-            date: "2023-10-15",
-            dose: "Mũi hàng năm",
-            batchNumber: "FLU2023",
-            location: "Trường THCS ABC",
-            doctor: "BS. Phạm Thị D",
-            nextDue: "2024-10-15",
-            status: "Hoàn thành",
-            sideEffects: "Đau nhẹ tại chỗ tiêm",
-          },
-        ]
-
-        setVaccinationHistory(mockVaccinationHistory)
+        const vaccinationData = await ParentService.getStudentVaccination(selectedStudent.id)
+        console.log("Fetched vaccination data:", vaccinationData)
+        setVaccinationHistory(vaccinationData)
       } catch (error) {
         console.error("Error fetching vaccination data:", error)
         setVaccinationHistory([])

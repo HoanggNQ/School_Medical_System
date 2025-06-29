@@ -20,7 +20,7 @@ const StudentHealth = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
+      try { 
         setLoading(true)
         const studentRes = await ParentService.getStudent()
         setStudents(studentRes.data)

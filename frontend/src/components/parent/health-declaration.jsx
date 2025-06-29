@@ -151,7 +151,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
         alert("Cập nhật khai báo sức khỏe thành công!")
       } else {
         // Create new declaration
-        await ParentService.createHealthDeclaration(submitData)
+        await ParentService.postHealthDeclaration(submitData)
         alert("Tạo khai báo sức khỏe thành công!")
       }
 

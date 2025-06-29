@@ -58,7 +58,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         return [
           ...baseItems,
           { id: 'children-health', label: 'Sức khỏe con em', icon: Heart, path: '/children-health' },
-          { id: 'vaccination-schedule', label: 'Sự kiện', icon: Calendar, path: '/vaccination-schedule' },
+          { id: 'schedule', label: 'Sự kiện', icon: Calendar, path: '/schedule' },
           { id: 'notifications', label: 'Thông báo', icon: UserCheck, path: '/notifications' },
           { id: 'profile', label: 'Hồ sơ', icon: Settings, path: '/profile' }
         ];

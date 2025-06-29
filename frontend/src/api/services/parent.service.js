@@ -62,9 +62,10 @@ const ParentService = {
         }
     },
 
-    postHealthDeclaration: async (studentId, data) => {
+    postHealthDeclaration: async (data) => {
         try {
-            const response = await axiosInstance.post(API_ENDPOINTS.PARENT.POST_HEALTH_DECLARATION(studentId), data);
+            console.log(API_ENDPOINTS.PARENT.POST_HEALTH_DECLARATION);
+            const response = await axiosInstance.post(API_ENDPOINTS.PARENT.POST_HEALTH_DECLARATION, data);
             return response.data;
         } catch (error) {
             throw handleApiError(error);
