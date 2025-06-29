@@ -3,8 +3,10 @@ package sms.swp391.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import sms.swp391.models.dtos.requests.HealthConsultationScheduleRequestDTO;
 import sms.swp391.models.dtos.responses.HealthConsultationScheduleResponseDTO;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.services.HealthConsultationScheduleService;
+import sms.swp391.utils.PageUtils;
 
 import java.util.List;
 
@@ -76,17 +79,21 @@ public class HealthConsultationScheduleController {
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long resultId,
             @RequestParam(required = false) MedicalStatus status,
-            @PageableDefault(size = 10) Pageable pageable
-    ) {
-        Page<HealthConsultationScheduleResponseDTO> page = scheduleService.searchByFilters(studentId, resultId, status, pageable);
+            @ParameterObject                     // để SpringDoc hiểu Pageable
+            @PageableDefault(size = 10,
+                    sort = "scheduleTime",
+                    direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<HealthConsultationScheduleResponseDTO> page =
+                scheduleService.searchByFilters(studentId, resultId, status, pageable);
+
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("SEARCH_SUCCESS")
                         .message("Tìm kiếm lịch tư vấn thành công")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
-                        .data(page)
-                        .build()
-        );
+                        .data(PageUtils.toPagedResponse(page))   // ⚠️ wrap
+                        .build());
     }
 }
