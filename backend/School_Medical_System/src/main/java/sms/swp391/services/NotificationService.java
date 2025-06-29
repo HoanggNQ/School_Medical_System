@@ -10,9 +10,18 @@ import java.util.List;
 
 @Service
 public interface NotificationService {
+    NotificationResponse markAsRead(Long notificationId, Long userId);
+
+    List<NotificationResponse> getAllNotificationForUser(Long userId);
+
     List<NotificationResponse> getAllNotification();
 
     NotificationResponse createNotification(NotificationCreateDTO notificationCreateDTO);
+
+    NotificationResponse push(Long creatorId,
+                              Long receiverId,
+                              String title,
+                              String content);
 
     NotificationResponse updateNotification(NotificationUpdateDTO notificationUpdateDTO);
 
