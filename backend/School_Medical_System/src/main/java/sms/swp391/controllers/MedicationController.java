@@ -63,7 +63,7 @@ public class MedicationController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseObject> updateMedication(
             @PathVariable Long id,
             @RequestPart("medication") @Valid MedicationRequestDTO dto,
