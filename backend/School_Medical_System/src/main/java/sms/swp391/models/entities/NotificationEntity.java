@@ -6,9 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sms.swp391.models.dtos.enums.NotificationStatus;
+import sms.swp391.models.dtos.enums.NotificationType;
 import sms.swp391.models.dtos.enums.StatusEnum;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications", schema = "public")
@@ -27,17 +29,25 @@ public class NotificationEntity {
     private String content;
 
     @Column(name = "date_create", nullable = false)
-    private LocalDate dateCreate;
+    private LocalDateTime dateCreate;
 
     @Column(name = "title", nullable = false)
     private String title;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private StatusEnum status;
+    private NotificationStatus status = NotificationStatus.UNREAD;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
-    private UserEntity creator; // đổi tên từ createNotification → creator
+    private UserEntity creator;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id")
+    @JsonIgnore
+    private UserEntity receiver;
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
+
 }

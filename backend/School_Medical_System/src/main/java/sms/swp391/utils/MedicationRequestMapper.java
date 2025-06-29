@@ -1,6 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
 import sms.swp391.models.dtos.requests.MedicationRequestDetailDTO;
 import sms.swp391.models.dtos.responses.MedicationRequestDetailResponseDTO;
@@ -19,7 +20,7 @@ public class MedicationRequestMapper {
                 .requestedBy(parent)
                 .requestDate(LocalDate.now())
                 .academicYear(academicYear)
-                .status("PENDING")
+                .status(MedicalStatus.PENDING)
                 .priority(dto.getPriority())
                 .notes(dto.getNotes())
                 .build();
@@ -34,7 +35,7 @@ public class MedicationRequestMapper {
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
                 .quantity(dto.getQuantity())
-                .status("PENDING")
+                .status(MedicalStatus.PENDING)
                 .providedByParent(dto.getProvidedByParent())
                 .build();
     }

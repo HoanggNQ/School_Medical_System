@@ -1,5 +1,6 @@
 package sms.swp391.models.dtos.responses;
 import lombok.*;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 
@@ -14,7 +15,7 @@ public class VaccinationCampaignResponse {
     private String description;
     private LocalDate endDate;
     private LocalDate startDate;
-    private String status;
+    private MedicalStatus status;
     private Integer targetGrade;
     private String notes;
     private String vaccineType;
