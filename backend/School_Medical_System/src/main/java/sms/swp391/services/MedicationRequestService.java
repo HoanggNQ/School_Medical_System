@@ -2,6 +2,8 @@ package sms.swp391.services;
 
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
 import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
 import sms.swp391.models.entities.UserEntity;
@@ -14,6 +16,12 @@ public interface MedicationRequestService {
     @Transactional
     MedicationRequestResponseDTO createMedicationRequest(MedicationRequestCreateDTO dto, UserEntity parent);
 
+    @Transactional
+    List<MedicationRequestResponseDTO> getApproveRequests();
+
+    @Transactional
+    List<MedicationRequestResponseDTO> getRejectRequests();
+
     List<MedicationRequestResponseDTO> getPendingRequests();
 
     MedicationRequestResponseDTO getById(Long requestId);
@@ -21,4 +29,9 @@ public interface MedicationRequestService {
     void approveRequest(Long requestId, Long staffId);
 
     void rejectRequest(Long requestId, Long staffId);
+
+    @Transactional
+    void doneRequest(Long requestId, Long staffId);
+
+    Page<MedicationRequestResponseDTO> getAllRequests(Pageable pageable);
 }
