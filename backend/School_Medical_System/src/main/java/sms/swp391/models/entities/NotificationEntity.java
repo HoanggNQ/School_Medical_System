@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sms.swp391.models.dtos.enums.NotificationStatus;
-import sms.swp391.models.dtos.enums.NotificationType;
-import sms.swp391.models.dtos.enums.StatusEnum;
 
 import java.time.LocalDateTime;
 
@@ -46,8 +44,6 @@ public class NotificationEntity {
     @JoinColumn(name = "receiver_id")
     @JsonIgnore
     private UserEntity receiver;
-    @Column(name = "type")
-    @Enumerated(EnumType.STRING)
-    private NotificationType type;
+
 
 }
