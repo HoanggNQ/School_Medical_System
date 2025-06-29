@@ -14,6 +14,12 @@ public interface MedicationRequestService {
     @Transactional
     MedicationRequestResponseDTO createMedicationRequest(MedicationRequestCreateDTO dto, UserEntity parent);
 
+    @Transactional
+    List<MedicationRequestResponseDTO> getApproveRequests();
+
+    @Transactional
+    List<MedicationRequestResponseDTO> getRejectRequests();
+
     List<MedicationRequestResponseDTO> getPendingRequests();
 
     MedicationRequestResponseDTO getById(Long requestId);
@@ -21,4 +27,7 @@ public interface MedicationRequestService {
     void approveRequest(Long requestId, Long staffId);
 
     void rejectRequest(Long requestId, Long staffId);
+
+    @Transactional
+    void doneRequest(Long requestId, Long staffId);
 }

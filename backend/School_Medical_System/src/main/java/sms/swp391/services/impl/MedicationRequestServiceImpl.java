@@ -19,6 +19,7 @@ import sms.swp391.utils.MedicationRequestMapper;
 
 import java.time.LocalDate;
 import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MedicationRequestServiceImpl implements MedicationRequestService {
@@ -81,6 +82,24 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
         return MedicationRequestMapper.toResponseDTO(request);
     }
 
+    @Transactional
+    @Override
+    public List<MedicationRequestResponseDTO> getApproveRequests() {
+        return requestRepository.findByStatus(MedicalStatus.APPROVED)
+                .stream()
+                .map(MedicationRequestMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Transactional
+    @Override
+    public List<MedicationRequestResponseDTO> getRejectRequests() {
+        return requestRepository.findByStatus(MedicalStatus.REJECTED)
+                .stream()
+                .map(MedicationRequestMapper::toResponseDTO)
+                .toList();
+    }
+
     @Override
     @Transactional
     public List<MedicationRequestResponseDTO> getPendingRequests() {
@@ -114,7 +133,7 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
         notificationService.push(
                 staff.getUserId(),
                 request.getRequestedBy().getUserId(),
-                "Yêu cầu thuốc đã được duyệt",
+                "Yêu đã được duyệt",
                 "Yêu cầu thuốc cho " + request.getStudent().getUser().getFullname() + " đã được chấp thuận."
         );
     }
@@ -135,8 +154,28 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
         notificationService.push(
                 staff.getUserId(),
                 request.getRequestedBy().getUserId(),
+                "Yêu bị từ chối",
+                "Yêu uống thuốc cho " + request.getStudent().getUser().getFullname() + " đã bị từ chối."
+        );
+    }
+    @Transactional
+    @Override
+    public void doneRequest(Long requestId, Long staffId) {
+        MedicationRequestEntity request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Medication request not found with id: " + requestId));
+        UserEntity staff = userRepository.findById(staffId)
+                .orElseThrow(() -> new NotFoundException("Staff not found with id: " + staffId));
+
+        request.setStatus(MedicalStatus.DONE);
+        request.setReviewedBy(staff);
+        request.setReviewDate(LocalDate.now());
+        requestRepository.save(request);
+
+        notificationService.push(
+                staff.getUserId(),
+                request.getRequestedBy().getUserId(),
                 "Yêu cầu thuốc bị từ chối",
-                "Yêu cầu thuốc cho " + request.getStudent().getUser().getFullname() + " đã bị từ chối."
+                "Yêu cầu thuốc cho " + request.getStudent().getUser().getFullname() + " đã hoàn thành."
         );
     }
 }
