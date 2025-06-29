@@ -2,6 +2,9 @@ package sms.swp391.services.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,6 +22,7 @@ import sms.swp391.utils.MedicationRequestMapper;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -178,4 +182,15 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
                 "Yêu cầu thuốc cho " + request.getStudent().getUser().getFullname() + " đã hoàn thành."
         );
     }
+
+    @Override
+    @Transactional
+    public Page<MedicationRequestResponseDTO> getAllRequests(Pageable pageable) {
+        Page<MedicationRequestEntity> page = requestRepository.findAll(pageable);
+        List<MedicationRequestResponseDTO> dtoList = page.stream()
+                .map(MedicationRequestMapper::toResponseDTO)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtoList, pageable, page.getTotalElements());
+    }
+
 }
