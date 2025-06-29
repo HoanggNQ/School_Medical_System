@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationUpdateDTO {
+    private Long id;
     private String content;
-
     private String title;
 }
 

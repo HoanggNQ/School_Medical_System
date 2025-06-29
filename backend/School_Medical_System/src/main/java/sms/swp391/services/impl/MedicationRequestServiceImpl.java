@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import sms.swp391.models.dtos.enums.MedicalStatus;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
 import sms.swp391.models.dtos.requests.MedicationRequestDetailDTO;
 import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
@@ -12,11 +14,11 @@ import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.MedicationRequestService;
+import sms.swp391.services.NotificationService;
 import sms.swp391.utils.MedicationRequestMapper;
 
 import java.time.LocalDate;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class MedicationRequestServiceImpl implements MedicationRequestService {
@@ -26,10 +28,7 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
     private final MedicationRepository medicationRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
-
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_REJECTED = "REJECTED";
-    private static final String STATUS_APPROVED = "APPROVED";
+    private final NotificationService notificationService;
 
     private String generateAcademicYear() {
         int year = LocalDate.now().getYear();
@@ -69,15 +68,23 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
             detailRepository.save(detail);
         }
 
-        // ✅ Trả về DTO
+        List<UserEntity> medicalStaff = userRepository.findByRoleName(RoleEnum.SCHOOL_NURSE);
+        for (UserEntity staff : medicalStaff) {
+            notificationService.push(
+                    parent.getUserId(),
+                    staff.getUserId(),
+                    "Yêu cầu cấp phát thuốc mới",
+                    "Phụ huynh của " + student.getUser().getFullname() + " đã gửi yêu cầu cấp phát thuốc."
+            );
+        }
+
         return MedicationRequestMapper.toResponseDTO(request);
     }
 
     @Override
     @Transactional
-
     public List<MedicationRequestResponseDTO> getPendingRequests() {
-        return requestRepository.findByStatus(STATUS_PENDING)
+        return requestRepository.findByStatus(MedicalStatus.PENDING)
                 .stream()
                 .map(MedicationRequestMapper::toResponseDTO)
                 .toList();
@@ -99,10 +106,17 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
         UserEntity staff = userRepository.findById(staffId)
                 .orElseThrow(() -> new NotFoundException("Staff not found with id: " + staffId));
 
-        request.setStatus(STATUS_APPROVED);
+        request.setStatus(MedicalStatus.APPROVED);
         request.setReviewedBy(staff);
         request.setReviewDate(LocalDate.now());
         requestRepository.save(request);
+
+        notificationService.push(
+                staff.getUserId(),
+                request.getRequestedBy().getUserId(),
+                "Yêu cầu thuốc đã được duyệt",
+                "Yêu cầu thuốc cho " + request.getStudent().getUser().getFullname() + " đã được chấp thuận."
+        );
     }
 
     @Override
@@ -113,9 +127,16 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
         UserEntity staff = userRepository.findById(staffId)
                 .orElseThrow(() -> new NotFoundException("Staff not found with id: " + staffId));
 
-        request.setStatus(STATUS_REJECTED);
+        request.setStatus(MedicalStatus.REJECTED);
         request.setReviewedBy(staff);
         request.setReviewDate(LocalDate.now());
         requestRepository.save(request);
+
+        notificationService.push(
+                staff.getUserId(),
+                request.getRequestedBy().getUserId(),
+                "Yêu cầu thuốc bị từ chối",
+                "Yêu cầu thuốc cho " + request.getStudent().getUser().getFullname() + " đã bị từ chối."
+        );
     }
 }

@@ -3,6 +3,8 @@ package sms.swp391.services.impl;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.responses.ClassResponse;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.models.exception.ActionFailedException;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ClassServiceImpl implements ClassService {
 
     private final ClassRepository classRepository;
@@ -94,7 +97,7 @@ public class ClassServiceImpl implements ClassService {
     private void calculateActiveStudent(ClassEntity classEntity) {
         if (classEntity.getStudents() != null) {
             int count = (int) classEntity.getStudents().stream()
-                .filter(s -> s.getUser() != null && s.getUser().getStatus() != null && s.getUser().getStatus().name().equals("ACTIVE"))
+                .filter(s -> s.getUser() != null && s.getUser().getStatus() != null && s.getUser().getStatus().name().equals(MedicalStatus.ACTIVE))
                 .count();
             classEntity.setTotalstudent(count);
         } else {

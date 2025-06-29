@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.entities.UserEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -40,8 +41,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByPhoneNumber(String phoneNumber);
 
-//    Optional<UserEntity> findByUserId(Long userId);
-//    @Query("SELECT u FROM UserEntity u WHERE u.userId = :keyword AND u.roleName = 'STUDENT'")
-//    Optional<UserEntity> findStudentByUserId(@Param("keyword") String keyword);
+    List<UserEntity> findByRoleName(RoleEnum roleName);
 
 }

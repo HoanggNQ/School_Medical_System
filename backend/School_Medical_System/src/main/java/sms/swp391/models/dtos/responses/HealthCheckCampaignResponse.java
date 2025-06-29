@@ -1,5 +1,6 @@
 package sms.swp391.models.dtos.responses;
 import lombok.*;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 
@@ -13,7 +14,7 @@ public class HealthCheckCampaignResponse {
     private String name;
     private String description;
     private LocalDate checkDate;
-    private String status;
+    private MedicalStatus status;
     private Integer targetGrade;
     private String location;
     private String requiredEquipment;

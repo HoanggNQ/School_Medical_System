@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,7 +41,8 @@ public class HealthCheckCampaignEntity {
     @Size(max = 20)
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private MedicalStatus status;
 
     @Column(name = "target_grade")
     private Integer targetGrade;

@@ -2,11 +2,13 @@ package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sms.swp391.models.dtos.enums.NotificationStatus;
 import sms.swp391.models.dtos.requests.NotificationCreateDTO;
 import sms.swp391.models.dtos.requests.NotificationUpdateDTO;
 import sms.swp391.models.dtos.responses.NotificationResponse;
 import sms.swp391.models.entities.NotificationEntity;
 import sms.swp391.models.entities.UserEntity;
+import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.NotificationRepository;
 import sms.swp391.repositories.UserRepository;
@@ -14,7 +16,7 @@ import sms.swp391.services.NotificationService;
 import sms.swp391.utils.NotificationMapper;
 
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,27 +27,61 @@ public class NotificationServiceIplm implements NotificationService {
     private final UserRepository userRepository;
 
     @Override
+    public NotificationResponse markAsRead(Long notificationId, Long userId) {
+        NotificationEntity notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException("Notification not found"));
+
+        if (!notification.getReceiver().getUserId().equals(userId)) {
+            throw new BusinessException("Bạn không được phép đánh dấu thông báo này");
+        }
+
+        notification.setStatus(NotificationStatus.SEEN);
+        notificationRepository.save(notification);
+        return NotificationMapper.toDTO(notification);
+    }
+
+    @Override
+    public List<NotificationResponse> getAllNotificationForUser(Long userId) {
+        List<NotificationEntity> list = notificationRepository.findByReceiver_UserIdOrderByDateCreateDesc(userId);
+        return list.stream()
+                .map(NotificationMapper::toDTO)
+                .toList();
+    }
+
+    @Override
     public List<NotificationResponse> getAllNotification() {
         List<NotificationEntity> notificationEntities = notificationRepository.findAll();
 
-        var notificationResponses = notificationEntities.stream().map(NotificationMapper::toDTO).toList();
-        return notificationResponses;
+        return notificationEntities.stream().map(NotificationMapper::toDTO).toList();
     }
     @Override
-    public NotificationResponse createNotification(NotificationCreateDTO notificationCreateDTO) {
-        // Tìm creator (bắt buộc phải có)
-        UserEntity creator = userRepository.findById(notificationCreateDTO.getCreatorId())
-                .orElseThrow(() -> new NotFoundException("Creator not found with id: " + notificationCreateDTO.getCreatorId()));
+    public NotificationResponse createNotification(NotificationCreateDTO dto) {
 
-        NotificationEntity notificationEntity = new NotificationEntity();
-        notificationEntity.setContent(notificationCreateDTO.getContent());
-        notificationEntity.setTitle(notificationCreateDTO.getTitle());
-        notificationEntity.setDateCreate(LocalDate.now());
-        notificationEntity.setCreator(creator); // 🛠 gán creator ở đây
+        UserEntity creator  = userRepository.findById(dto.getCreatorId())
+                .orElseThrow(() -> new NotFoundException("Creator not found"));
 
-        notificationRepository.save(notificationEntity);
+        UserEntity receiver = userRepository.findById(dto.getReceiverId())
+                .orElseThrow(() -> new NotFoundException("Receiver not found"));   // 👈
 
-        return NotificationMapper.toDTO(notificationEntity);
+        NotificationEntity entity = new NotificationEntity();
+        entity.setTitle(dto.getTitle());
+        entity.setContent(dto.getContent());
+        entity.setCreator(creator);
+        entity.setReceiver(receiver);
+        entity.setStatus(NotificationStatus.UNREAD);
+        entity.setDateCreate(LocalDateTime.now());
+
+        notificationRepository.save(entity);
+        return NotificationMapper.toDTO(entity);
+    }
+
+    @Override
+    public NotificationResponse push(Long creatorId,
+                                     Long receiverId,
+                                     String title,
+                                     String content) {
+        NotificationCreateDTO dto = new NotificationCreateDTO(title, content, creatorId, receiverId);
+        return createNotification(dto);
     }
 
 
@@ -56,8 +92,7 @@ public class NotificationServiceIplm implements NotificationService {
         notificationEntity.setContent(notificationUpdateDTO.getContent());
         notificationEntity.setTitle(notificationUpdateDTO.getTitle());
         notificationRepository.save(notificationEntity);
-        NotificationResponse notificationResponse = NotificationMapper.toDTO(notificationEntity);
-        return notificationResponse;
+        return NotificationMapper.toDTO(notificationEntity);
     }
 
     @Override
