@@ -8,6 +8,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -68,6 +69,7 @@ public class MedicationRequestDetailEntity {
 
     @Size(max = 20)
     @Column(name = "status", length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private MedicalStatus status;
 
 }
