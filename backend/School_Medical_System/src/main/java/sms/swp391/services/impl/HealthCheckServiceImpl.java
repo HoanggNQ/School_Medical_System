@@ -201,7 +201,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .orElseThrow(() -> new NotFoundException("Checker not found"));
 
         HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
-        if (consent == null || !"APPROVED".equals(consent.getConsentStatus())) {
+        if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
             throw new BusinessException("Parent consent not approved for this examination");
         }
 
