@@ -43,18 +43,15 @@ public class StudentEntity {
     @Column(name = "student_code", nullable = false, length = 50, unique = true)
     private String studentCode;
 
-    // ⚠️ Thông tin hành chính, KHÔNG xoá
     @Column(name = "emergency_contact_name")
     private String emergencyContactName;
 
     @Column(name = "emergency_contact_phone")
     private String emergencyContactPhone;
 
-    /** 1-1: Hồ sơ sức khỏe hiện tại */
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private StudentHealthProfileEntity healthProfile;
 
-    /* ========== Quan hệ khác ========== */
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -88,7 +85,6 @@ public class StudentEntity {
     @Builder.Default
     private Set<HealthConsultationScheduleEntity> healthConsultationSchedules = new HashSet<>();
 
-    /* ========== Timestamps ========== */
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;

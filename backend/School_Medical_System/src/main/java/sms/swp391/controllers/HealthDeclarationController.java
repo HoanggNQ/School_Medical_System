@@ -3,9 +3,11 @@ package sms.swp391.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.dtos.responses.StudentHealthProfileResponseDTO;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthDeclarationService;
+import sms.swp391.utils.PageUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -248,32 +251,24 @@ public class HealthDeclarationController {
     public ResponseEntity<ResponseObject> searchByFilters(
             @RequestParam(required = false) MedicalStatus status,
             @RequestParam(required = false) Long studentId,
-            @RequestParam(required = false) Long declaredById,
+
             @RequestParam(required = false) String academicYear,
-            @PageableDefault(size = 10) Pageable pageable) {
-        try {
-            Page<HealthDeclarationResponseDTO> declarations = healthDeclarationService.searchByFilters(
-                    status, studentId, declaredById, academicYear, pageable);
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("SEARCH_SUCCESS")
-                            .message("Search health declarations successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(declarations)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .code("SEARCH_FAILED")
-                            .message("Failed to search health declarations: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-        }
+            @ParameterObject
+            @PageableDefault(size = 10,
+                    sort = "declarationDate",
+                    direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<HealthDeclarationResponseDTO> page =
+                healthDeclarationService.searchByFilters(status, studentId, academicYear, pageable);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("SEARCH_SUCCESS")
+                        .message("Search health declarations successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(PageUtils.toPagedResponse(page))
+                        .build());
     }
 
     @Operation(summary = "Cập nhật trạng thái khai báo y tế", description = "Thay đổi trạng thái của khai báo y tế (VD: PENDING, APPROVED, REJECTED).")

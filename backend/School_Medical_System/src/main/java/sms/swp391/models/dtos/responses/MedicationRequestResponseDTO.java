@@ -2,6 +2,7 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.Builder;
 import lombok.Data;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,7 +15,7 @@ public class MedicationRequestResponseDTO {
     private String studentName;       // optional nếu chỉ cần studentId
     private String academicYear;
     private String priority;
-    private String status;
+    private MedicalStatus status;
     private String notes;
     private LocalDate requestDate;
     private List<MedicationRequestDetailResponseDTO> details;

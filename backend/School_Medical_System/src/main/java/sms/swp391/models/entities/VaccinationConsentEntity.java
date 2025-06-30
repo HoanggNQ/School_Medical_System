@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,7 +43,8 @@ public class VaccinationConsentEntity {
     @Size(max = 20)
     @NotNull
     @Column(name = "consent_status", nullable = false, length = 20)
-    private String consentStatus;
+    @Enumerated(EnumType.STRING)
+    private MedicalStatus consentStatus;
 
     @Column(name = "response_date")
     private LocalDate responseDate;

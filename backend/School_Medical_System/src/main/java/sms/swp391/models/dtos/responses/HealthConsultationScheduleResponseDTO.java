@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class HealthConsultationScheduleResponseDTO {
     private Long id;
     private String studentName;
+    private String parentName;
     private Long resultId;
     private LocalDateTime scheduleTime;
     private String reason;

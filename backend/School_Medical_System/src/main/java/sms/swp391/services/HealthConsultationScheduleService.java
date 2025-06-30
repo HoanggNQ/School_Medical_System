@@ -15,4 +15,5 @@ public interface HealthConsultationScheduleService {
     List<HealthConsultationScheduleResponseDTO> getSchedulesByStudent(Long studentId);
     Page<HealthConsultationScheduleResponseDTO> searchByFilters(Long studentId, Long resultId, MedicalStatus status, Pageable pageable);
 
+    List<HealthConsultationScheduleResponseDTO> getSchedulesByParent(Long parent_Id);
 }
