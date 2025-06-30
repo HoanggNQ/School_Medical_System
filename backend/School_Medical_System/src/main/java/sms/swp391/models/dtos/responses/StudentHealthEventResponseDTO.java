@@ -11,7 +11,9 @@ import java.time.LocalDate;
 public class StudentHealthEventResponseDTO {
     private String type;                    // "HEALTH_CHECK" / "VACCINATION"
     private Long eventId;
-    private String campaign;
+    private Long consentId;
+    private String consentStatusText;
+    private String campaignName;
     private String description;
     private LocalDate checkDate;
     private String studentName;

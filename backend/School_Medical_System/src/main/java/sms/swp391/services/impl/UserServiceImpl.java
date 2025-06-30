@@ -255,7 +255,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createNurse(UserRegisterDTO userRegisterDTO) {
         Optional<UserEntity> userEntity = userRepository.findByEmail(userRegisterDTO.getEmail());
-
         if (userEntity.isPresent()) {
             switch (userEntity.get().getStatus().toString()) {
                 case "ACTIVE" -> throw new ConflictException("Email already exists!");

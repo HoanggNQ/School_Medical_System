@@ -2,6 +2,9 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.Builder;
 import lombok.Data;
+import sms.swp391.models.dtos.enums.MedicalStatus;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -12,8 +15,8 @@ public class MedicalEventResponse {
     private String location;
     private Long reportedById;
     private Long studentId;
-    private String eventDate;
-    private String status;
+    private LocalDateTime eventDate;
+    private MedicalStatus status;
     private Boolean followUpRequired;
     private String followUpNotes;
 }
