@@ -10,6 +10,7 @@ import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.requests.StudentUpdateRequest;
 import sms.swp391.models.dtos.responses.PaginatedStudentResponse;
 import sms.swp391.models.dtos.responses.StudentGetResponse;
+import sms.swp391.models.dtos.responses.StudentHealthEventResponseDTO;
 import sms.swp391.models.dtos.responses.StudentResponse;
 import sms.swp391.models.entities.ClassEntity;
 import sms.swp391.models.entities.StudentEntity;
@@ -17,9 +18,7 @@ import sms.swp391.models.entities.StudentHealthProfileEntity;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.NotFoundException;
-import sms.swp391.repositories.ClassRepository;
-import sms.swp391.repositories.StudentRepository;
-import sms.swp391.repositories.UserRepository;
+import sms.swp391.repositories.*;
 import sms.swp391.services.StudentService;
 import sms.swp391.utils.StudentMapper;
 import sms.swp391.utils.UserMapper;
@@ -40,6 +39,7 @@ public class StudentServiceImpl implements StudentService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final ClassRepository classRepository;
+    private final StudentEventRepository studentEventRepository;
 
     @Override
     public StudentResponse createStudent(StudentRequest request) {
@@ -278,5 +278,25 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentResponse> findStudentByParent(Long parentId) {
         List<StudentEntity> students = studentRepository.findByParent_UserId(parentId);
         return students.stream().map(StudentMapper::toDTO).toList();
+    }
+
+    @Override
+    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId, Pageable pageable) {
+        Page<StudentHealthEventProjection> page =
+                studentEventRepository.findAllHealthEventsByStudent(studentId, pageable);
+
+        return page.map(p -> StudentHealthEventResponseDTO.builder()
+                .type(p.getType())
+                .eventId(p.getEventId())
+                .campaign(p.getCampaign())
+                .description(p.getDescription())
+                .checkDate(p.getCheckDate())
+                .studentName(p.getStudentName())
+                .location(p.getLocation())
+                .requirementEquipment(p.getRequirementEquipment())
+                .consentStatus(p.getConsentStatus())
+                .resultStatus(p.getStatus())
+                .build());
+
     }
 }
