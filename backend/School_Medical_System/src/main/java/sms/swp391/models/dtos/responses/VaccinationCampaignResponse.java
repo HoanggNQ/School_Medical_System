@@ -21,4 +21,5 @@ public class VaccinationCampaignResponse {
     private String vaccineType;
     private Long createdById;
     private LocalDate createdAt;
+    private String location;
 }

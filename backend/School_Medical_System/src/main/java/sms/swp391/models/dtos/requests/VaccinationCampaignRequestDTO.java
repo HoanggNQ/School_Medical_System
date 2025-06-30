@@ -16,5 +16,6 @@ public class VaccinationCampaignRequestDTO {
     private Integer targetGrade;
     private String notes;
     private String vaccineType;
+    private String location;
     //createdAt, createdBy, campaignId, status
 }

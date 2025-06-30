@@ -2,12 +2,20 @@ package sms.swp391.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.VaccinationConsentRequestDTO;
-import sms.swp391.models.dtos.responses.*;
+import sms.swp391.models.dtos.responses.PaginatedContentResponse;
+import sms.swp391.models.dtos.responses.PaginatedVaccinationConsentResponse;
+import sms.swp391.models.dtos.responses.VaccinationConsentResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.NotFoundException;
@@ -68,7 +76,7 @@ public class VaccinationConsentController {
         }
     }
 
-    @Operation(summary = "Lấy danh sách đồng ý theo chiến dịch (đang chờ)", description = "Trả về danh sách các đồng ý tiêm vaccine đang ở trạng thái chờ theo chiến dịch.")
+    @Operation(summary = "Lấy danh sách tất cả consent kể cả đồng ý hay chưa theo campaign id")
     @GetMapping("/campaigns/{campaignId}/consents/pending")
     public ResponseEntity<ResponseObject> getConsentsByCampaign(@PathVariable Long campaignId) {
         try {
@@ -94,7 +102,7 @@ public class VaccinationConsentController {
         }
     }
 
-    @Operation(summary = "Lấy đồng ý tiêm vaccine theo ID", description = "Trả về chi tiết đồng ý tiêm vaccine theo ID.")
+    @Operation(summary = "Lấy consent bất kể đồng ý hay chưa theo consent id", description = "Trả về chi tiết consent theo ID.")
     @GetMapping("/consents/{id}")
     public ResponseEntity<ResponseObject> getConsentById(@PathVariable Long id) {
         try {
@@ -129,7 +137,7 @@ public class VaccinationConsentController {
         }
     }
 
-    @Operation(summary = "Lấy danh sách đồng ý đang chờ của phụ huynh", description = "Trả về các đơn đồng ý khám của phụ huynh đang ở trạng thái chờ.")
+    @Operation(summary = "Lấy danh sách consent đang chờ đồng ý theo parent id")
     @GetMapping("/parents/{parentId}/consents/pending")
     public ResponseEntity<ResponseObject> getPendingConsentsByParent(@PathVariable Long parentId) {
         try {
@@ -155,7 +163,7 @@ public class VaccinationConsentController {
         }
     }
 
-    @Operation(summary = "Lấy danh sách đã đồng ý của phụ huynh", description = "Trả về các đơn đồng ý khám của phụ huynh đang ở trạng thái đồng ý.")
+    @Operation(summary = "Lấy danh sách consent đã đồng ý theo parent id")
     @GetMapping("/parents/{parentId}/consents/approved")
     public ResponseEntity<ResponseObject> getPendingConsentsApprovedByParent(@PathVariable Long parentId) {
         try {
@@ -179,5 +187,27 @@ public class VaccinationConsentController {
                             .build()
             );
         }
+    }
+
+    @Operation(summary = "Lấy tất cả consent mà phụ huynh đã đồng ý", description = "Trả về danh sách học sinh đồng ý với phân trang và tìm kiếm, sort mặc định là id." +
+            " Sort(cần nhập đúng) bao gồm ")
+    @GetMapping("/getAll")
+    public ResponseEntity<ResponseObject> getAll(
+            @RequestParam(value = "search", required = false) String search,
+            @ParameterObject
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+            }) Pageable pageable) {
+        PaginatedVaccinationConsentResponse vaccinationConsentResponse = vaccinationService.getAllVaccinationConsents(search, pageable);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_SUCCESS")
+                        .message("Get all contents successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(vaccinationConsentResponse)
+                        .build()
+        );
     }
 }

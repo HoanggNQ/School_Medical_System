@@ -2,12 +2,19 @@ package sms.swp391.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.HealthCheckConsentRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckConsentResponse;
+import sms.swp391.models.dtos.responses.PaginatedHealthCheckConsentResponse;
+import sms.swp391.models.dtos.responses.PaginatedVaccinationConsentResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.AuthFailedException;
@@ -180,6 +187,28 @@ public class HealthCheckConsentController {
                             .build()
             );
         }
+    }
+
+    @Operation(summary = "Lấy tất cả học sinh mà phụ huynh đã đồng ý", description = "Trả về danh sách học sinh đồng ý với phân trang và tìm kiếm, sort mặc định là id." +
+            " Sort(cần nhập đúng) bao gồm ")
+    @GetMapping("/getAll")
+    public ResponseEntity<ResponseObject> getAll(
+            @RequestParam(value = "search", required = false) String search,
+            @ParameterObject
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+            }) Pageable pageable) {
+        PaginatedHealthCheckConsentResponse healthCheckConsentResponse = healthCheckService.getAllHealthCheckConsents(search, pageable);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_SUCCESS")
+                        .message("Get all contents successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(healthCheckConsentResponse)
+                        .build()
+        );
     }
 
 }
