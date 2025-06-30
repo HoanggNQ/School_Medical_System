@@ -35,12 +35,11 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
     @Transactional(readOnly = true)
     public Page<HealthDeclarationResponseDTO> searchByFilters(MedicalStatus status,
                                                               Long studentId,
-                                                              Long declaredById,
                                                               String academicYear,
                                                               Pageable pageable) {
         if (pageable == null) throw new IllegalArgumentException("pageable cannot be null");
         Page<HealthDeclarationEntity> page = healthDeclarationRepository.searchByFilters(
-                status, studentId, declaredById, academicYear, pageable);
+                status, studentId, academicYear, pageable);
         return page.map(HealthDeclarationMapper::toDTO);
     }
 
