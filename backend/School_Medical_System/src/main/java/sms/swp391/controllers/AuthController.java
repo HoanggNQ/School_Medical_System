@@ -98,10 +98,9 @@ public class AuthController {
             value = "/register",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseObject> register(
-            @RequestPart("user") @Valid UserRegisterDTO userRegisterDTO,
-            @RequestPart(value = "avatar", required = false) MultipartFile avatar) {
+            @RequestPart("user") @Valid UserRegisterDTO userRegisterDTO) {
         try {
-            UserResponse userResponse = authService.registerUser(userRegisterDTO,avatar);
+            UserResponse userResponse = authService.registerUser(userRegisterDTO);
             otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.ACCOUNT.toString());
 
             return ResponseEntity.ok().body(

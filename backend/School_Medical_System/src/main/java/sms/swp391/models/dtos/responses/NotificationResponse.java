@@ -3,7 +3,7 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -18,11 +18,12 @@ public class NotificationResponse {
     private String content;
 
 
-    private LocalDate dateCreate;
+    private LocalDateTime dateCreate;
 
 
     private String title;
 
 
-    private long userId ;
+    private Long userId ;
+
 }

@@ -14,5 +14,6 @@ public class NotificationCreateDTO {
     private String title;
     private String content;
     private Long creatorId;
+    private Long receiverId;
 }
 

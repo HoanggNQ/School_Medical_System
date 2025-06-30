@@ -5,5 +5,6 @@ public enum MedicalStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    DONE
+    DONE,
+    ACTIVE
 }

@@ -27,7 +27,6 @@ public interface HealthDeclarationRepository extends JpaRepository<HealthDeclara
             "AND h.status = 'PENDING' OR h.status = 'APPROVED'")
     Page<HealthDeclarationEntity> searchByFilters(
             @Param("status") MedicalStatus status,
-            @Param("studentId") Long studentId,
             @Param("declaredById") Long declaredById,
             @Param("academicYear") String academicYear,
             Pageable pageable

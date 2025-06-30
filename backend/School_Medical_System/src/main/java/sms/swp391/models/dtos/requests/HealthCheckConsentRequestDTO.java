@@ -1,6 +1,7 @@
 package sms.swp391.models.dtos.requests;
 
 import lombok.*;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 @Getter
 @Setter
@@ -8,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HealthCheckConsentRequestDTO {
-    private String status;
+    private MedicalStatus status;
 
 }

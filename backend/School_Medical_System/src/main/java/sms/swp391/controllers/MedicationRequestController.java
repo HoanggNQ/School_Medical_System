@@ -3,16 +3,22 @@ package sms.swp391.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
 import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
+import sms.swp391.models.dtos.responses.PagedResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.services.MedicationRequestService;
+import org.springframework.data.domain.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -27,7 +33,7 @@ public class MedicationRequestController {
     public ResponseEntity<ResponseObject> createRequest(@RequestBody @Valid MedicationRequestCreateDTO dto,
                                                         @AuthenticationPrincipal UserEntity currentUser) {
         try {
-            MedicationRequestResponseDTO response = medicationRequestService.createRequest(dto,currentUser.getUserId());
+            MedicationRequestResponseDTO response = medicationRequestService.createRequest(dto, currentUser.getUserId());
             return ResponseEntity.ok(ResponseObject.builder()
                     .code("REQUEST_CREATED")
                     .message("Medication request submitted successfully.")
@@ -64,6 +70,54 @@ public class MedicationRequestController {
                     ResponseObject.builder()
                             .code("FETCH_FAILED")
                             .message("Failed to fetch pending requests: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
+    @Operation(summary = "Lấy danh sách yêu cầu thuốc đang từ chối", description = "Nhân viên y tế xem các yêu cầu thuốc từ chối.")
+    @GetMapping("/reject")
+    public ResponseEntity<ResponseObject> getRejectRequests() {
+        try {
+            List<MedicationRequestResponseDTO> pending = medicationRequestService.getRejectRequests();
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("FETCH_SUCCESS")
+                    .message("Fetched Reject requests successfully.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(pending)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("FETCH_FAILED")
+                            .message("Failed to fetch Reject requests: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
+    @Operation(summary = "Lấy danh sách yêu cầu thuốc đã duyệt", description = "Nhân viên y tế xem các yêu cầu thuốc đã được duyệt.")
+    @GetMapping("/approve")
+    public ResponseEntity<ResponseObject> getApproveRequests() {
+        try {
+            List<MedicationRequestResponseDTO> pending = medicationRequestService.getApproveRequests();
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("FETCH_SUCCESS")
+                    .message("Fetched pending Approve successfully.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(pending)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("FETCH_FAILED")
+                            .message("Failed to fetch Approve requests: " + e.getMessage())
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .isSuccess(false)
                             .build()
@@ -119,6 +173,30 @@ public class MedicationRequestController {
         }
     }
 
+    @Operation(summary = "Hoàn thành yêu cầu thuốc", description = "Nhân viên y tế dã Hoàn thành yêu cầu thuốc.")
+    @PutMapping("/{id}/done")
+    public ResponseEntity<ResponseObject> doneRequest(@PathVariable Long id,
+                                                      @AuthenticationPrincipal UserEntity currentUser) {
+        try {
+            medicationRequestService.doneRequest(id, currentUser.getUserId());
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("REQUEST_done")
+                    .message("Medication request done successfully.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("REJECT_done")
+                            .message("Failed to done medication request: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
     @Operation(summary = "Xem chi tiết yêu cầu thuốc", description = "Xem chi tiết yêu cầu thuốc theo ID.")
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> getRequestById(@PathVariable Long id) {
@@ -142,4 +220,64 @@ public class MedicationRequestController {
             );
         }
     }
+
+    @Operation(summary = "Lấy tất cả yêu cầu thuốc")
+
+    @GetMapping
+    public ResponseEntity<ResponseObject> getAllRequests(
+            @ParameterObject
+            @PageableDefault(sort = "requestDate", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        Page<MedicationRequestResponseDTO> page = medicationRequestService.getAllRequests(pageable);
+
+        PagedResponse<MedicationRequestResponseDTO> response = PagedResponse.<MedicationRequestResponseDTO>builder()
+                .content(page.getContent())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("REQUEST_LIST")
+                        .message("Lấy danh sách yêu cầu thuốc thành công.")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(response)
+                        .build());
+    }
+
+//    @GetMapping
+//    public ResponseEntity<ResponseObject> getAllRequests(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "requestDate,desc") String[] sort) {
+//
+//        List<Sort.Order> orders = new ArrayList<>();
+//
+//        for (String sortParam : sort) {
+//            String[] parts = sortParam.split(",");
+//            String property = parts[0];
+//            Sort.Direction direction = parts.length > 1
+//                    ? Sort.Direction.fromString(parts[1])
+//                    : Sort.Direction.ASC;
+//            orders.add(new Sort.Order(direction, property));
+//        }
+//
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
+//        Page<MedicationRequestResponseDTO> result = medicationRequestService.getAllRequests(pageable);
+//
+//        return ResponseEntity.ok(
+//                ResponseObject.builder()
+//                        .code("REQUEST_LIST")
+//                        .message("Lấy danh sách yêu cầu thuốc thành công.")
+//                        .status(HttpStatus.OK)
+//                        .isSuccess(true)
+//                        .data(result)
+//                        .build()
+//        );
+//    }
 }
