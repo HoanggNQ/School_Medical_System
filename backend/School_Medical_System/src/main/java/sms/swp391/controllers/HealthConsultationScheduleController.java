@@ -42,7 +42,20 @@ public class HealthConsultationScheduleController {
                         .build()
         );
     }
-
+    @Operation(summary = "Lấy lịch tư vấn theo học sinh", description = "Trả về các lịch tư vấn theo studentId.")
+    @GetMapping("/parent/{parent_Id}")
+    public ResponseEntity<ResponseObject> getByParent(@PathVariable Long parent_Id) {
+        List<HealthConsultationScheduleResponseDTO> list = scheduleService.getSchedulesByParent(parent_Id);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("FETCH_SUCCESS")
+                        .message("Lấy danh sách lịch tư vấn thành công")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(list)
+                        .build()
+        );
+    }
     @Operation(summary = "Lấy lịch tư vấn theo học sinh", description = "Trả về các lịch tư vấn theo studentId.")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<ResponseObject> getByStudent(@PathVariable Long studentId) {

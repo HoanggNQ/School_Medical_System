@@ -85,10 +85,19 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<HealthConsultationScheduleResponseDTO> getSchedulesByParent(Long parent_Id) {
+        return scheduleRepo.findByStudent_Parent_UserId(parent_Id)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     private HealthConsultationScheduleResponseDTO toResponse(HealthConsultationScheduleEntity entity) {
         return HealthConsultationScheduleResponseDTO.builder()
                 .id(entity.getId())
                 .studentName(entity.getStudent().getUser().getFullname())
+                .parentName(entity.getStudent().getParent().getFullname())
                 .resultId(entity.getResult().getResultId())
                 .scheduleTime(entity.getScheduleTime())
                 .reason(entity.getReason())
