@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
@@ -12,12 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.requests.StudentUpdateRequest;
-import sms.swp391.models.dtos.responses.ResponseObject;
-import sms.swp391.models.dtos.responses.StudentResponse;
+import sms.swp391.models.dtos.responses.*;
 import sms.swp391.services.StudentService;
-import sms.swp391.models.dtos.responses.StudentGetResponse;
 import org.springframework.data.domain.Sort;
-import sms.swp391.models.dtos.responses.PaginatedStudentResponse;
+import sms.swp391.utils.PageUtils;
 
 import java.util.List;
 
@@ -137,5 +136,22 @@ public class StudentController {
                     .build()
             );
         }
+    }
+    @GetMapping("/students/{studentId}/events")
+    public ResponseEntity<ResponseObject> getEvents(
+            @PathVariable Long studentId,
+            @ParameterObject @PageableDefault(size = 10) Pageable pageable) {
+
+        Page<StudentHealthEventResponseDTO> page =
+                studentService.getPagedEvents(studentId, pageable);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_EVENTS_SUCCESS")
+                        .message("Lấy sự kiện thành công")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(PageUtils.toPagedResponse(page))
+                        .build());
     }
 }

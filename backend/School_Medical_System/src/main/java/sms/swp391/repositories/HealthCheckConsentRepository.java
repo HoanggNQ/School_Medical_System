@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.VaccinationConsentEntity;
@@ -22,7 +23,7 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
 
     // Find pending consents for a specific parent
     List<HealthCheckConsentEntity> findByParent_UserIdAndConsentStatus
-    (Long parentId, String status);
+    (Long parentId, MedicalStatus status);
 
     @Query("SELECT hc FROM HealthCheckConsentEntity hc " +
             "WHERE (LOWER(hc.student.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
