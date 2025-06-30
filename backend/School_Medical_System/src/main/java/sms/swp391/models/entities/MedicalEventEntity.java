@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -28,7 +29,7 @@ public class MedicalEventEntity {
     @NotNull
     @ColumnDefault("now()")
     @Column(name = "event_date", nullable = false)
-    private LocalDate eventDate;
+    private LocalDateTime eventDate;
 
     @NotNull
     @Column(name = "event_type", nullable = false, length = Integer.MAX_VALUE)
