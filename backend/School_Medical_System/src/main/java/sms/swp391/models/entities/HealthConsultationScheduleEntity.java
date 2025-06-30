@@ -25,7 +25,9 @@ public class HealthConsultationScheduleEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private StudentEntity student;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", nullable = true)
+    private UserEntity parent;
     // Kết quả kiểm tra dẫn đến tư vấn
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "result_id", nullable = false)
