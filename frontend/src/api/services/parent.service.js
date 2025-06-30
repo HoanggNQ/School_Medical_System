@@ -89,6 +89,79 @@ const ParentService = {
             throw handleApiError(error);
         }
     },
+
+    getParentSchedule: async (studentId) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_SCHEDULE(studentId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+
+    getStudentHealthCheckEvent: async (parentId) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_STUDENT_HEALTH_CHECK_EVENT(parentId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    getStudentVaccinationEvent: async (parentId) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_STUDENT_VACCINATION_EVENT(parentId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    getNotifications: async () => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_NOTIFICATION);
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    markNotificationAsRead: async (id) => {
+        try {
+            const response = await axiosInstance.put(API_ENDPOINTS.PARENT.NOTIFICATION_READ(id));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    deleteNotification: async (id) => {
+        try {
+            const response = await axiosInstance.delete(API_ENDPOINTS.PARENT.DELETE_NOTIFICATION(id));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    updateAcceptedVaccination: async (id) => {
+        try {
+            const response = await axiosInstance.put(API_ENDPOINTS.PARENT.UPDATE_ACCEPTED_VACCINATION(id));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    updateAcceptedHealthCheck: async (id) => {
+        try {
+            const response = await axiosInstance.put(API_ENDPOINTS.PARENT.UPDATE_ACCEPTED_HEALTH_CHECK(id));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    }
 }
 
 export default ParentService;

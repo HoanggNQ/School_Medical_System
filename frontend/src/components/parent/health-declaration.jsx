@@ -1,8 +1,21 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { FileText, Save, AlertCircle, User, Phone, Heart, Activity, Ruler, Weight, Droplets, Shield, Pill, Calendar } from 'lucide-react'
+import {
+  FileText,
+  Save,
+  AlertCircle,
+  User,
+  Phone,
+  Heart,
+  Activity,
+  Ruler,
+  Weight,
+  Droplets,
+  Shield,
+  Pill,
+  Calendar,
+} from "lucide-react"
 import ParentService from "../../api/services/parent.service"
 
 const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave, onCancel }) => {
@@ -18,7 +31,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     chronicDiseases: "",
     currentMedications: "",
     emergencyContactName: "",
-    emergencyContactPhone: ""
+    emergencyContactPhone: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
@@ -36,7 +49,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     const now = new Date()
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() + 1
-    
+
     // Academic year typically starts in September
     if (currentMonth >= 9) {
       return `${currentYear}-${currentYear + 1}`
@@ -45,18 +58,39 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     }
   }
 
+  // Thêm function để lấy current user từ localStorage
+  const getCurrentUser = () => {
+    try {
+      const currentUser = localStorage.getItem("currentUser")
+      if (currentUser) {
+        return JSON.parse(currentUser)
+      }
+      return null
+    } catch (error) {
+      console.error("Error parsing current user:", error)
+      return null
+    }
+  }
+
+  // Trong useEffect, cập nhật để set declaredById từ current user
   useEffect(() => {
+    // Get current user ID
+    const currentUser = getCurrentUser()
+    const parentId = currentUser?.id || 0
+
     // Initialize form with editing data or defaults
     if (editingDeclaration) {
       setFormData({
         ...editingDeclaration,
-        studentId: selectedStudent?.id || editingDeclaration.studentId
+        studentId: selectedStudent?.id || editingDeclaration.studentId,
+        declaredById: parentId, // Always use current user ID
       })
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         studentId: selectedStudent?.id || 0,
-        academicYear: getCurrentAcademicYear()
+        declaredById: parentId, // Set current user ID
+        academicYear: getCurrentAcademicYear(),
       }))
     }
   }, [selectedStudent, editingDeclaration])
@@ -71,20 +105,20 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     { value: "AB-", label: "AB-" },
     { value: "O+", label: "O+" },
     { value: "O-", label: "O-" },
-    { value: "UNKNOWN", label: "Chưa xác định" }
+    { value: "UNKNOWN", label: "Chưa xác định" },
   ]
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }))
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }))
     }
   }
@@ -126,9 +160,10 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     return Object.keys(newErrors).length === 0
   }
 
+  // Trong handleSubmit, đảm bảo declaredById luôn được set từ current user
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -136,11 +171,16 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     setIsSubmitting(true)
 
     try {
+      // Get current user ID
+      const currentUser = getCurrentUser()
+      const parentId = currentUser?.id || 0
+
       const submitData = {
         ...formData,
         height: Number.parseFloat(formData.height),
         weight: Number.parseFloat(formData.weight),
-        studentId: selectedStudent?.id || formData.studentId
+        studentId: selectedStudent?.id || formData.studentId,
+        declaredById: parentId, // Always use current user ID
       }
 
       console.log("Submitting health declaration:", submitData)
@@ -159,7 +199,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
       if (!editingDeclaration) {
         setFormData({
           studentId: selectedStudent?.id || 0,
-          declaredById: 0,
+          declaredById: parentId, // Use current user ID
           status: "PENDING",
           academicYear: getCurrentAcademicYear(),
           height: "",
@@ -169,7 +209,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
           chronicDiseases: "",
           currentMedications: "",
           emergencyContactName: "",
-          emergencyContactPhone: ""
+          emergencyContactPhone: "",
         })
       }
 
@@ -177,7 +217,6 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
       if (onSave) {
         onSave()
       }
-
     } catch (error) {
       console.error("Error submitting health declaration:", error)
       alert("Có lỗi xảy ra khi gửi khai báo sức khỏe")
@@ -197,7 +236,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
 
   const getBMIStatus = (bmi) => {
     if (!bmi) return ""
-    const bmiValue = parseFloat(bmi)
+    const bmiValue = Number.parseFloat(bmi)
     if (bmiValue < 18.5) return "Thiếu cân"
     if (bmiValue < 25) return "Bình thường"
     if (bmiValue < 30) return "Thừa cân"
@@ -206,7 +245,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
 
   const getBMIColor = (bmi) => {
     if (!bmi) return "text-gray-500"
-    const bmiValue = parseFloat(bmi)
+    const bmiValue = Number.parseFloat(bmi)
     if (bmiValue < 18.5) return "text-blue-600"
     if (bmiValue < 25) return "text-green-600"
     if (bmiValue < 30) return "text-yellow-600"
@@ -219,7 +258,8 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-gray-900 flex items-center">
             <FileText className="w-6 h-6 mr-2 text-blue-500" />
-            {editingDeclaration ? "Chỉnh sửa khai báo sức khỏe" : "Khai báo sức khỏe"} - {formatValue(selectedStudent.user?.fullName)}
+            {editingDeclaration ? "Chỉnh sửa khai báo sức khỏe" : "Khai báo sức khỏe"} -{" "}
+            {formatValue(selectedStudent.user?.fullName)}
           </h3>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Heart className="w-4 h-4" />
@@ -249,9 +289,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                   }`}
                   placeholder="Ví dụ: 2024-2025"
                 />
-                {errors.academicYear && (
-                  <p className="mt-1 text-sm text-red-600">{errors.academicYear}</p>
-                )}
+                {errors.academicYear && <p className="mt-1 text-sm text-red-600">{errors.academicYear}</p>}
               </div>
               <div className="flex items-center">
                 <div className="bg-blue-100 p-3 rounded-lg">
@@ -288,9 +326,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                   }`}
                   placeholder="150.5"
                 />
-                {errors.height && (
-                  <p className="mt-1 text-sm text-red-600">{errors.height}</p>
-                )}
+                {errors.height && <p className="mt-1 text-sm text-red-600">{errors.height}</p>}
               </div>
 
               <div>
@@ -311,9 +347,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                   }`}
                   placeholder="45.5"
                 />
-                {errors.weight && (
-                  <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
-                )}
+                {errors.weight && <p className="mt-1 text-sm text-red-600">{errors.weight}</p>}
               </div>
 
               <div>
@@ -335,9 +369,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                     </option>
                   ))}
                 </select>
-                {errors.bloodType && (
-                  <p className="mt-1 text-sm text-red-600">{errors.bloodType}</p>
-                )}
+                {errors.bloodType && <p className="mt-1 text-sm text-red-600">{errors.bloodType}</p>}
               </div>
             </div>
 
@@ -347,9 +379,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Chỉ số BMI:</span>
                   <div className="text-right">
-                    <span className={`text-lg font-bold ${getBMIColor(calculateBMI())}`}>
-                      {calculateBMI()}
-                    </span>
+                    <span className={`text-lg font-bold ${getBMIColor(calculateBMI())}`}>{calculateBMI()}</span>
                     <span className={`ml-2 text-sm ${getBMIColor(calculateBMI())}`}>
                       ({getBMIStatus(calculateBMI())})
                     </span>
@@ -367,9 +397,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
             </h4>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dị ứng (nếu có)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dị ứng (nếu có)</label>
                 <textarea
                   rows={3}
                   value={formData.allergies}
@@ -380,9 +408,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bệnh mãn tính (nếu có)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bệnh mãn tính (nếu có)</label>
                 <textarea
                   rows={3}
                   value={formData.chronicDiseases}

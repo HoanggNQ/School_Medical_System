@@ -40,7 +40,14 @@ const API_ENDPOINTS = {
     POST_HEALTH_DECLARATION: `/api/v1/health-declarations`,
     GET_HEALTH_DECLARATION: (studentId) => `/api/v1/health-declarations/student/${studentId}/details`,
     UPDATE_HEALTH_DECLARATION: (id) => `/api/v1/health-declarations/${id}`,
-    GET_NOTIFICATION: (userId) => `/api/v1/notification/user/${userId}`,
+    GET_NOTIFICATION: `/api/v1/notification`,
+    NOTIFICATION_READ: (id) => `/api/v1/notification/${id}/read`,
+    DELETE_NOTIFICATION: (id) => `/api/v1/notification/${id}/read`,
+    GET_SCHEDULE: (studentId) => `/api/v1/schedule/user/${studentId}`,
+    GET_STUDENT_HEALTH_CHECK_EVENT: (parentId) => `/api/v1/health-check-consent/parents/${parentId}/consents/pending`,
+    GET_STUDENT_VACCINATION_EVENT: (parentId) => `/api/vaccination-consent/parents/${parentId}/consents/pending`,
+    UPDATE_ACCEPTED_VACCINATION: (id) => `/api/v1/vaccination-campaign/accept/${id}`,
+    UPDATE_ACCEPTED_HEALTH_CHECK: (id) => `/api/v1/health-check-campaign/accept/${id}`,
   },
 
   STUDENT: {
