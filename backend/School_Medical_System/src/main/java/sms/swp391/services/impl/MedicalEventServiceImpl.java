@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
 import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
@@ -46,7 +47,7 @@ public class MedicalEventServiceImpl implements MedicalEventService {
                     .orElseThrow(() -> new NotFoundException("User not found: " + request.getReportedById()));
         }
         MedicalEventEntity entity = MedicalEventMapper.toEntity(request, student, reporter);
-        entity.setStatus(sms.swp391.models.dtos.enums.MedicalStatus.PENDING); // Always set to PENDING on create
+        entity.setStatus(MedicalStatus.PENDING);
         return MedicalEventMapper.toDTO(medicalEventRepository.save(entity));
     }
 
@@ -59,10 +60,10 @@ public class MedicalEventServiceImpl implements MedicalEventService {
         entity.setDescription(request.getDescription());
         entity.setLocation(request.getLocation());
         if (request.getEventDate() != null) {
-            entity.setEventDate(java.time.LocalDateTime.parse(request.getEventDate()));
+            entity.setEventDate(request.getEventDate());
         }
         if (request.getStatus() != null) {
-            entity.setStatus(sms.swp391.models.dtos.enums.MedicalStatus.valueOf(request.getStatus()));
+            entity.setStatus(request.getStatus());
         }
         entity.setFollowUpRequired(request.getFollowUpRequired());
         entity.setFollowUpNotes(request.getFollowUpNotes());
@@ -83,7 +84,10 @@ public class MedicalEventServiceImpl implements MedicalEventService {
 
     @Override
     public void delete(Long id) {
-        medicalEventRepository.deleteById(id);
+        MedicalEventEntity entity = medicalEventRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException("Medical event not found"));
+        entity.setStatus(MedicalStatus.REJECTED);
+        medicalEventRepository.save(entity);
     }
 
     @Override

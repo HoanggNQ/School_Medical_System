@@ -1,6 +1,9 @@
 package sms.swp391.models.dtos.requests;
 
 import lombok.Data;
+import sms.swp391.models.dtos.enums.MedicalStatus;
+
+import java.time.LocalDateTime;
 
 @Data
 public class MedicalEventUpdateRequestDTO {
@@ -9,8 +12,8 @@ public class MedicalEventUpdateRequestDTO {
     private String location;
     private Long reportedById;
     private Long studentId;
-    private String eventDate; // ISO string, will be parsed to LocalDateTime
-    private String status; // Use String, will be parsed to MedicalStatus enum
+    private LocalDateTime eventDate; // ISO string, will be parsed to LocalDateTime
+    private MedicalStatus status; // Use String, will be parsed to MedicalStatus enum
     private Boolean followUpRequired;
     private String followUpNotes;
 }

@@ -47,6 +47,10 @@ public class StudentServiceImpl implements StudentService {
             if (studentRepository.findByStudentCode(request.getStudentCode()).isPresent()) {
                 throw new ActionFailedException("Student code already exists");
             }
+            if (studentRepository.findByUser_Email(request.getUserRegister().getEmail()).isPresent()){
+                throw new ActionFailedException("Student email already exists");
+
+            }
 
             String phone = request.getUserRegister().getPhoneNumber();
             Optional<UserEntity> existingUser = userRepository.findByPhoneNumber(phone);
@@ -288,8 +292,10 @@ public class StudentServiceImpl implements StudentService {
         return page.map(p -> StudentHealthEventResponseDTO.builder()
                 .type(p.getType())
                 .eventId(p.getEventId())
-                .campaign(p.getCampaign())
+                .campaignName(p.getCampaign())
                 .description(p.getDescription())
+                .consentId(p.getConsentId())
+                .consentStatusText(p.getConsentId() == null ? "Chiến dịch chưa bắt đầu" : "Đã có consent")
                 .checkDate(p.getCheckDate())
                 .studentName(p.getStudentName())
                 .location(p.getLocation())
