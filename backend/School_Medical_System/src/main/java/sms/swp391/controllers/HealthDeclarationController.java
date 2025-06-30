@@ -251,7 +251,7 @@ public class HealthDeclarationController {
     public ResponseEntity<ResponseObject> searchByFilters(
             @RequestParam(required = false) MedicalStatus status,
             @RequestParam(required = false) Long studentId,
-            @RequestParam(required = false) Long declaredById,
+
             @RequestParam(required = false) String academicYear,
             @ParameterObject
             @PageableDefault(size = 10,
@@ -259,7 +259,7 @@ public class HealthDeclarationController {
                     direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<HealthDeclarationResponseDTO> page =
-                healthDeclarationService.searchByFilters(status, studentId, declaredById, academicYear, pageable);
+                healthDeclarationService.searchByFilters(status, studentId, academicYear, pageable);
 
         return ResponseEntity.ok(
                 ResponseObject.builder()

@@ -1,6 +1,7 @@
 package sms.swp391.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 
@@ -17,5 +18,5 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
 
     // Find pending consents for a specific parent
     List<HealthCheckConsentEntity> findByParent_UserIdAndConsentStatus
-    (Long parentId, String status);
+    (Long parentId, MedicalStatus status);
 }

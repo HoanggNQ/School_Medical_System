@@ -267,7 +267,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
     @Override
     public List<VaccinationConsentResponse> getPendingConsentsByParent(Long parentId) {
-        List<VaccinationConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "PENDING");
+        List<VaccinationConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, MedicalStatus.PENDING);
         return consents.stream()
                 .map(VaccinationConsentMapper::toDTO)
                 .toList();
@@ -275,7 +275,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
     @Override
     public List<VaccinationConsentResponse> getPendingConsentsApprovedByParent(Long parentId) {
-        List<VaccinationConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "APPROVED");
+        List<VaccinationConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, MedicalStatus.APPROVED);
         return consents.stream()
                 .map(VaccinationConsentMapper::toDTO)
                 .toList();
