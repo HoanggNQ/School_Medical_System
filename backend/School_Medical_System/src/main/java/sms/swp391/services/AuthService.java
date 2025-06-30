@@ -10,5 +10,5 @@ import sms.swp391.models.dtos.responses.UserResponse;
 @Service
 public interface AuthService {
     JwtResponse authenticateUser(LoginDTO loginDto);
-    UserResponse registerUser(UserRegisterDTO userRegisterDTO, MultipartFile avatar);
+    UserResponse registerUser(UserRegisterDTO userRegisterDTO);
 }
