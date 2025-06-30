@@ -1,9 +1,13 @@
 package sms.swp391.repositories;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import sms.swp391.models.dtos.enums.MedicalStatus;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
+import sms.swp391.models.entities.VaccinationConsentEntity;
 
 import java.util.List;
 
@@ -18,5 +22,14 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
 
     // Find pending consents for a specific parent
     List<HealthCheckConsentEntity> findByParent_UserIdAndConsentStatus
-    (Long parentId, MedicalStatus status);
+    (Long parentId, String status);
+
+    @Query("SELECT hc FROM HealthCheckConsentEntity hc " +
+            "WHERE (LOWER(hc.student.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(hc.healthCheckCampaign.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND hc.consentStatus = 'APPROVED'")
+    Page<HealthCheckConsentEntity> searchHealthCheckConsents(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT v FROM HealthCheckConsentEntity v WHERE v.consentStatus = 'APPROVED'")
+    Page<HealthCheckConsentEntity> findApprovedStudent(Pageable pageable);
 }

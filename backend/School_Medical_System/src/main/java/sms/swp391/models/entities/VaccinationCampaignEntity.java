@@ -37,6 +37,10 @@ public class VaccinationCampaignEntity {
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
+    @Size(max = 100)
+    @Column(name = "location", length = 100)
+    private String location;
+
     @NotNull
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;

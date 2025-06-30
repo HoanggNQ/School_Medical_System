@@ -1,5 +1,6 @@
 package sms.swp391.services;
 
+import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import java.util.List;
@@ -37,4 +38,8 @@ public interface HealthCheckService {
     List<HealthCheckResultResponse> getResultsByCampaign(Long campaignId);
 
     List<HealthCheckResultResponse> getResultsByStudent(Long studentId);
+
+    PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable);
+
+    void deleteCampaign(Long campaignId);
 }

@@ -20,6 +20,7 @@ public class VaccinationCampaignMapper {
                 .targetGrade(entity.getTargetGrade())
                 .vaccineType(entity.getVaccineType())
                 .notes(entity.getNotes())
+                .location(entity.getLocation())
                 .createdById(entity.getCreatedBy() != null ? entity.getCreatedBy().getUserId() : null)
                 .createdAt(entity.getCreatedAt())
                 .build();
@@ -35,6 +36,7 @@ public class VaccinationCampaignMapper {
         entity.setEndDate(dto.getEndDate());
         entity.setTargetGrade(dto.getTargetGrade());
         entity.setVaccineType(dto.getVaccineType());
+        entity.setLocation(entity.getLocation());
         entity.setNotes(dto.getNotes());
         return entity;
     }

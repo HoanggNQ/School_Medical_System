@@ -247,4 +247,19 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
+    @Operation(summary = "Xóa chiến dịch đã tạo", description = "Đổi trạng chiến dịch thành REJECTED theo ID.")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseObject> deleteCampaign(@PathVariable Long id) {
+        healthCheckService.deleteCampaign(id);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("DELETE_SUCCESS")
+                        .message("Campaign deleted successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(null)
+                        .build()
+        );
+    }
 }

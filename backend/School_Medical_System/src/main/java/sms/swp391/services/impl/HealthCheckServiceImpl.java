@@ -1,7 +1,10 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
@@ -12,21 +15,20 @@ import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.HealthCheckService;
-import sms.swp391.services.NotificationService;
 import sms.swp391.services.SendMailService;
 import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
+import sms.swp391.utils.VaccinationConsentMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,21 +41,14 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final SendMailService sendMailService;
-    private final NotificationService notificationService;
-
-    Long getCurrentUserId() {
-        var principal = (UserEntity) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        return principal.getUserId();
-    }
-
+    private final HealthCheckConsentRepository healthCheckConsentRepository;
 
     @Override
     public void endCampaign(Long campaignId) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
 
-        campaign.setStatus(MedicalStatus.DONE);
+        campaign.setStatus("CLOSE");
         campaignRepository.save(campaign);
     }
 
@@ -64,7 +59,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
         HealthCheckCampaignEntity campaign = HealthCheckCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
-        campaign.setStatus(MedicalStatus.PENDING);
+        campaign.setStatus("PENDING");
         campaign.setCreatedAt(LocalDate.now());
 
         HealthCheckCampaignEntity savedCampaign = campaignRepository.save(campaign);
@@ -73,11 +68,9 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request) {
-
         HealthCheckCampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
 
-        // 1. Cập nhật thông tin
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
         campaign.setCheckDate(request.getCheckDate());
@@ -85,50 +78,26 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         campaign.setLocation(request.getLocation());
         campaign.setRequiredEquipment(request.getRequiredEquipment());
 
-        // 2. Lưu campaign trước rồi mới đẩy thông báo
         HealthCheckCampaignEntity updatedCampaign = campaignRepository.save(campaign);
-
-        // 3. Lấy danh sách HS thuộc khối mới
-        List<StudentEntity> targetStudents =
-                studentRepository.findByClassEntity_GradeWithUserAndParent(updatedCampaign.getTargetGrade());
-
-        // 4. Gửi thông báo cho PH (tránh trùng lặp nếu PH có nhiều con)
-        Set<Long> notifiedParents = new HashSet<>();
-        for (StudentEntity student : targetStudents) {
-            Long parentId = student.getParent().getUserId();
-            if (notifiedParents.add(parentId)) {                // chỉ gửi 1 lần/PH
-                notificationService.push(
-                        getCurrentUserId(),                     // creator (người sửa)
-                        parentId,                               // receiver (PH)
-                        "Cập nhật chiến dịch kiểm tra sức khỏe",
-                        "Chiến dịch \"" + updatedCampaign.getName() +
-                                "\" của khối " + updatedCampaign.getTargetGrade() +
-                                " đã thay đổi. Vui lòng kiểm tra thông tin mới."
-                );
-            }
-        }
-
         return HealthCheckCampaignMapper.toDTO(updatedCampaign);
     }
-
 
     @Override
     public void startCampaign(Long campaignId) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
 
-        List<StudentEntity> targetStudents =
-                studentRepository.findByClassEntity_GradeWithUserAndParent(campaign.getTargetGrade());
+        List<StudentEntity> targetStudents = studentRepository.findByClassEntity_GradeWithUserAndParent(campaign.getTargetGrade());
 
         for (StudentEntity student : targetStudents) {
-
             HealthCheckConsentEntity consent = HealthCheckConsentEntity.builder()
                     .healthCheckCampaign(campaign)
                     .student(student)
                     .parent(student.getParent())
-                    .consentStatus(MedicalStatus.PENDING)
+                    .consentStatus("PENDING")
                     .academicYear(getCurrentAcademicYear())
                     .build();
+
             consentRepository.save(consent);
 
             sendMailService.sendConsentRequestEmail(
@@ -139,28 +108,11 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     campaign.getCheckDate().toString(),
                     campaign.getLocation()
             );
-
-            String campaignName = campaign.getName().toUpperCase();
-            String studentName = student.getUser().getFullname().toUpperCase();
-            String checkDate = campaign.getCheckDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-
-            String content = "Vui lòng xem và xác nhận cho chiến dịch " +
-                    campaignName + " của học sinh " + studentName +
-                    " ngày " + checkDate + ".";
-
-            notificationService.push(
-                    getCurrentUserId(),                          // creator
-                    student.getParent().getUserId(),             // receiver
-                    "Yêu cầu đồng ý kiểm tra sức khỏe",
-                    content
-            );
-
         }
 
-        campaign.setStatus(MedicalStatus.APPROVED);
+        campaign.setStatus("ACTIVE");
         campaignRepository.save(campaign);
     }
-
 
     @Override
     public HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId) {
@@ -175,17 +127,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         consent.setResponseDate(LocalDate.now());
 
         HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
-        notificationService.push(
-                parentId,
-                consent.getHealthCheckCampaign()
-                        .getCreatedBy()
-                        .getUserId(),
-                "Phụ huynh đã " +
-                        (request.getStatus().equals(MedicalStatus.APPROVED) ? "đồng ý" : "từ chối") +
-                        " kiểm tra",
-                "Phụ huynh của " + consent.getStudent().getUser().getFullname()
-                        + " đã cập nhật trạng thái đồng ý: " + request.getStatus()
-        );
         return HealthCheckConsentMapper.toDTO(updatedConsent);
     }
 
@@ -201,7 +142,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .orElseThrow(() -> new NotFoundException("Checker not found"));
 
         HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
-        if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
+        if (consent == null || !"APPROVED".equals(consent.getConsentStatus())) {
             throw new BusinessException("Parent consent not approved for this examination");
         }
 
@@ -236,14 +177,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckResultEntity savedResult = resultRepository.saveAndFlush(result);
         studentRepository.save(student);
 
-        notificationService.push(
-                checkedById,                          // nhân viên y tế
-                student.getParent().getUserId(),      // PH
-                "Kết quả kiểm tra sức khỏe",
-                "Kết quả kiểm tra của " + student.getUser().getFullname()
-                        + " đã sẵn sàng Phụ huynh có xem chi tiết ở Mail."
-        );
-
         if (Boolean.TRUE.equals(savedResult.getFollowUpRequired()) || isAbnormal(savedResult)) {
             LocalDateTime scheduleTime;
             if (request.getScheduleTime() != null) {
@@ -268,13 +201,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     student.getUser().getFullname(),
                     scheduleTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")),
                     schedule.getReason()
-            );
-            notificationService.push(
-                    checkedById,
-                    student.getParent().getUserId(),
-                    "Lịch tư vấn sức khỏe",
-                    "Con bạn cần tư vấn sức khỏe vào "
-                            + scheduleTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
             );
         }
 
@@ -342,14 +268,14 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public List<HealthCheckConsentResponse> getPendingConsentsByParent(Long parentId) {
-        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, MedicalStatus.PENDING);
+        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "PENDING");
         return consents.stream()
                 .map(HealthCheckConsentMapper::toDTO)
                 .toList();
     }
     @Override
     public List<HealthCheckConsentResponse> getPendingConsentsApprovedByParent(Long parentId) {
-        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, MedicalStatus.APPROVED);
+        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "APPROVED");
         return consents.stream()
                 .map(HealthCheckConsentMapper::toDTO)
                 .toList();
@@ -404,5 +330,54 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         java.math.BigDecimal heightM = heightCm.divide(new java.math.BigDecimal("100"));
         return weightKg.divide(heightM.multiply(heightM), 2, java.math.RoundingMode.HALF_UP);
     }
-    
+
+    @Override
+    public PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("id") ||
+                            property.equals("consentStatus") ||
+                            property.equals("academicYear") ||
+                            property.equals("student.user.fullname") ||
+                            property.equals("healthCheckCampaign.name");
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<HealthCheckConsentEntity> healthCheckConsentPage;
+        if (search != null && !search.isEmpty()) {
+            healthCheckConsentPage = healthCheckConsentRepository.searchHealthCheckConsents(search, validatedPageable);
+        } else {
+            healthCheckConsentPage = healthCheckConsentRepository.findApprovedStudent(validatedPageable);
+        }
+
+        List<HealthCheckConsentResponse> healthCheckConsentDTOs = healthCheckConsentPage.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+
+        return PaginatedHealthCheckConsentResponse.builder()
+                .healthCheckConsents(healthCheckConsentDTOs)
+                .totalElements(healthCheckConsentPage.getTotalElements())
+                .totalPages(healthCheckConsentPage.getTotalPages())
+                .currentPage(healthCheckConsentPage.getNumber())
+                .build();
+    }
+
+    @Override
+    public void deleteCampaign(Long campaignId) {
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
+        campaign.setStatus("REJECTED");
+        campaignRepository.save(campaign);
+    }
+
 }
