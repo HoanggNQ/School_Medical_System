@@ -7,7 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sms.swp391.models.dtos.requests.MedicalEventRequestDTO;
+import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
+import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
 import sms.swp391.models.entities.MedicalEventEntity;
 import sms.swp391.models.entities.StudentEntity;
@@ -33,23 +34,24 @@ public class MedicalEventServiceImpl implements MedicalEventService {
     private final UserRepository userRepository;
 
     @Override
-    public MedicalEventResponse create(MedicalEventRequestDTO request) {
+    public MedicalEventResponse create(MedicalEventCreateRequestDTO request) {
         StudentEntity student = null;
         if (request.getStudentId() != null) {
             student = studentRepository.findById(request.getStudentId())
-                    .orElseThrow(() -> new NotFoundException("Student not found"));
+                    .orElseThrow(() -> new NotFoundException("Student not found: " + request.getStudentId()));
         }
         UserEntity reporter = null;
         if (request.getReportedById() != null) {
             reporter = userRepository.findById(request.getReportedById())
-                    .orElseThrow(() -> new NotFoundException("Reporter not found"));
+                    .orElseThrow(() -> new NotFoundException("User not found: " + request.getReportedById()));
         }
         MedicalEventEntity entity = MedicalEventMapper.toEntity(request, student, reporter);
+        entity.setStatus(sms.swp391.models.dtos.enums.MedicalStatus.PENDING); // Always set to PENDING on create
         return MedicalEventMapper.toDTO(medicalEventRepository.save(entity));
     }
 
     @Override
-    public MedicalEventResponse update(Long id, MedicalEventRequestDTO request) {
+    public MedicalEventResponse update(Long id, MedicalEventUpdateRequestDTO request) {
         MedicalEventEntity entity = medicalEventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Medical event not found"));
 
@@ -57,7 +59,7 @@ public class MedicalEventServiceImpl implements MedicalEventService {
         entity.setDescription(request.getDescription());
         entity.setLocation(request.getLocation());
         if (request.getEventDate() != null) {
-            entity.setEventDate(java.time.LocalDate.parse(request.getEventDate()));
+            entity.setEventDate(java.time.LocalDateTime.parse(request.getEventDate()));
         }
         if (request.getStatus() != null) {
             entity.setStatus(sms.swp391.models.dtos.enums.MedicalStatus.valueOf(request.getStatus()));
