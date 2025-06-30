@@ -17,7 +17,7 @@ public interface HealthDeclarationService {
     Page<HealthDeclarationResponseDTO> searchByFilters(
             MedicalStatus status,
             Long studentId,
-            Long declaredById,
+
             String academicYear,
             Pageable pageable
     );

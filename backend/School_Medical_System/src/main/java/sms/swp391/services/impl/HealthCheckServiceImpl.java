@@ -342,14 +342,14 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public List<HealthCheckConsentResponse> getPendingConsentsByParent(Long parentId) {
-        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "PENDING");
+        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, MedicalStatus.PENDING);
         return consents.stream()
                 .map(HealthCheckConsentMapper::toDTO)
                 .toList();
     }
     @Override
     public List<HealthCheckConsentResponse> getPendingConsentsApprovedByParent(Long parentId) {
-        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, "APPROVED");
+        List<HealthCheckConsentEntity> consents = consentRepository.findByParent_UserIdAndConsentStatus(parentId, MedicalStatus.APPROVED);
         return consents.stream()
                 .map(HealthCheckConsentMapper::toDTO)
                 .toList();
