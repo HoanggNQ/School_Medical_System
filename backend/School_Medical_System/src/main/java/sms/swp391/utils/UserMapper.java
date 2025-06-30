@@ -34,7 +34,6 @@ public class UserMapper {
                 .address(request.getAddress())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
-                .avatarurl(request.getAvatarUrl())
                 .dob(request.getDob())
                 .gender(request.getGender())
                 .password(request.getPassword()) // You should hash this elsewhere!
@@ -49,7 +48,6 @@ public class UserMapper {
                 .address(dto.getAddress())
                 .gender(dto.getGender())
                 .phoneNumber(dto.getPhoneNumber())
-                .avatarurl(dto.getAvatarUrl())
                 .dob(dto.getDob())
                 .email(dto.getEmail())
                 .fullname(dto.getFullname())
