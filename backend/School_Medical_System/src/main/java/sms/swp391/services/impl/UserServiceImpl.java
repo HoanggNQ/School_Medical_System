@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
@@ -172,23 +173,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(UserUpdateDTO updateUserDTO, MultipartFile image) {
-        UserEntity userEntity = userRepository.findById(updateUserDTO.getId())
-                .orElseThrow(() -> new NotFoundException(
-                        String.format("Cannot find user with ID: %s", updateUserDTO.getId())
-                ));
-        userEntity.setDob(updateUserDTO.getDob());
-        userEntity.setAddress(updateUserDTO.getAddress());
-        userEntity.setGender(updateUserDTO.getGender());
-        userEntity.setFullname(updateUserDTO.getName());
-        if (image != null && !image.isEmpty()) {
-            var imageUrl = fileDatabaseService.uploadFile(image);
-            userEntity.setAvatarurl(imageUrl.getUrl());
-        }
-        var item = userRepository.save(userEntity);
-        UserResponse userResponse = UserMapper.toDTO(item);
-            return userResponse;
+    public UserResponse updateUser(@Validated UserUpdateDTO dto,
+                                   MultipartFile image) {
 
+        var user = userRepository.findById(dto.getId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Cannot find user with ID: %d".formatted(dto.getId())));
+
+        user.setDob(dto.getDob());
+        user.setAddress(dto.getAddress());
+        user.setGender(dto.getGender());
+        user.setFullname(dto.getName());
+
+        if (image != null && !image.isEmpty()) {
+            var uploadResult = fileDatabaseService.uploadFile(image);
+            user.setAvatarurl(uploadResult.getUrl());
+        }
+
+        var saved = userRepository.save(user);
+        return UserMapper.toDTO(saved);
     }
     @Override
     public UserResponse changPassword(String email, String oldPassword, String newPassword, String newPasswordConfirm) {
