@@ -1,8 +1,6 @@
 package sms.swp391.models.dtos.requests;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,20 +13,20 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateDTO {
+
+    @Positive(message = "ID must be positive")
     private long id;
 
-    @NotEmpty(message = "name not null!!!")
+    @NotBlank(message = "Name must not be blank")
     private String name;
 
-    @NotEmpty(message = "address not null!!!")
+    @NotBlank(message = "Address must not be blank")
     private String address;
 
-    @NotEmpty(message = "gender not null!!!")
+    @NotBlank(message = "Gender must not be blank")
     private String gender;
 
-    @NotNull(message = "Dob not null!!!")
-    @Past(message = "Dob must be in the past!!!")
-    private LocalDate Dob;
-
-
+    @NotNull(message = "Dob must not be null")
+    @Past(message = "Dob must be in the past")
+    private LocalDate dob;
 }
