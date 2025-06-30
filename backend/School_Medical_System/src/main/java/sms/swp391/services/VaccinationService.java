@@ -1,5 +1,6 @@
 package sms.swp391.services;
 
+import org.springframework.data.domain.Pageable;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import java.util.List;
@@ -32,6 +33,8 @@ public interface VaccinationService {
 
     List<VaccinationConsentResponse> getPendingConsentsApprovedByParent(Long parentId);
 
+    PaginatedVaccinationConsentResponse getAllVaccinationConsents(String search, Pageable pageable);
+
     // Record Management
     VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request, Long checkedById);
 
@@ -41,5 +44,5 @@ public interface VaccinationService {
 
     List<VaccinationRecordResponse> getRecordsByStudent(Long studentId);
 
-
+    void deleteCampaign(Long campaignId);
 }

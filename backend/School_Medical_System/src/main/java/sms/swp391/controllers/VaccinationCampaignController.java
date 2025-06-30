@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
-import sms.swp391.models.dtos.respones.VaccinationCampaignResponse;
-import sms.swp391.models.dtos.respones.ResponseObject;
+import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
+import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.VaccinationService;
@@ -247,5 +247,20 @@ public class VaccinationCampaignController {
                             .build()
             );
         }
+    }
+
+    @Operation(summary = "Xóa chiến dịch đã tạo", description = "Đổi trạng chiến dịch thành REJECTED theo ID.")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseObject> deleteCampaign(@PathVariable Long id) {
+        vaccinationService.deleteCampaign(id);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("DELETE_SUCCESS")
+                        .message("Campaign deleted successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(null)
+                        .build()
+        );
     }
 }

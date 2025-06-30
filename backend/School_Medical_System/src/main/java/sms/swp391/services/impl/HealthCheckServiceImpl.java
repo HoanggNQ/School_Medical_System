@@ -1,6 +1,10 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
@@ -15,6 +19,7 @@ import sms.swp391.services.SendMailService;
 import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
+import sms.swp391.utils.VaccinationConsentMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +41,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final SendMailService sendMailService;
+    private final HealthCheckConsentRepository healthCheckConsentRepository;
 
     @Override
     public void endCampaign(Long campaignId) {
@@ -323,5 +330,54 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         java.math.BigDecimal heightM = heightCm.divide(new java.math.BigDecimal("100"));
         return weightKg.divide(heightM.multiply(heightM), 2, java.math.RoundingMode.HALF_UP);
     }
-    
+
+    @Override
+    public PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("id") ||
+                            property.equals("consentStatus") ||
+                            property.equals("academicYear") ||
+                            property.equals("student.user.fullname") ||
+                            property.equals("healthCheckCampaign.name");
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<HealthCheckConsentEntity> healthCheckConsentPage;
+        if (search != null && !search.isEmpty()) {
+            healthCheckConsentPage = healthCheckConsentRepository.searchHealthCheckConsents(search, validatedPageable);
+        } else {
+            healthCheckConsentPage = healthCheckConsentRepository.findApprovedStudent(validatedPageable);
+        }
+
+        List<HealthCheckConsentResponse> healthCheckConsentDTOs = healthCheckConsentPage.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+
+        return PaginatedHealthCheckConsentResponse.builder()
+                .healthCheckConsents(healthCheckConsentDTOs)
+                .totalElements(healthCheckConsentPage.getTotalElements())
+                .totalPages(healthCheckConsentPage.getTotalPages())
+                .currentPage(healthCheckConsentPage.getNumber())
+                .build();
+    }
+
+    @Override
+    public void deleteCampaign(Long campaignId) {
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
+        campaign.setStatus("REJECTED");
+        campaignRepository.save(campaign);
+    }
+
 }
