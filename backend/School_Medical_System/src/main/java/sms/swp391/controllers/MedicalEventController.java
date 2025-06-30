@@ -10,7 +10,8 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sms.swp391.models.dtos.requests.MedicalEventRequestDTO;
+import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
+import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
 import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
@@ -23,9 +24,10 @@ public class MedicalEventController {
 
     private final MedicalEventService medicalEventService;
 
-    @Operation(summary = "Tạo medical event", description = "Khởi tạo một medical event. status bao gồm PENDING, APPROVED, REJECTED, DONE")
+    @Operation(summary = "Tạo medical event", description = "Khởi tạo một medical event. status bao gồm PENDING, APPROVED, REJECTED, DONE." +
+            "LocalDateTime được định dạng (yyyy-MM-dd'T'HH:mm:ss). EX: 2023-10-01T10:00:00")
     @PostMapping("/create")
-    public ResponseEntity<ResponseObject> create(@RequestBody MedicalEventRequestDTO request) {
+    public ResponseEntity<ResponseObject> create(@RequestBody MedicalEventCreateRequestDTO request) {
         MedicalEventResponse response = medicalEventService.create(request);
         return ResponseEntity.ok(
                 ResponseObject.builder()
@@ -38,9 +40,10 @@ public class MedicalEventController {
         );
     }
 
-    @Operation(summary = "Cập nhật medical event", description = "Chỉnh sửa thông tin medical event theo id. status bao gồm PENDING, APPROVED, REJECTED, DONE")
+    @Operation(summary = "Cập nhật medical event", description = "Chỉnh sửa thông tin medical event theo id. status bao gồm PENDING, APPROVED, REJECTED, DONE." +
+            "LocalDateTime được định dạng (yyyy-MM-dd'T'HH:mm:ss). EX: 2023-10-01T10:00:00")
     @PutMapping("/update/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody MedicalEventRequestDTO request) {
+    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody MedicalEventUpdateRequestDTO request) {
         MedicalEventResponse response = medicalEventService.update(id, request);
         return ResponseEntity.ok(
                 ResponseObject.builder()
