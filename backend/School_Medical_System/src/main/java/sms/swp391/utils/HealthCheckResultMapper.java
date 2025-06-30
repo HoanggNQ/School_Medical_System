@@ -31,6 +31,7 @@ public class HealthCheckResultMapper {
                 .studentName(Optional.ofNullable(student.getUser()).map(UserEntity::getFullname).orElse(null))
                 .checkedById(entity.getCheckedBy().getUserId())
                 .checkedByName(entity.getCheckedBy().getFullname())
+                .campaignName(entity.getHealthCheckCampaign().getName())
                 .checkDate(entity.getCheckDate())
                 .heightCm(profile != null ? profile.getHeight() : null)
                 .weightKg(profile != null ? profile.getWeight() : null)

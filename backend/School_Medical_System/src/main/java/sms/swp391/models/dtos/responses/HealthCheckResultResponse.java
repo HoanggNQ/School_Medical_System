@@ -14,6 +14,7 @@ public class HealthCheckResultResponse {
     private Long campaignId;
     private Long studentId;
     private String studentName;
+    private String campaignName;
     private Long checkedById;
     private String checkedByName;
     private LocalDate checkDate;

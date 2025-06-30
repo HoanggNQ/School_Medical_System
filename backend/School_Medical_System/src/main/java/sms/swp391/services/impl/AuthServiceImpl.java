@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final FileDatabaseService fileDatabaseService;
 
     @Override
-    public UserResponse registerUser(UserRegisterDTO userRegisterDTO, MultipartFile avatar) {
+    public UserResponse registerUser(UserRegisterDTO userRegisterDTO) {
         Optional<UserEntity> userEntity = userRepository.findByEmail(userRegisterDTO.getEmail());
 
         if (userEntity.isPresent()) {
@@ -71,10 +71,6 @@ public class AuthServiceImpl implements AuthService {
         userCreate.setStatus(StatusEnum.VERIFY);
         userCreate.setRoleName(RoleEnum.PARENT);
         userCreate.setPassword(password);
-        if (avatar != null && !avatar.isEmpty()) {
-            FileObjectResponse foRes = fileDatabaseService.uploadFile(avatar);
-            userCreate.setAvatarurl(foRes.getUrl());
-        }
         userRepository.save(userCreate);
 
         return UserMapper.toDTO(userCreate);
