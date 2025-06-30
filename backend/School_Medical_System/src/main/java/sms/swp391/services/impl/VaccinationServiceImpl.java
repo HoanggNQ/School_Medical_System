@@ -1,6 +1,10 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.CampaignStatus;
@@ -25,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +43,7 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final SendMailService sendMailService;
+    private final VaccinationConsentRepository vaccinationConsentRepository;
 
     // Campaign Methods
     public void endCampaign(Long campaignId) {
@@ -75,6 +81,7 @@ public class VaccinationServiceImpl implements VaccinationService {
         campaign.setTargetGrade(request.getTargetGrade());
         campaign.setNotes(request.getNotes());
         campaign.setVaccineType(request.getVaccineType());
+        campaign.setLocation(request.getLocation());
 
         VaccinationCampaignEntity updatedCampaign = campaignRepository.save(campaign);
         return VaccinationCampaignMapper.toDTO(updatedCampaign);
@@ -247,5 +254,54 @@ public class VaccinationServiceImpl implements VaccinationService {
     private String getCurrentAcademicYear() {
         int year = Year.now().getValue();
         return year + "-" + (year + 1);
+    }
+
+    @Override
+    public PaginatedVaccinationConsentResponse getAllVaccinationConsents(String search, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("id") ||
+                            property.equals("consentStatus") ||
+                            property.equals("academicYear") ||
+                            property.equals("student.user.fullname") ||
+                            property.equals("vaccinationCampaign.name");
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<VaccinationConsentEntity> vaccinationConsentPage;
+        if (search != null && !search.isEmpty()) {
+            vaccinationConsentPage = vaccinationConsentRepository.searchVaccinationConsents(search, validatedPageable);
+        } else {
+            vaccinationConsentPage = vaccinationConsentRepository.findApprovedStudent(validatedPageable);
+        }
+
+        List<VaccinationConsentResponse> vaccinationConsentDTOs = vaccinationConsentPage.stream()
+                .map(VaccinationConsentMapper::toDTO)
+                .toList();
+
+        return PaginatedVaccinationConsentResponse.builder()
+                .vaccinationConsents(vaccinationConsentDTOs)
+                .totalElements(vaccinationConsentPage.getTotalElements())
+                .totalPages(vaccinationConsentPage.getTotalPages())
+                .currentPage(vaccinationConsentPage.getNumber())
+                .build();
+    }
+
+    @Override
+    public void deleteCampaign(Long campaignId) {
+        VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
+        campaign.setStatus("REJECTED");
+        campaignRepository.save(campaign);
     }
 }
