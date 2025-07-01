@@ -14,6 +14,7 @@ public class VaccinationConsentResponse {
     private Long id;
     private Long campaignId;
     private Long studentId;
+    private String campaignName;
     private String studentName;
     private Long parentId;
     private int phoneNumber;
