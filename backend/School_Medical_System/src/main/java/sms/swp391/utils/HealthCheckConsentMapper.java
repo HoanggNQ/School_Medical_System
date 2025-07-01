@@ -15,7 +15,6 @@ public class HealthCheckConsentMapper {
         if (entity == null) return null;
 
         return HealthCheckConsentResponse.builder()
-                .id(entity.getId())
                 .campaignId(entity.getHealthCheckCampaign().getId())
                 .consentId(entity.getId())
                 .studentId(entity.getStudent().getId())
@@ -23,6 +22,7 @@ public class HealthCheckConsentMapper {
                 .className(entity.getStudent().getClassEntity().getClassName())
                 .parentId(entity.getParent().getUserId())
                 .parentName(entity.getParent().getFullname())
+                .campaignName(entity.getHealthCheckCampaign().getName())
                 .status(entity.getConsentStatus())
                 .responseDate(entity.getResponseDate())
                 .academicYear(entity.getAcademicYear())
