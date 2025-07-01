@@ -240,8 +240,11 @@ public class VaccinationServiceImpl implements VaccinationService {
         record.setAdministeredBy(checker);
         record.setAdministrationDate(LocalDate.now());
         record.setAcademicYear(getCurrentAcademicYear());
+        record.setConsent(consent);
 
         VaccinationRecordEntity savedRecord = recordRepository.save(record);
+        consent.setConsentStatus(MedicalStatus.DONE);
+        consentRepository.save(consent);
 
         /* 🔔 Thông báo kết quả cho PH */
         notificationService.push(

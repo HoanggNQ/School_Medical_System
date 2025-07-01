@@ -197,6 +197,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
     }
 
     @Override
+    @Transactional
     public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
@@ -239,8 +240,11 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         result.setCheckedBy(checker);
         result.setCheckDate(LocalDate.now());
         result.setAcademicYear(getCurrentAcademicYear());
+        result.setConsent(consent);
 
         HealthCheckResultEntity savedResult = resultRepository.saveAndFlush(result);
+        consent.setConsentStatus(MedicalStatus.DONE);
+        consentRepository.save(consent);
         studentRepository.save(student);
 
         notificationService.push(
