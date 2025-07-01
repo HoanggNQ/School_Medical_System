@@ -21,6 +21,7 @@ import sms.swp391.services.SendMailService;
 import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
+import sms.swp391.utils.VaccinationConsentMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -417,8 +418,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .filter(order -> {
                     String property = order.getProperty();
                     return property.equals("id") ||
-                            property.equals("consentStatus") ||
-                            property.equals("academicYear") ||
                             property.equals("student.user.fullname") ||
                             property.equals("healthCheckCampaign.name");
                 })
@@ -458,6 +457,37 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
         campaign.setStatus(MedicalStatus.REJECTED);
         campaignRepository.save(campaign);
+    }
+    @Override
+    public PaginatedHealthCheckConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return "parent.userId".equals(property) || "student.id".equals(property);
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<HealthCheckConsentEntity> vaccinationConsentPage = healthCheckConsentRepository.findApprovedConsentsByCampaignId(campaignId, validatedPageable);
+
+        List<HealthCheckConsentResponse> vaccinationConsentDTOs = vaccinationConsentPage.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+
+        return PaginatedHealthCheckConsentResponse.builder()
+                .healthCheckConsents(vaccinationConsentDTOs)
+                .totalElements(vaccinationConsentPage.getTotalElements())
+                .totalPages(vaccinationConsentPage.getTotalPages())
+                .currentPage(vaccinationConsentPage.getNumber())
+                .build();
     }
 
 }
