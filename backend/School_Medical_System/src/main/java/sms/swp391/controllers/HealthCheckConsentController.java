@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.HealthCheckConsentRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckConsentResponse;
 import sms.swp391.models.dtos.responses.PaginatedHealthCheckConsentResponse;
@@ -35,6 +36,17 @@ public class HealthCheckConsentController {
             @PathVariable Long id,
             @RequestBody HealthCheckConsentRequestDTO request,
             @AuthenticationPrincipal UserEntity parentId) {
+        if (parentId == null || !RoleEnum.PARENT.name().equals(parentId.getRoleName()) || parentId.getRoleName() == null ) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
             HealthCheckConsentResponse response = healthCheckService.updateConsent(id, request, parentId.getUserId());
             return ResponseEntity.ok(

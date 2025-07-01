@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
@@ -26,6 +27,17 @@ public class VaccinationCampaignController {
     public ResponseEntity<ResponseObject> createCampaign(
             @RequestBody VaccinationCampaignRequestDTO request,
             @AuthenticationPrincipal UserEntity createdById) {
+        if (createdById == null || createdById.getRoleName() == null || !RoleEnum.ADMIN.name().equals(createdById.getRoleName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
             VaccinationCampaignResponse response = vaccinationService.createCampaign(request, createdById.getUserId());
             return ResponseEntity.ok(
