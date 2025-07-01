@@ -2,12 +2,18 @@ package sms.swp391.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
+import sms.swp391.models.dtos.responses.PaginatedHealthCheckConsentResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.NotFoundException;
@@ -261,5 +267,37 @@ public class HealthCheckCampaignController {
                         .data(null)
                         .build()
         );
+    }
+    @Operation(summary = "Lấy danh sách consent đã đồng ý theo campaign id", description = "Trả về danh sách consent đã đồng ý theo campaign id với phân trang và sắp xếp" +
+            " bao gồm: student.id, parent,userId.")
+    @GetMapping("/campaigns/{campaignId}/consents/approved")
+    public ResponseEntity<ResponseObject> getApprovedConsentsByCampaign(
+            @PathVariable Long campaignId,
+            @ParameterObject
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+            }) Pageable pageable) {
+        try {
+            PaginatedHealthCheckConsentResponse vaccinationConsentResponse = healthCheckService.getApprovedConsentsByCampaign(campaignId, pageable);
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("GET_APPROVED_CONSENTS_SUCCESS")
+                            .message("Approved consents retrieved successfully")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(vaccinationConsentResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("GET_APPROVED_CONSENTS_FAILED")
+                            .message("Failed to get approved consents: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
     }
 }

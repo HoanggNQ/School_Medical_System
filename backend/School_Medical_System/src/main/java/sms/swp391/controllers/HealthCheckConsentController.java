@@ -189,7 +189,7 @@ public class HealthCheckConsentController {
         }
     }
 
-    @Operation(summary = "Lấy tất cả học sinh mà phụ huynh đã đồng ý", description = "Trả về danh sách học sinh đồng ý với phân trang và tìm kiếm, sort mặc định là id." +
+    @Operation(summary = "Lấy tất cả học sinh mà phụ huynh đã đồng ý", description = "Trả về danh sách học sinh đồng ý với phân trang và tìm kiếm theo (ten HSinh or ten chien dich), sort mặc định là id." +
             " Sort(cần nhập đúng) bao gồm ")
     @GetMapping("/getAll")
     public ResponseEntity<ResponseObject> getAll(
