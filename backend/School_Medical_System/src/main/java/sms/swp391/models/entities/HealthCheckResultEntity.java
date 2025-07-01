@@ -28,6 +28,10 @@ public class HealthCheckResultEntity {
     @JoinColumn(name = "student_id", nullable = false)
     private StudentEntity student;
 
+    @OneToOne
+    @JoinColumn(name = "consent_id", nullable = false)
+    private HealthCheckConsentEntity consent;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "health_check_campaign_id", nullable = false)
     private HealthCheckCampaignEntity healthCheckCampaign;
