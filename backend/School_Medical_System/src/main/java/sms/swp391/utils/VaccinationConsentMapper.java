@@ -17,6 +17,7 @@ public class VaccinationConsentMapper {
         return VaccinationConsentResponse.builder()
                 .id(entity.getId())
                 .campaignId(entity.getVaccinationCampaign().getId())
+                .campaignName(entity.getVaccinationCampaign().getName())
                 .studentId(entity.getStudent().getId())
                 .studentName(Optional.ofNullable(entity.getStudent()).map(StudentEntity::getUser).map(UserEntity::getFullname).orElse(null))
                 .parentId(entity.getParent().getUserId())
@@ -25,6 +26,7 @@ public class VaccinationConsentMapper {
                 .responseDate(entity.getResponseDate())
                 .academicYear(entity.getAcademicYear())
                 .consentFormUrl(entity.getConsentFormUrl())
+                .consentStatus(entity.getConsentStatus())
                 .build();
     }
 
