@@ -33,4 +33,9 @@ public interface VaccinationConsentRepository extends JpaRepository<VaccinationC
 
     @Query("SELECT v FROM VaccinationConsentEntity v WHERE v.consentStatus = 'APPROVED'")
     Page<VaccinationConsentEntity> findApprovedStudent(Pageable pageable);
+
+    @Query("SELECT vc FROM VaccinationConsentEntity vc " +
+           "WHERE vc.vaccinationCampaign.id = :campaignId " +
+           "AND vc.consentStatus = 'APPROVED'")
+    Page<VaccinationConsentEntity> findApprovedConsentsByCampaignId(@Param("campaignId") Long campaignId, Pageable pageable);
 }
