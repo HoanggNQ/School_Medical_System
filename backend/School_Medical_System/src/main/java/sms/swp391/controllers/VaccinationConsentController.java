@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.VaccinationConsentRequestDTO;
 import sms.swp391.models.dtos.responses.PaginatedContentResponse;
 import sms.swp391.models.dtos.responses.PaginatedVaccinationConsentResponse;
@@ -35,6 +36,17 @@ public class VaccinationConsentController {
             @PathVariable Long id,
             @RequestBody VaccinationConsentRequestDTO request,
             @AuthenticationPrincipal UserEntity parentId) {
+        if (parentId == null || !RoleEnum.PARENT.name().equals(parentId.getRoleName()) || parentId.getRoleName() == null ) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
             VaccinationConsentResponse response = vaccinationService.updateConsent(id, request, parentId.getUserId());
             return ResponseEntity.ok(

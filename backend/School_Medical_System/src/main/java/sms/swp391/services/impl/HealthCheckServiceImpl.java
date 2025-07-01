@@ -467,7 +467,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         Sort validatedSort = pageable.getSort().stream()
                 .filter(order -> {
                     String property = order.getProperty();
-                    return "parent.userId".equals(property) || "student.id".equals(property);
+                    return "parent.userId".equals(property) || "student.id".equals(property) ;
                 })
                 .collect(Collectors.collectingAndThen(
                         Collectors.toList(),
