@@ -46,6 +46,14 @@ export const campaignService = {
         } catch (error) {
             throw handleApiError(error);
         }
+    },
+    endCampaign: async (campaignId) => {
+        try {
+            const response = await axiosInstance.post(API_ENDPOINTS.CAMPAIGN_ENDPOINTS.END(campaignId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
     }
 };
 

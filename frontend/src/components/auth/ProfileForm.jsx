@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, MapPin, Calendar, Shield } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Shield, Upload, X } from 'lucide-react';
 
 const ProfileForm = () => {
   const { toast } = useToast();
@@ -20,11 +20,15 @@ const ProfileForm = () => {
     gender: '',
     address: '',
     roleName: '',
-    status: ''
+    status: '',
+    avatarUrl: '',
+    userId: null
   });
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [originalData, setOriginalData] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     fetchProfile();
@@ -46,11 +50,15 @@ const ProfileForm = () => {
         gender: userData.gender || '',
         address: userData.address || '',
         roleName: userData.roleName || '',
-        status: userData.status || ''
+        status: userData.status || '',
+        avatarUrl: userData.avatarUrl || '',
+        userId: userData.userId || userData.id || null
       };
       
       setFormData(formattedData);
       setOriginalData(formattedData);
+      setImagePreview(formattedData.avatarUrl || null);
+      setSelectedImage(null);
     } catch (error) {
       toast({
         title: 'Lỗi',
@@ -66,21 +74,66 @@ const ProfileForm = () => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Lỗi',
+          description: 'Vui lòng chọn file ảnh hợp lệ.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Lỗi',
+          description: 'Kích thước file không được vượt quá 5MB.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setSelectedImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(formData.avatarUrl || null);
+  };
+
+  const handleFormSubmit = (e) => {
     e.preventDefault();
+  };
+
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
     setLoading(true);
     
     try {
-      // Prepare data for API (remove roleName and status as they shouldn't be updated)
-      const updateData = {
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        dob: formData.dob,
+      // Tạo FormData để gửi lên API
+      const formDataToSend = new FormData();
+      const userData = {
+        id: formData.userId,
+        name: formData.fullName,
+        address: formData.address,
         gender: formData.gender,
-        address: formData.address
+        Dob: formData.dob,
+        phoneNumber: formData.phoneNumber
       };
-
-      await UserService.updateProfile(updateData);
+      formDataToSend.append('user', new Blob([JSON.stringify(userData)], { type: 'application/json' }));
+      if (selectedImage) {
+        formDataToSend.append('file', selectedImage);
+      }
+      await UserService.updateProfile(formDataToSend);
       
       toast({
         title: 'Thành công',
@@ -88,14 +141,8 @@ const ProfileForm = () => {
       });
       
       setIsEditing(false);
-      setOriginalData(formData);
-      
-      // Update local storage user data
-      const currentUser = AuthService.getCurrentUser();
-      if (currentUser) {
-        const updatedUser = { ...currentUser, ...updateData };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      }
+      // Fetch lại profile để cập nhật avatar mới
+      await fetchProfile();
     } catch (error) {
       toast({
         title: 'Lỗi',
@@ -110,6 +157,12 @@ const ProfileForm = () => {
   const handleCancel = () => {
     setFormData(originalData);
     setIsEditing(false);
+    setSelectedImage(null);
+    setImagePreview(originalData.avatarUrl || null);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
   const getRoleBadgeVariant = (roleName) => {
@@ -188,7 +241,54 @@ const ProfileForm = () => {
         <CardDescription>Xem và cập nhật thông tin cá nhân của bạn</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
+          {/* Avatar section */}
+          <div className="space-y-2">
+            <Label htmlFor="avatarUrl">Ảnh đại diện</Label>
+            <div className="flex items-center gap-4">
+              {(imagePreview || formData.avatarUrl) ? (
+                <div className="relative">
+                  <img
+                    src={imagePreview || formData.avatarUrl}
+                    alt="Avatar"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                  />
+                  {isEditing && (imagePreview || selectedImage) && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                      onClick={removeImage}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                  No Avatar
+                </div>
+              )}
+              {isEditing && (
+                <Button
+                  type="button"
+                  onClick={() => document.getElementById('avatar-upload').click()}
+                  className="ml-2"
+                >
+                  {imagePreview ? 'Thay đổi ảnh' : 'Tải lên ảnh'}
+                </Button>
+              )}
+            </div>
+            <Input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              disabled={!isEditing}
+            />
+          </div>
           {/* Read-only fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -309,7 +409,7 @@ const ProfileForm = () => {
             {!isEditing ? (
               <Button 
                 type="button" 
-                onClick={() => setIsEditing(true)}
+                onClick={handleEdit}
                 className="flex-1"
               >
                 Chỉnh sửa hồ sơ
@@ -317,7 +417,8 @@ const ProfileForm = () => {
             ) : (
               <>
                 <Button 
-                  type="submit" 
+                  type="button"
+                  onClick={handleSubmit}
                   disabled={loading}
                   className="flex-1"
                 >
@@ -335,7 +436,7 @@ const ProfileForm = () => {
               </>
             )}
           </div>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );

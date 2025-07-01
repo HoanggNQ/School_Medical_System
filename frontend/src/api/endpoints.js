@@ -43,6 +43,7 @@ const API_ENDPOINTS = {
     DELETE: (id) => `api/v1/health-check-campaign/campaigns/${id}`,
     GET_BY_ID: (id) => `api/v1/health-check-campaign/campaigns/${id}`,
     START: (id) => `api/v1/health-check-campaign/campaigns/${id}/start`,
+    END: (id) => `api/v1/health-check-campaign/campaigns/${id}/end`,
   },
   VACCINATION_ENDPOINTS: {
     CREATE: (createdById) => `api/vaccination-campaign/campaigns?createdById=${createdById}`,
@@ -51,6 +52,7 @@ const API_ENDPOINTS = {
     DELETE: (id) => `api/vaccination-campaign/campaigns/${id}`,
     GET_BY_ID: (id) => `api/vaccination-campaign/campaigns/${id}`,
     START: (id) => `api/vaccination-campaign/campaigns/${id}/start`,
+    END: (id) => `api/vaccination-campaign/campaigns/${id}/end`,
   },
 };
 

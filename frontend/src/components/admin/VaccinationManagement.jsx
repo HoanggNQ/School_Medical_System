@@ -128,6 +128,14 @@ const fetchVaccinations = async () => {
     setLoading(false);
   };
 
+  const handleEndVaccination = async (vaccinationId) => {
+    setLoading(true);
+    await vaccinationService.endVaccination(vaccinationId);
+    fetchVaccinations();
+    toast({ title: 'Chiến dịch tiêm chủng đã kết thúc!' });
+    setLoading(false);
+  };
+
   const openEditModal = (vaccination) => {
     setSelectedVaccination(vaccination);
     setFormData({
@@ -219,12 +227,15 @@ const fetchVaccinations = async () => {
                   <TableCell>{vaccination.description}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      vaccination.status === 'PLANNING' ? 'bg-yellow-100 text-yellow-800' :
-                      vaccination.status === 'IN_PROGRESS' ? 'bg-green-100 text-green-800' :
+                      vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                      vaccination.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                      vaccination.status === 'DONE' ? 'bg-gray-400 text-white' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {vaccination.status === 'PLANNING' ? 'Đã lên lịch' :
-                       vaccination.status === 'IN_PROGRESS' ? 'Đang diễn ra' : 'Đã hủy'}
+                      {vaccination.status === 'PENDING' ? 'Chờ duyệt' :
+                        vaccination.status === 'ACTIVE' ? 'Đang diễn ra' :
+                        vaccination.status === 'DONE' ? 'Đã xong' :
+                        vaccination.status}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -244,9 +255,14 @@ const fetchVaccinations = async () => {
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                      {vaccination.status === 'PLANNING' && (
+                      {vaccination.status === 'PENDING' && (
                         <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartVaccination(vaccination.id)} disabled={loading}>
                           Bắt đầu chiến dịch
+                        </Button>
+                      )}
+                      {vaccination.status === 'ACTIVE' && (
+                        <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndVaccination(vaccination.id)} disabled={loading}>
+                          Kết thúc chiến dịch
                         </Button>
                       )}
                     </div>
@@ -329,12 +345,15 @@ const fetchVaccinations = async () => {
               </div>
               <div>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  selectedDetail.status === 'PLANNING' ? 'bg-yellow-100 text-yellow-800' :
-                  selectedDetail.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                  selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                  selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                  selectedDetail.status === 'DONE' ? 'bg-gray-400 text-white' :
                   'bg-red-100 text-gray-800'
                 }`}>
-                  {selectedDetail.status === 'PLANNING' ? 'Đã lên lịch' :
-                    selectedDetail.status === 'COMPLETED' ? 'Hoàn thành' : 'Đã hủy'}
+                  {selectedDetail.status === 'PENDING' ? 'Chờ duyệt' :
+                    selectedDetail.status === 'APPROVED' ? 'Đang diễn ra' :
+                    selectedDetail.status === 'DONE' ? 'Đã xong' :
+                    selectedDetail.status}
                 </span>
               </div>
             </div>

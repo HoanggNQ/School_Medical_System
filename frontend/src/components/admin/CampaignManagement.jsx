@@ -124,6 +124,16 @@ const CampaignManagement = () => {
         setLoading(false);
     };
 
+    const handleEndCampaign = async (campaignId) => {
+        setLoading(true);
+        const campaign = campaigns.find(c => c.id === campaignId);
+        if (!campaign) return;
+        await campaignService.endCampaign(campaignId);
+        fetchCampaigns();
+        toast({ title: 'Chiến dịch đã kết thúc!' });
+        setLoading(false);
+    };
+
     const openEditModal = (campaign) => {
         setSelectedCampaign(campaign);
         setFormData({
@@ -213,13 +223,13 @@ const CampaignManagement = () => {
                                     <TableCell>{campaign.targetGrade === 0 ? 'Toàn trường' : `Khối ${campaign.targetGrade}`}</TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                campaign.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                                                    campaign.status === 'SCHEDULED' ? 'bg-orange-500 text-white' :
+                                                campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                                    campaign.status === 'DONE' ? 'bg-orange-500 text-white' :
                                                         'bg-gray-100 text-gray-800'
                                             }`}>
                                             {campaign.status === 'PENDING' ? 'Chờ duyệt' :
-                                                campaign.status === 'ACTIVE' ? 'Đang diễn ra' :
-                                                    campaign.status === 'SCHEDULED' ? 'Đã lên lịch' :
+                                                campaign.status === 'APPROVED' ? 'Đang diễn ra' :
+                                                    campaign.status === 'DONE' ? 'Đã xong' :
                                                         campaign.status}
                                         </span>
                                     </TableCell>
@@ -235,6 +245,11 @@ const CampaignManagement = () => {
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
                                                 <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartCampaign(campaign.id)} disabled={loading}>
                                                     Bắt đầu chiến dịch
+                                                </Button>
+                                            )}
+                                            {campaign.status === 'APPROVED' && (
+                                                <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndCampaign(campaign.id)} disabled={loading}>
+                                                    Kết thúc chiến dịch
                                                 </Button>
                                             )}
                                         </div>
@@ -312,13 +327,13 @@ const CampaignManagement = () => {
                             <div>
                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                     selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                    selectedDetail.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                                    selectedDetail.status === 'SCHEDULED' ? 'bg-orange-500 text-white' :
+                                    selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                    selectedDetail.status === 'DONE' ? 'bg-orange-500 text-white' :
                                     'bg-gray-100 text-gray-800'
                                 }`}>
                                     {selectedDetail.status === 'PENDING' ? 'Chờ duyệt' :
-                                        selectedDetail.status === 'ACTIVE' ? 'Đang diễn ra' :
-                                        selectedDetail.status === 'SCHEDULED' ? 'Đã lên lịch' :
+                                        selectedDetail.status === 'APPROVED' ? 'Đang diễn ra' :
+                                        selectedDetail.status === 'DONE' ? 'Đã xong' :
                                         selectedDetail.status}
                                 </span>
                             </div>

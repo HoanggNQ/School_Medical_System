@@ -13,9 +13,9 @@ export const exampleGetProfile = async () => {
 };
 
 // Example 2: Update user profile
-export const exampleUpdateProfile = async (profileData) => {
+export const exampleUpdateProfile = async (profileData, imageFile = null) => {
   try {
-    const result = await UserService.updateProfile(profileData);
+    const result = await UserService.updateProfile(profileData, imageFile);
     console.log('Profile updated:', result);
     return result;
   } catch (error) {
@@ -23,7 +23,7 @@ export const exampleUpdateProfile = async (profileData) => {
   }
 };
 
-// Example 3: Complete profile update example
+// Example 3: Complete profile update example with image
 export const exampleCompleteProfileUpdate = async () => {
   try {
     // First get current profile
@@ -32,6 +32,7 @@ export const exampleCompleteProfileUpdate = async () => {
 
     // Prepare update data
     const updateData = {
+      id: currentProfile.data.data.userId,
       fullName: 'Nguyễn Văn A',
       phoneNumber: '0901234567',
       dob: '1990-01-01',
@@ -39,7 +40,7 @@ export const exampleCompleteProfileUpdate = async () => {
       address: '123 Đường ABC, Quận 1, TP.HCM'
     };
 
-    // Update profile
+    // Update profile without image
     const updatedProfile = await UserService.updateProfile(updateData);
     console.log('Updated profile:', updatedProfile);
     return updatedProfile;
@@ -48,7 +49,33 @@ export const exampleCompleteProfileUpdate = async () => {
   }
 };
 
-// Example 4: Profile data structure
+// Example 4: Profile update with image upload
+export const exampleProfileUpdateWithImage = async (imageFile) => {
+  try {
+    // Get current profile
+    const currentProfile = await UserService.getProfile();
+    const userData = currentProfile.data.data;
+
+    // Prepare update data
+    const updateData = {
+      id: userData.userId,
+      fullName: userData.fullName,
+      phoneNumber: userData.phoneNumber,
+      dob: userData.dob,
+      gender: userData.gender,
+      address: userData.address
+    };
+
+    // Update profile with image
+    const result = await UserService.updateProfile(updateData, imageFile);
+    console.log('Profile updated with image:', result);
+    return result;
+  } catch (error) {
+    console.error('Error updating profile with image:', error);
+  }
+};
+
+// Example 5: Profile data structure
 export const profileDataStructure = {
   fullName: "string - Họ và tên người dùng",
   email: "string - Email (read-only)",
@@ -60,7 +87,7 @@ export const profileDataStructure = {
   status: "string - Trạng thái (read-only)"
 };
 
-// Example 5: API request format
+// Example 6: API request format
 export const apiRequestExamples = {
   // Get profile
   getProfile: {
@@ -78,19 +105,25 @@ export const apiRequestExamples = {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer YOUR_TOKEN',
-      'Content-Type': 'application/json'
+      'Content-Type': 'multipart/form-data'
     },
     body: {
-      fullName: 'Nguyễn Văn A',
-      phoneNumber: '0901234567',
-      dob: '1990-01-01',
+      // FormData with two parts:
+      // 1. user: JSON string containing user data
+      // 2. file: image file (optional)
+      user: JSON.stringify({
+        id: 18,
+        name: 'Nguyễn Văn A',
+        address: '123 Đường ABC, Quận 1, TP.HCM',
       gender: 'male',
-      address: '123 Đường ABC, Quận 1, TP.HCM'
+        Dob: '1990-01-01'
+      }),
+      file: 'image file (optional)'
     }
   }
 };
 
-// Example 6: Response format
+// Example 7: Response format
 export const expectedResponseFormat = {
   // Get profile response
   getProfile: {
@@ -139,7 +172,7 @@ export const expectedResponseFormat = {
   }
 };
 
-// Example 7: Using in React component
+// Example 8: Using in React component
 export const reactComponentExample = `
 import React, { useState, useEffect } from 'react';
 import UserService from '../api/services/user.service';
@@ -193,7 +226,7 @@ const ProfileComponent = () => {
 };
 `;
 
-// Example 8: Validation rules
+// Example 9: Validation rules
 export const validationRules = {
   fullName: {
     required: true,
@@ -220,7 +253,7 @@ export const validationRules = {
   }
 };
 
-// Example 9: Error handling
+// Example 10: Error handling
 export const errorHandlingExample = `
 const handleProfileUpdate = async (profileData) => {
   try {
@@ -254,6 +287,7 @@ export default {
   exampleGetProfile,
   exampleUpdateProfile,
   exampleCompleteProfileUpdate,
+  exampleProfileUpdateWithImage,
   profileDataStructure,
   apiRequestExamples,
   expectedResponseFormat,
