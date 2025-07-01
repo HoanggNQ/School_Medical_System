@@ -19,15 +19,16 @@ public interface HealthDeclarationRepository extends JpaRepository<HealthDeclara
     boolean existsByStudentIdAndAcademicYear(Long studentId, String academicYear);
 
     // Search with multiple filters
-    @Query("SELECT h FROM HealthDeclarationEntity h " +
-            "WHERE (:status IS NULL OR h.status = :status) " +
-            "AND (:studentId IS NULL OR h.student.id = :studentId) " +
-            "AND (:declaredById IS NULL OR h.declaredBy.userId = :declaredById) " +
-            "AND (:academicYear IS NULL OR h.academicYear = :academicYear)" +
-            "AND h.status = 'PENDING' OR h.status = 'APPROVED'")
+    @Query("""
+    SELECT h
+    FROM HealthDeclarationEntity h
+    WHERE (:status IS NULL OR h.status = :status)
+      AND (:studentId IS NULL OR h.student.id = :studentId)
+      AND (:academicYear IS NULL OR h.academicYear = :academicYear)
+""")
     Page<HealthDeclarationEntity> searchByFilters(
             @Param("status") MedicalStatus status,
-            @Param("declaredById") Long declaredById,
+            @Param("studentId") Long studentId,
             @Param("academicYear") String academicYear,
             Pageable pageable
     );
