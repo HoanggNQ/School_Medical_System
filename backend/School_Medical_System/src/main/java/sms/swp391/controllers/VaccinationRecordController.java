@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import sms.swp391.models.dtos.responses.ResponseObject;
@@ -26,9 +27,20 @@ public class VaccinationRecordController {
     @PostMapping("/records")
     public ResponseEntity<ResponseObject> saveRecord(
             @RequestBody VaccinationRecordRequestDTO request,
-            @AuthenticationPrincipal UserEntity administeredById) {
+            @AuthenticationPrincipal UserEntity checkedById) {
+        if (checkedById == null || !RoleEnum.SCHOOL_NURSE.name().equals(checkedById.getRoleName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản nurse")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
-            VaccinationRecordResponse response = vaccinationService.saveRecord(request, administeredById.getUserId());
+            VaccinationRecordResponse response = vaccinationService.saveRecord(request, checkedById.getUserId());
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("SAVE_RECORD_SUCCESS")
