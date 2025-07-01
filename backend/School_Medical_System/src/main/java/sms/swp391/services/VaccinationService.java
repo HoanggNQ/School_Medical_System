@@ -35,6 +35,8 @@ public interface VaccinationService {
 
     PaginatedVaccinationConsentResponse getAllVaccinationConsents(String search, Pageable pageable);
 
+    PaginatedVaccinationConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable);
+
     // Record Management
     VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request, Long checkedById);
 
