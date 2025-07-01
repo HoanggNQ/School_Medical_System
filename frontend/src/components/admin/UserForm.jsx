@@ -86,11 +86,9 @@ const UserForm = ({ isEdit = false, formData, handleInputChange, onCancel, onSub
               <SelectValue placeholder="Chọn vai trò" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="STUDENT">Học sinh</SelectItem>
-              <SelectItem value="PARENT">Phụ huynh</SelectItem>
+              
               <SelectItem value="SCHOOL_NURSE">Y tá trường</SelectItem>
-              <SelectItem value="MANAGER">Quản lý</SelectItem>
-              <SelectItem value="ADMIN">Quản trị viên</SelectItem>
+             
             </SelectContent>
           </Select>
         </div>
