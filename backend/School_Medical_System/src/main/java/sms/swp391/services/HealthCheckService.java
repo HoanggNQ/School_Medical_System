@@ -42,4 +42,6 @@ public interface HealthCheckService {
     PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable);
 
     void deleteCampaign(Long campaignId);
+
+    PaginatedHealthCheckConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable);
 }

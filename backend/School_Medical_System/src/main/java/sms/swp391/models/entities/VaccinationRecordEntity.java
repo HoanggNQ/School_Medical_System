@@ -25,7 +25,9 @@ public class VaccinationRecordEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "vaccination_campaign_id", nullable = false)
     private VaccinationCampaignEntity vaccinationCampaign;
-
+    @OneToOne
+    @JoinColumn(name = "consent_id", nullable = true)
+    private VaccinationConsentEntity consent;
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)

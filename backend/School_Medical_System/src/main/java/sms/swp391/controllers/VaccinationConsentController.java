@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.VaccinationConsentRequestDTO;
 import sms.swp391.models.dtos.responses.PaginatedContentResponse;
 import sms.swp391.models.dtos.responses.PaginatedVaccinationConsentResponse;
@@ -35,6 +36,17 @@ public class VaccinationConsentController {
             @PathVariable Long id,
             @RequestBody VaccinationConsentRequestDTO request,
             @AuthenticationPrincipal UserEntity parentId) {
+        if (parentId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
             VaccinationConsentResponse response = vaccinationService.updateConsent(id, request, parentId.getUserId());
             return ResponseEntity.ok(
@@ -77,7 +89,7 @@ public class VaccinationConsentController {
     }
 
     @Operation(summary = "Lấy danh sách tất cả consent kể cả đồng ý hay chưa theo campaign id")
-    @GetMapping("/campaigns/{campaignId}/consents/pending")
+    @GetMapping("/campaigns/{campaignId}/consents")
     public ResponseEntity<ResponseObject> getConsentsByCampaign(@PathVariable Long campaignId) {
         try {
             List<VaccinationConsentResponse> responses = vaccinationService.getConsentsByCampaign(campaignId);
@@ -165,7 +177,7 @@ public class VaccinationConsentController {
 
     @Operation(summary = "Lấy danh sách consent đã đồng ý theo parent id")
     @GetMapping("/parents/{parentId}/consents/approved")
-    public ResponseEntity<ResponseObject> getPendingConsentsApprovedByParent(@PathVariable Long parentId) {
+    public ResponseEntity<ResponseObject> getApprovedConsentsByParent(@PathVariable Long parentId) {
         try {
             List<VaccinationConsentResponse> responses = vaccinationService.getPendingConsentsApprovedByParent(parentId);
             return ResponseEntity.ok(
@@ -209,5 +221,38 @@ public class VaccinationConsentController {
                         .data(vaccinationConsentResponse)
                         .build()
         );
+    }
+
+    @Operation(summary = "Lấy danh sách consent đã đồng ý theo campaign id", description = "Trả về danh sách consent đã đồng ý theo campaign id với phân trang và sắp xếp" +
+            " bao gồm: id, responseDate, student.id, parent,userId.")
+    @GetMapping("/campaigns/{campaignId}/consents/approved")
+    public ResponseEntity<ResponseObject> getApprovedConsentsByCampaign(
+            @PathVariable Long campaignId,
+            @ParameterObject
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+            }) Pageable pageable) {
+        try {
+            PaginatedVaccinationConsentResponse vaccinationConsentResponse = vaccinationService.getApprovedConsentsByCampaign(campaignId, pageable);
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("GET_APPROVED_CONSENTS_SUCCESS")
+                            .message("Approved consents retrieved successfully")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(vaccinationConsentResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("GET_APPROVED_CONSENTS_FAILED")
+                            .message("Failed to get approved consents: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
     }
 }

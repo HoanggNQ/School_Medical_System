@@ -194,21 +194,6 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         VaccinationConsentEntity updatedConsent = consentRepository.save(consent);
 
-        /* 🔔 Gửi thông báo cho nhân viên y tế */
-        Long staffReceiverId = consent.getVaccinationCampaign()
-                .getCreatedBy()
-                .getUserId();
-
-        notificationService.push(
-                parentId,                                // creator  (PH)
-                staffReceiverId,                         // receiver (NV y tế)
-                "Phụ huynh đã " +
-                        (request.getConsentStatus().equals(MedicalStatus.APPROVED) ? "đồng ý" : "từ chối") +
-                        " tiêm chủng",
-                "Phụ huynh của " + consent.getStudent().getUser().getFullname()
-                        + " đã cập nhật trạng thái đồng ý: " + request.getConsentStatus()
-        );
-
         return VaccinationConsentMapper.toDTO(updatedConsent);
     }
 
@@ -240,10 +225,12 @@ public class VaccinationServiceImpl implements VaccinationService {
         record.setAdministeredBy(checker);
         record.setAdministrationDate(LocalDate.now());
         record.setAcademicYear(getCurrentAcademicYear());
+        record.setConsent(consent);
 
         VaccinationRecordEntity savedRecord = recordRepository.save(record);
+        consent.setConsentStatus(MedicalStatus.DONE);
+        consentRepository.save(consent);
 
-        /* 🔔 Thông báo kết quả cho PH */
         notificationService.push(
                 administeredById,                         // creator  (NV y tế)
                 student.getParent().getUserId(),          // receiver (PH)
@@ -371,4 +358,37 @@ public class VaccinationServiceImpl implements VaccinationService {
         campaign.setStatus(MedicalStatus.REJECTED);
         campaignRepository.save(campaign);
     }
+
+    @Override
+    public PaginatedVaccinationConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return property.equals("id") || property.equals("responseDate") || "parent.userId".equals(property) || "student.id".equals(property);
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<VaccinationConsentEntity> vaccinationConsentPage = vaccinationConsentRepository.findApprovedConsentsByCampaignId(campaignId, validatedPageable);
+
+        List<VaccinationConsentResponse> vaccinationConsentDTOs = vaccinationConsentPage.stream()
+                .map(VaccinationConsentMapper::toDTO)
+                .toList();
+
+        return PaginatedVaccinationConsentResponse.builder()
+                .vaccinationConsents(vaccinationConsentDTOs)
+                .totalElements(vaccinationConsentPage.getTotalElements())
+                .totalPages(vaccinationConsentPage.getTotalPages())
+                .currentPage(vaccinationConsentPage.getNumber())
+                .build();
+    }
+
 }

@@ -21,6 +21,7 @@ import sms.swp391.services.SendMailService;
 import sms.swp391.utils.HealthCheckCampaignMapper;
 import sms.swp391.utils.HealthCheckConsentMapper;
 import sms.swp391.utils.HealthCheckResultMapper;
+import sms.swp391.utils.VaccinationConsentMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -181,21 +182,12 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         consent.setResponseDate(LocalDate.now());
 
         HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
-        notificationService.push(
-                parentId,
-                consent.getHealthCheckCampaign()
-                        .getCreatedBy()
-                        .getUserId(),
-                "Phụ huynh đã " +
-                        (request.getStatus().equals(MedicalStatus.APPROVED) ? "đồng ý" : "từ chối") +
-                        " kiểm tra",
-                "Phụ huynh của " + consent.getStudent().getUser().getFullname()
-                        + " đã cập nhật trạng thái đồng ý: " + request.getStatus()
-        );
+
         return HealthCheckConsentMapper.toDTO(updatedConsent);
     }
 
     @Override
+    @Transactional
     public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
@@ -238,8 +230,11 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         result.setCheckedBy(checker);
         result.setCheckDate(LocalDate.now());
         result.setAcademicYear(getCurrentAcademicYear());
+        result.setConsent(consent);
 
         HealthCheckResultEntity savedResult = resultRepository.saveAndFlush(result);
+        consent.setConsentStatus(MedicalStatus.DONE);
+        consentRepository.save(consent);
         studentRepository.save(student);
 
         notificationService.push(
@@ -417,8 +412,6 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .filter(order -> {
                     String property = order.getProperty();
                     return property.equals("id") ||
-                            property.equals("consentStatus") ||
-                            property.equals("academicYear") ||
                             property.equals("student.user.fullname") ||
                             property.equals("healthCheckCampaign.name");
                 })
@@ -458,6 +451,37 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
         campaign.setStatus(MedicalStatus.REJECTED);
         campaignRepository.save(campaign);
+    }
+    @Override
+    public PaginatedHealthCheckConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> {
+                    String property = order.getProperty();
+                    return "parent.userId".equals(property) || "student.id".equals(property) ;
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        Sort::by
+                ));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+
+        Page<HealthCheckConsentEntity> vaccinationConsentPage = healthCheckConsentRepository.findApprovedConsentsByCampaignId(campaignId, validatedPageable);
+
+        List<HealthCheckConsentResponse> vaccinationConsentDTOs = vaccinationConsentPage.stream()
+                .map(HealthCheckConsentMapper::toDTO)
+                .toList();
+
+        return PaginatedHealthCheckConsentResponse.builder()
+                .healthCheckConsents(vaccinationConsentDTOs)
+                .totalElements(vaccinationConsentPage.getTotalElements())
+                .totalPages(vaccinationConsentPage.getTotalPages())
+                .currentPage(vaccinationConsentPage.getNumber())
+                .build();
     }
 
 }
