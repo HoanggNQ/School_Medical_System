@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.MedicationRequestCreateDTO;
 import sms.swp391.models.dtos.responses.MedicationRequestResponseDTO;
 import sms.swp391.models.dtos.responses.PagedResponse;
@@ -32,6 +33,17 @@ public class MedicationRequestController {
     @PostMapping
     public ResponseEntity<ResponseObject> createRequest(@RequestBody @Valid MedicationRequestCreateDTO dto,
                                                         @AuthenticationPrincipal UserEntity currentUser) {
+        if (currentUser == null || currentUser.getRoleName() == null || !RoleEnum.PARENT.name().equals(currentUser.getRoleName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
             MedicationRequestResponseDTO response = medicationRequestService.createRequest(dto, currentUser.getUserId());
             return ResponseEntity.ok(ResponseObject.builder()

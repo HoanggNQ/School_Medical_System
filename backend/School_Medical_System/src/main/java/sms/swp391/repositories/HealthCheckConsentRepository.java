@@ -33,4 +33,9 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
 
     @Query("SELECT v FROM HealthCheckConsentEntity v WHERE v.consentStatus = 'APPROVED'")
     Page<HealthCheckConsentEntity> findApprovedStudent(Pageable pageable);
+
+    @Query("SELECT vc FROM HealthCheckConsentEntity vc " +
+            "WHERE vc.healthCheckCampaign.id = :campaignId " +
+            "AND vc.consentStatus = 'APPROVED'")
+    Page<HealthCheckConsentEntity> findApprovedConsentsByCampaignId(@Param("campaignId") Long campaignId, Pageable pageable);
 }

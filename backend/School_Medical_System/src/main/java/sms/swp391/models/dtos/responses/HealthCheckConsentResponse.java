@@ -11,11 +11,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HealthCheckConsentResponse {
-    private Long id;
     private Long campaignId;
     private Long consentId;
     private Long studentId;
     private String studentName;
+    private String campaignName;
     private String className;
     private Long parentId;
     private int phoneNumber;

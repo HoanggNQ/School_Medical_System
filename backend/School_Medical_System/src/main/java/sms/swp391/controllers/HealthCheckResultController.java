@@ -5,8 +5,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import sms.swp391.models.dtos.responses.ResponseObject;
@@ -27,6 +29,18 @@ public class HealthCheckResultController {
     public ResponseEntity<ResponseObject> saveResult(
             @RequestBody HealthCheckResultRequestDTO request,
             @AuthenticationPrincipal UserEntity checkedById) {
+
+        if (checkedById == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản nurse")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
         try {
             HealthCheckResultResponse response = healthCheckService.saveResult(request, checkedById.getUserId());
             return ResponseEntity.ok(
@@ -67,6 +81,7 @@ public class HealthCheckResultController {
             );
         }
     }
+
     @Operation(summary = "Lấy kết quả khám theo ID", description = "Trả về kết quả khám sức khỏe chi tiết theo ID.")
 
     @GetMapping("/results/{id}")
