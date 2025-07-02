@@ -101,9 +101,13 @@ public class AuthServiceImpl implements AuthService {
             // 4. Generate tokens
             String token = jwtService.generateToken(authentication);
             String refreshToken = jwtService.generateRefreshToken(authentication);
+            Long principalId = userEntity.getRoleName() == RoleEnum.STUDENT && userEntity.getStudentEntity() != null
+                    ? userEntity.getStudentEntity().getId()
+                    : userEntity.getUserId();
+
 
             JwtResponse.UserInfo userInfo = new JwtResponse.UserInfo(
-                    userEntity.getUserId(),
+                    principalId,
                     userEntity.getUsername(),
                     userEntity.getEmail(),
                     userEntity.getRoleName().toString()
