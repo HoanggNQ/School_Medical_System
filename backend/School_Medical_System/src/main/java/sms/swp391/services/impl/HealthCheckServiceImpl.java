@@ -182,17 +182,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         consent.setResponseDate(LocalDate.now());
 
         HealthCheckConsentEntity updatedConsent = consentRepository.save(consent);
-        notificationService.push(
-                parentId,
-                consent.getHealthCheckCampaign()
-                        .getCreatedBy()
-                        .getUserId(),
-                "Phụ huynh đã " +
-                        (request.getStatus().equals(MedicalStatus.APPROVED) ? "đồng ý" : "từ chối") +
-                        " kiểm tra",
-                "Phụ huynh của " + consent.getStudent().getUser().getFullname()
-                        + " đã cập nhật trạng thái đồng ý: " + request.getStatus()
-        );
+
         return HealthCheckConsentMapper.toDTO(updatedConsent);
     }
 
