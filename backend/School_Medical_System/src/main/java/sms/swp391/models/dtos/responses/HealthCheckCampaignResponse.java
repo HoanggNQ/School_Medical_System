@@ -3,6 +3,7 @@ import lombok.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,5 +20,5 @@ public class HealthCheckCampaignResponse {
     private String location;
     private String requiredEquipment;
     private Long createdById;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 }

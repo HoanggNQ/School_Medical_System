@@ -201,8 +201,10 @@ public class HealthCheckConsentController {
         }
     }
 
-    @Operation(summary = "Lấy tất cả học sinh mà phụ huynh đã đồng ý", description = "Trả về danh sách học sinh đồng ý với phân trang và tìm kiếm theo (ten HSinh or ten chien dich), sort mặc định là id." +
-            " Sort(cần nhập đúng) bao gồm ")
+    @Operation(
+            summary = "Lấy tất cả học sinh ",
+            description = "Trả về danh sách học sinh đồng ý với phân trang và tìm kiếm theo tên học sinh hoặc tên chiến dịch"
+    )
     @GetMapping("/getAll")
     public ResponseEntity<ResponseObject> getAll(
             @RequestParam(value = "search", required = false) String search,
@@ -211,16 +213,19 @@ public class HealthCheckConsentController {
             @SortDefault.SortDefaults({
                     @SortDefault(sort = "id", direction = Sort.Direction.ASC)
             }) Pageable pageable) {
-        PaginatedHealthCheckConsentResponse healthCheckConsentResponse = healthCheckService.getAllHealthCheckConsents(search, pageable);
+
+        PaginatedHealthCheckConsentResponse response = healthCheckService.getAllHealthCheckConsents(search, pageable);
+
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("GET_SUCCESS")
-                        .message("Get all contents successfully")
+                        .message("Lấy danh sách thành công")
                         .status(HttpStatus.OK)
                         .isSuccess(true)
-                        .data(healthCheckConsentResponse)
+                        .data(response)
                         .build()
         );
     }
+
 
 }
