@@ -50,11 +50,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         return [
           ...baseItems,
           { id: 'medicines', label: 'Quản lý thuốc', icon: Pill, path: '/medicines' },
-          { id: 'health-records', label: 'Hồ sơ sức khỏe', icon: Activity, path: '/health-records' },
+          { id: 'health-records', label: 'Danh sách yêu cầu thuốc', icon: Activity, path: '/health-records' },
           { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
           { id: 'management-vaccine', label: 'Quản lý tiêm chủng', icon: Shield, path: '/management-vaccine' },
+          { id: 'campaigns', label: 'xem  chiến dịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
-          { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' }
+          { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
+          
         ];
       case 'STUDENT':
         return [
