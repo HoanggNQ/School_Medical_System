@@ -18,6 +18,6 @@ public interface StudentService {
     StudentGetResponse getStudentById(Long id);
     List<StudentResponse> findStudentByParent(Long parentId);
     PaginatedStudentResponse getAllStudents(String search, Pageable pageable);
+    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId, String campaignName, String type, Pageable pageable);
 
-    Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId, Pageable pageable);
 }

@@ -283,19 +283,27 @@ public class StudentServiceImpl implements StudentService {
         List<StudentEntity> students = studentRepository.findByParent_UserId(parentId);
         return students.stream().map(StudentMapper::toDTO).toList();
     }
-
     @Override
-    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId, Pageable pageable) {
+    @Transactional
+    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId,String campaignName,String type, Pageable pageable) {
+        // Gọi repository để lấy projection từ native query
         Page<StudentHealthEventProjection> page =
-                studentEventRepository.findAllHealthEventsByStudent(studentId, pageable);
+                studentEventRepository.findAllHealthEventsByStudent(
+                        studentId,
+                        campaignName == null ? "" : campaignName.trim(),
+                        type,
+                        pageable);
 
+
+        // Chuyển projection thành DTO
         return page.map(p -> StudentHealthEventResponseDTO.builder()
                 .type(p.getType())
                 .eventId(p.getEventId())
                 .campaignName(p.getCampaign())
                 .description(p.getDescription())
                 .consentId(p.getConsentId())
-                .consentStatusText(p.getConsentId() == null ? "Chiến dịch chưa bắt đầu" : "Đã có consent")
+                .consentStatusText(p.getConsentId() == null ?
+                        "Chiến dịch chưa bắt đầu" : "Đã có consent")
                 .checkDate(p.getCheckDate())
                 .studentName(p.getStudentName())
                 .location(p.getLocation())
@@ -303,6 +311,6 @@ public class StudentServiceImpl implements StudentService {
                 .consentStatus(p.getConsentStatus())
                 .resultStatus(p.getStatus())
                 .build());
-
     }
+
 }

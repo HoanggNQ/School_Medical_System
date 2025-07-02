@@ -9,6 +9,7 @@ import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -41,10 +42,6 @@ public class VaccinationCampaignEntity {
     @Column(name = "location", length = 100)
     private String location;
 
-    @NotNull
-    @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
-
     @Size(max = 20)
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
@@ -68,7 +65,7 @@ public class VaccinationCampaignEntity {
 
     @ColumnDefault("now()")
     @Column(name = "created_at")
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "vaccinationCampaign")
     private Set<VaccinationConsentEntity> vaccinationConsents = new LinkedHashSet<>();
