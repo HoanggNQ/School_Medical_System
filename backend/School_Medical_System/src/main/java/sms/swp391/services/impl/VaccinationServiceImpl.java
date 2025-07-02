@@ -194,21 +194,6 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         VaccinationConsentEntity updatedConsent = consentRepository.save(consent);
 
-        /* 🔔 Gửi thông báo cho nhân viên y tế */
-        Long staffReceiverId = consent.getVaccinationCampaign()
-                .getCreatedBy()
-                .getUserId();
-
-        notificationService.push(
-                parentId,                                // creator  (PH)
-                staffReceiverId,                         // receiver (NV y tế)
-                "Phụ huynh đã " +
-                        (request.getConsentStatus().equals(MedicalStatus.APPROVED) ? "đồng ý" : "từ chối") +
-                        " tiêm chủng",
-                "Phụ huynh của " + consent.getStudent().getUser().getFullname()
-                        + " đã cập nhật trạng thái đồng ý: " + request.getConsentStatus()
-        );
-
         return VaccinationConsentMapper.toDTO(updatedConsent);
     }
 
@@ -246,7 +231,6 @@ public class VaccinationServiceImpl implements VaccinationService {
         consent.setConsentStatus(MedicalStatus.DONE);
         consentRepository.save(consent);
 
-        /* 🔔 Thông báo kết quả cho PH */
         notificationService.push(
                 administeredById,                         // creator  (NV y tế)
                 student.getParent().getUserId(),          // receiver (PH)
