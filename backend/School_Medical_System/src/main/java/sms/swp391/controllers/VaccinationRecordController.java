@@ -28,7 +28,7 @@ public class VaccinationRecordController {
     public ResponseEntity<ResponseObject> saveRecord(
             @RequestBody VaccinationRecordRequestDTO request,
             @AuthenticationPrincipal UserEntity checkedById) {
-        if (checkedById == null || !RoleEnum.SCHOOL_NURSE.name().equals(checkedById.getRoleName())) {
+        if (checkedById == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
