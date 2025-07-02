@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Package, AlertTriangle, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package, AlertTriangle, Calendar, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,12 @@ const MedicineManagement = () => {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [approvedRequests, setApprovedRequests] = useState([]);
+  const [showApprovedDialog, setShowApprovedDialog] = useState(false);
   
   const initialFormData = {
     medicationName: '',
@@ -33,9 +39,11 @@ const MedicineManagement = () => {
     medicationInformation: '',
     medicationImg: '',
     activeIngredient: '',
-    manufacturer: ''
+    manufacturer: '',
+    quantity:0 
   };
   const [formData, setFormData] = useState(initialFormData);
+
 
   useEffect(() => {
     fetchMedicines();
@@ -45,15 +53,13 @@ const MedicineManagement = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await medicalService.getAllMedications();
-      
-      if (!Array.isArray(response)) {
-        throw new Error('Invalid response format');
-      }
-      
-      setMedicines(response);
+      const response = await medicalService.getAllMedications({ page, size, sort: 'medicationName,ASC' });
+      console.log('API response:', response);
+      setMedicines(response.data?.content || []);
+      setTotalPages(response.data?.totalPages || 0);
+      setTotalElements(response.data?.totalElements || 0);
     } catch (error) {
-      console.error('Error fetching medicines:', error);
+      console.error('Error fetching medicines:', error, error?.response);
       setError(error.message || 'Failed to fetch medicines');
       setMedicines([]);
       toast({
@@ -65,6 +71,7 @@ const MedicineManagement = () => {
       setIsLoading(false);
     }
   };
+  console.log("medicines tesst 11 ",medicines);
 
   const filteredMedicines = medicines.filter(medicine => {
     if (!medicine) return false;
@@ -149,9 +156,24 @@ const MedicineManagement = () => {
       medicationInformation: medicine.medicationInformation,
       medicationImg: medicine.medicationImg,
       activeIngredient: medicine.activeIngredient,
-      manufacturer: medicine.manufacturer
+      manufacturer: medicine.manufacturer,
+      quantity: medicine.quantity ?? 0
     });
     setIsEditModalOpen(true);
+  };
+
+  const fetchApprovedRequests = async () => {
+    try {
+      const response = await medicalService.getApprovedMedicationRequests();
+      setApprovedRequests(response.data?.data || []);
+      setShowApprovedDialog(true);
+    } catch (error) {
+      toast({
+        title: 'Lỗi!',
+        description: 'Không thể tải danh sách chấp nhận.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -166,25 +188,35 @@ const MedicineManagement = () => {
           <h1 className="text-3xl font-bold text-gray-900">Quản lý thuốc</h1>
           <p className="text-gray-600 mt-2">Quản lý kho thuốc và vật tư y tế</p>
         </div>
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="btn-primary" onClick={() => setFormData(initialFormData)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Thêm thuốc
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Thêm thuốc mới</DialogTitle>
-            </DialogHeader>
-            <MedicineForm
-              initialData={initialFormData}
-              onSubmit={handleCreateMedicine}
-              onCancel={() => setIsCreateModalOpen(false)}
-              isEdit={false}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 border-green-600 text-green-700 hover:bg-green-50"
+            onClick={fetchApprovedRequests}
+          >
+            <ListChecks className="w-4 h-4 mr-1" />
+            Danh sách chấp nhận
+          </Button>
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="btn-primary" onClick={() => setFormData(initialFormData)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm thuốc
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Thêm thuốc mới</DialogTitle>
+              </DialogHeader>
+              <MedicineForm
+                initialData={initialFormData}
+                onSubmit={handleCreateMedicine}
+                onCancel={() => setIsCreateModalOpen(false)}
+                isEdit={false}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <MedicineStats medicines={medicines} />
@@ -209,10 +241,7 @@ const MedicineManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="Giảm đau, hạ sốt">Giảm đau, hạ sốt</SelectItem>
-                  <SelectItem value="Kháng sinh">Kháng sinh</SelectItem>
-                  <SelectItem value="Vitamin">Vitamin</SelectItem>
-                  <SelectItem value="Giảm đau, chống viêm">Giảm đau, chống viêm</SelectItem>
+                  <SelectItem value="Thông thường">Thông thường</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -241,96 +270,92 @@ const MedicineManagement = () => {
               <p>Không tìm thấy thuốc nào</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Tên thuốc</TableHead>
-                    <TableHead>Phân loại</TableHead>
-                    <TableHead>Dạng bào chế</TableHead>
-                    <TableHead>Nhà sản xuất</TableHead>
-                    <TableHead>Hoạt chất</TableHead>
-                    <TableHead>Nước sản xuất</TableHead>
-                    <TableHead>Yêu cầu đơn</TableHead>
-                    <TableHead>Thông tin</TableHead>
-                    <TableHead>Ghi chú</TableHead>
-                    <TableHead>Hình ảnh</TableHead>
-                    <TableHead>Ngày tạo</TableHead>
-                    <TableHead>Thao tác</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMedicines.map((medicine) => (
-                    <TableRow key={medicine.id}>
-                      <TableCell>{medicine.id}</TableCell>
-                      <TableCell className="font-medium">{medicine.medicationName}</TableCell>
-                      <TableCell>{medicine.category}</TableCell>
-                      <TableCell>{medicine.dosageForm}</TableCell>
-                      <TableCell>{medicine.manufacturer}</TableCell>
-                      <TableCell>{medicine.activeIngredient || 'N/A'}</TableCell>
-                      <TableCell>{medicine.countryOfOrigin}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          medicine.prescriptionRequired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                        }`}>
-                          {medicine.prescriptionRequired ? 'Có' : 'Không'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs truncate" title={medicine.medicationInformation}>
-                          {medicine.medicationInformation || 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs truncate" title={medicine.description}>
-                          {medicine.description || 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {medicine.medicationImg ? (
-                          <img 
-                            src={medicine.medicationImg} 
-                            alt={medicine.medicationName}
-                            className="w-10 h-10 object-cover rounded"
-                          />
-                        ) : (
-                          'N/A'
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(medicine.createdAt).toLocaleDateString('vi-VN', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditModal(medicine)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteMedicine(medicine.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Tên thuốc</TableHead>
+                      <TableHead>Phân loại</TableHead>
+                      <TableHead>Dạng bào chế</TableHead>
+                      <TableHead>Yêu cầu đơn</TableHead>
+                      <TableHead>Nước sản xuất</TableHead>
+                      <TableHead>Ghi chú</TableHead>
+                      <TableHead>Thông tin</TableHead>
+                      {/* <TableHead>Hoạt chất</TableHead> */}
+                      <TableHead>Nhà sản xuất</TableHead> 
+                      <TableHead>Số lượng</TableHead> {/* Thêm cột số lượng */}
+                      <TableHead>Ngày tạo</TableHead>
+                      <TableHead>Hành động</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredMedicines.map((medicine) => (
+                      <TableRow key={medicine.id}>
+                        <TableCell>{medicine.id}</TableCell>
+                        <TableCell className="font-medium">{medicine.medicationName || 'N/A'}</TableCell>
+                        <TableCell>{medicine.category || 'N/A'}</TableCell>
+                        <TableCell>{medicine.dosageForm || 'N/A'}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            medicine.prescriptionRequired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                          }`}>
+                            {medicine.prescriptionRequired ? 'Có' : 'Không'}
+                          </span>
+                        </TableCell>
+                        <TableCell>{medicine.countryOfOrigin || 'N/A'}</TableCell>
+                        <TableCell>{medicine.description || 'N/A'}</TableCell>
+                        <TableCell>{medicine.medicationInformation || 'N/A'}</TableCell>
+                        {/* <TableCell>{medicine.activeIngredient || 'N/A'}</TableCell> */}
+                        <TableCell>{medicine.manufacturer || 'N/A'}</TableCell>
+                         <TableCell>{medicine.quantity ?? 0}</TableCell> {/* Hiển thị số lượng */}
+                        <TableCell>
+                          {medicine.createdAt
+                            ? new Date(medicine.createdAt).toLocaleDateString('vi-VN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit'
+                              })
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="outline" className="mr-2" onClick={() => openEditModal(medicine)}>
+                            Cập nhật
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeleteMedicine(medicine.id)}>
+                            Xóa
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {/* Pagination */}
+              <div className="flex justify-center items-center mt-8 gap-2">
+                {/* <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                  disabled={page === 0}
+                >
+                  Trang trước
+                </Button>
+                <span>
+                  Trang {page + 1} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                  disabled={page >= totalPages - 1}
+                >
+                  Trang sau
+                </Button> */}
+                <span className="ml-4 text-sm text-gray-500">Tổng: {totalElements} thuốc</span>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -348,6 +373,50 @@ const MedicineManagement = () => {
               isEdit={true}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showApprovedDialog} onOpenChange={setShowApprovedDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Danh sách yêu cầu thuốc đã chấp nhận</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto">
+            {approvedRequests.length === 0 ? (
+              <div className="text-gray-500">Không có yêu cầu nào được chấp nhận.</div>
+            ) : (
+              <table className="min-w-full text-sm border">
+                <thead>
+                  <tr>
+                    <th className="border px-2 py-1">ID</th>
+                    <th className="border px-2 py-1">Tên học sinh</th>
+                    <th className="border px-2 py-1">Năm học</th>
+                    <th className="border px-2 py-1">Ghi chú</th>
+                    <th className="border px-2 py-1">Chi tiết</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {approvedRequests.map((req) => (
+                    <tr key={req.id}>
+                      <td className="border px-2 py-1">{req.id}</td>
+                      <td className="border px-2 py-1">{req.studentName}</td>
+                      <td className="border px-2 py-1">{req.academicYear}</td>
+                      <td className="border px-2 py-1">{req.notes}</td>
+                      <td className="border px-2 py-1">
+                        <ul className="list-disc pl-4">
+                          {req.details?.map((d, idx) => (
+                            <li key={idx}>
+                              {d.medicationName} - {d.dosage} - {d.frequency}
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </motion.div>

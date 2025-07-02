@@ -17,6 +17,7 @@ const AuthService = {
             throw handleApiError(error);
         }
     },
+    
 
     getCurrentUser: () => {
         const userStr = localStorage.getItem('user');
@@ -55,18 +56,16 @@ const AuthService = {
             throw handleApiError(error);
         }
     },
-    resendVerificationCode: async ({email, otp}) => {
+
+
+    forgotPassword: async (email) => {
         try {
-            const response = await axiosInstance.post(API_ENDPOINTS.AUTH.resendVerificationCode, { email });
+            const response = await axiosInstance.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
             return response;
         } catch (error) {
-            throw handleApiError(error);
+            throw error;
         }
     },
-
-
-
-
 
     resetPassword: async (token, newPassword) => {
         try {

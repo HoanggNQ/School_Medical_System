@@ -2,17 +2,16 @@ const API_ENDPOINTS = {
   AUTH: {
     LOGIN: 'api/v1/auth/login',
     REGISTER: 'api/v1/auth/register',
-    resendVerificationCode:"api/v1/otp/resend",
+    resendVerificationCode: 'api/v1/otp/resend',
+    FORGOT_PASSWORD: 'api/v1/auth/forgot-password',
     RESET_PASSWORD: 'api/v1/auth/reset-password',
     LOGOUT: 'api/v1/auth/logout',
     VERIFY_EMAIL: 'api/v1/otp/verify',
   },
-
   USER: {
-     FORGOT_PASSWORD: 'api/v1/user/forgot-password',
+    FORGOT_PASSWORD: 'api/v1/user/forgot-password',
     PROFILE: 'api/v1/user/profile',
     UPDATE_PROFILE: 'api/v1/user/update',
-    // cái update cần làm lại 
     CHANGE_PASSWORD: 'api/v1/user/change-password',
     GET_ALL: 'api/v1/user',
     CREATE: 'api/v1/user',
@@ -20,7 +19,6 @@ const API_ENDPOINTS = {
     UPDATE: (id) => `api/v1/user/${id}`,
     DELETE: (id) => `api/v1/user/delete/${id}`,
   },
-
   HEALTH: {
     RECORDS: '/health-records',
     RECORD_DETAIL: (id) => `/health-records/${id}`,
@@ -28,14 +26,33 @@ const API_ENDPOINTS = {
     UPDATE_RECORD: (id) => `/health-records/${id}`,
     DELETE_RECORD: (id) => `/health-records/${id}`,
   },
-
   MEDICATION_ENDPOINTS: {
     CREATE: 'api/v1/medications',
-    GET_ALL: 'api/v1/medications/all',
+    GET_ALL: 'api/v1/medications',
     UPDATE: (id) => `api/v1/medications/${id}`,
     DELETE: (id) => `api/v1/medications/${id}`,
   },
-
+  MEDICATION_REQUEST: {
+    GET_ALL: 'api/v1/medication-requests/pending',
+    REQUEST_MEDICATION: (id) => `api/v1/medication-requests/${id}/reject`,
+    APPROVE_REQUEST: (id) => `api/v1/medication-requests/${id}/approve`,
+  },
+  EVENT: {
+    CREATE: 'api/v1/medical-event/create',
+    GET_ALL: 'api/v1/medical-event/getAll/all',
+    GET_BY_ID: (id) => `api/v1/medical-event/${id}`,
+    UPDATE: (id) => `api/v1/medical-event/update/${id}`,
+    DELETE: (id) => `api/v1/medical-event/delete/${id}`,
+  },
+  Vaccine: {
+    GET_ALL: 'api/vaccination-consent/getAll',
+    GET_BY_CAM: (id) => `api/vaccination-consent/campaigns/${id}/consents`,
+    CREATE: 'api/vaccination-record/records',
+  },
+  HealthCheck: {
+    GET_BY_CAM: (id) => `api/v1/health-check-campaign/campaigns/${id}/consents/approved`,
+    CREATE: 'api/v1/health-check-result/results',
+  },
   CAMPAIGN_ENDPOINTS: {
     CREATE: 'api/v1/health-check-campaign/campaigns',
     GET_ALL: 'api/v1/health-check-campaign/campaigns',
@@ -56,4 +73,4 @@ const API_ENDPOINTS = {
   },
 };
 
-export default API_ENDPOINTS; 
+export default API_ENDPOINTS;
