@@ -21,6 +21,7 @@ import sms.swp391.services.VaccinationService;
 import sms.swp391.utils.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -51,20 +52,24 @@ public class VaccinationServiceImpl implements VaccinationService {
         campaign.setStatus(MedicalStatus.DONE);
         campaignRepository.save(campaign);
     }
-
     @Override
-    public VaccinationCampaignResponse createCampaign(VaccinationCampaignRequestDTO request, Long createdById) {
+    @Transactional
+    public VaccinationCampaignResponse createCampaign(VaccinationCampaignRequestDTO request,
+                                                      Long createdById) {
         UserEntity creator = userRepository.findById(createdById)
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + createdById));
+                .orElseThrow(() -> new NotFoundException(
+                        "User not found with id: " + createdById));
 
         VaccinationCampaignEntity campaign = VaccinationCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
-        campaign.setCreatedAt(LocalDate.now());
+        campaign.setCreatedAt(LocalDateTime.now().withSecond(0).withNano(0));
         campaign.setStatus(MedicalStatus.PENDING);
 
         VaccinationCampaignEntity savedCampaign = campaignRepository.save(campaign);
-        return VaccinationCampaignMapper.toDTO(campaignRepository.save(campaign));
+
+        return VaccinationCampaignMapper.toDTO(savedCampaign);
     }
+
 
     @Override
     public VaccinationCampaignResponse updateCampaign(Long id, VaccinationCampaignRequestDTO request) {
@@ -75,7 +80,6 @@ public class VaccinationServiceImpl implements VaccinationService {
         /* 1. Cập nhật thông tin */
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
-        campaign.setEndDate(request.getEndDate());
         campaign.setStartDate(request.getStartDate());
         campaign.setTargetGrade(request.getTargetGrade());
         campaign.setNotes(request.getNotes());

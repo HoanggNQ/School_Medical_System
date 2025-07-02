@@ -72,7 +72,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckCampaignEntity campaign = HealthCheckCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
         campaign.setStatus(MedicalStatus.PENDING);
-        campaign.setCreatedAt(LocalDate.now());
+        campaign.setCreatedAt(LocalDateTime.now().withSecond(0).withNano(0));
 
         HealthCheckCampaignEntity savedCampaign = campaignRepository.save(campaign);
         return HealthCheckCampaignMapper.toDTO(savedCampaign);
@@ -408,6 +408,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable) {
+        // Chỉ cho phép sort theo các trường hợp hợp lệ
         Sort validatedSort = pageable.getSort().stream()
                 .filter(order -> {
                     String property = order.getProperty();
@@ -415,10 +416,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                             property.equals("student.user.fullname") ||
                             property.equals("healthCheckCampaign.name");
                 })
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        Sort::by
-                ));
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
 
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
@@ -426,12 +424,10 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 validatedSort
         );
 
-        Page<HealthCheckConsentEntity> healthCheckConsentPage;
-        if (search != null && !search.isEmpty()) {
-            healthCheckConsentPage = healthCheckConsentRepository.searchHealthCheckConsents(search, validatedPageable);
-        } else {
-            healthCheckConsentPage = healthCheckConsentRepository.findApprovedStudent(validatedPageable);
-        }
+        Page<HealthCheckConsentEntity> healthCheckConsentPage =
+                (search != null && !search.isBlank())
+                        ? healthCheckConsentRepository.searchHealthCheckConsents(search, validatedPageable)
+                        : healthCheckConsentRepository.findAll(validatedPageable); // ← sửa ở đây
 
         List<HealthCheckConsentResponse> healthCheckConsentDTOs = healthCheckConsentPage.stream()
                 .map(HealthCheckConsentMapper::toDTO)
@@ -444,6 +440,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .currentPage(healthCheckConsentPage.getNumber())
                 .build();
     }
+
 
     @Override
     public void deleteCampaign(Long campaignId) {
