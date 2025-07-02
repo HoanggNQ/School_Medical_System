@@ -35,7 +35,7 @@ public class HealthCheckCampaignController {
     public ResponseEntity<ResponseObject> createCampaign(
             @RequestBody HealthCheckCampaignRequestDTO request,
             @AuthenticationPrincipal UserEntity createdById) {
-        if (createdById == null || createdById.getRoleName() == null || !RoleEnum.ADMIN.name().equals(createdById.getRoleName())) {
+        if (createdById == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
