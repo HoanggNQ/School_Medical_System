@@ -37,7 +37,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'PARENT'")
     Optional<UserEntity> findByParentIdAndRoleName(@Param("userId") Long userId);
-    Optional<UserEntity> findByEmail(String email);
+
+    @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.studentEntity WHERE u.email = :email")
+    Optional<UserEntity> findByEmail(@Param("email") String email);
 
     Optional<UserEntity> findByPhoneNumber(String phoneNumber);
 
