@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { ClipboardList } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const { user } = useAuth();
@@ -50,7 +51,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           ...baseItems,
           { id: 'medicines', label: 'Quản lý thuốc', icon: Pill, path: '/medicines' },
           { id: 'health-records', label: 'Hồ sơ sức khỏe', icon: Activity, path: '/health-records' },
-          { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' }
+          { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
+          { id: 'management-vaccine', label: 'Quản lý tiêm chủng', icon: Shield, path: '/management-vaccine' },
+          { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
+          { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' }
         ];
       case 'STUDENT':
         return [

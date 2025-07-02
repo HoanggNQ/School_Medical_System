@@ -25,6 +25,9 @@ import ParentNotifications from './components/parent/ParentNotifications';
 import CampaignManagement from '@/components/admin/CampaignManagement';
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 import ProfileForm from '@/components/auth/ProfileForm';
+import ManagementVaccine from './components/nurse/ManagementVaccine';
+import HealthCheck from './components/nurse/HealthCheck';
+import Event from './components/nurse/Event';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -202,6 +205,14 @@ function App() {
 
           <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
             <Route path="vaccinations" element={<VaccinationManagement />} />
+          </Route>
+          
+          <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
+            <Route path="medicines" element={<MedicineManagement />} />
+            <Route path="health-records" element={<PlaceholderPage />} />
+            <Route path="management-vaccine" element={<ManagementVaccine />} />
+            <Route path="health-check" element={<HealthCheck />} />
+            <Route path="event" element={<Event />} />
           </Route>
 
 
