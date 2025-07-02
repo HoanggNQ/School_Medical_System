@@ -217,8 +217,12 @@ const fetchVaccinations = async () => {
             </TableHeader>
             <TableBody>
               {filteredVaccinations.map((vaccination) => (
-                <TableRow key={vaccination.id}>
-                  <TableCell className="font-medium cursor-pointer text-blue-600 hover:underline" onClick={() => { setSelectedDetail(vaccination); setIsDetailModalOpen(true); }}>{vaccination.name}</TableCell>
+                <TableRow
+                  key={vaccination.id}
+                  className="cursor-pointer"
+                  onClick={() => { setSelectedDetail(vaccination); setIsDetailModalOpen(true); }}
+                >
+                  <TableCell className="font-medium">{vaccination.name}</TableCell>
                   <TableCell>{vaccination.vaccineType}</TableCell>
                   <TableCell>{vaccination.startDate}</TableCell>
                   <TableCell>{vaccination.endDate}</TableCell>
@@ -239,7 +243,8 @@ const fetchVaccinations = async () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    {/* <div className="flex space-x-2"> */}
+                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                       <Button
                         variant="outline"
                         size="sm"
