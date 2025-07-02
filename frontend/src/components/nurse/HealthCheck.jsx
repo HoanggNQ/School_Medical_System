@@ -9,13 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import {  useLocation } from "react-router-dom"
 
 const HealthCheck = () => {
   const { toast } = useToast()
   const [studentsHealth, setStudentsHealth] = useState([])
   const [loadingHealth, setLoadingHealth] = useState(false)
   const [errorHealth, setErrorHealth] = useState(null)
-  const [campaignId, setCampaignId] = useState("")
   const [searchCampaignId, setSearchCampaignId] = useState("")
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [showDialog, setShowDialog] = useState(false)
@@ -36,6 +36,9 @@ const HealthCheck = () => {
     overallHealthRating: '',
     scheduleTime: '',
   })
+
+  const location = useLocation()
+  const campaignId = location.state?.campaignId
 
   useEffect(() => {
     if (!campaignId) {

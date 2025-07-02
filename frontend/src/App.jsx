@@ -28,6 +28,8 @@ import ProfileForm from '@/components/auth/ProfileForm';
 import ManagementVaccine from './components/nurse/ManagementVaccine';
 import HealthCheck from './components/nurse/HealthCheck';
 import Event from './components/nurse/Event';
+import PlaceholderPage from './components/nurse/PlaceholderPage';
+import CampaignsNurse from './components/nurse/CampaignsNurse';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -168,11 +170,11 @@ const NotFoundPage = () => (
   </div>
 );
 
-const PlaceholderPage = ({ title }) => (
-  <div className="flex items-center justify-center h-64">
-    <p className="text-gray-500 text-lg">{title} đang được phát triển...</p>
-  </div>
-);
+// const PlaceholderPage = ({ title }) => (
+//   <div className="flex items-center justify-center h-64">
+//     <p className="text-gray-500 text-lg">{title} đang được phát triển...</p>
+//   </div>
+// );
 
 
 function App() {
@@ -218,6 +220,7 @@ function App() {
 
           <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
             <Route path="medicines" element={<MedicineManagement />} />
+            <Route path="campaigns-nurse" element={<CampaignsNurse />} />
             {/* <Route path="health-records" element={<PlaceholderPage title="Trang hồ sơ sức khỏe" />} /> */}
           </Route>
 
@@ -245,7 +248,7 @@ function App() {
 
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
             <Route path="campaigns" element={<CampaignManagement />} />
             {/* <Route path="campaigns" element={<CampaignManagement />} /> */}
           </Route>

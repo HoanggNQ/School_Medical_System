@@ -31,6 +31,12 @@ const CampaignManagement = () => {
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+    const statusOrder = {
+        'APPROVED': 0, // Đang diễn ra
+        'PENDING': 1,  // Chờ duyệt
+        'DONE': 2      // Đã xong
+    };
+
     useEffect(() => {
         fetchCampaigns();
     }, []);
@@ -50,10 +56,16 @@ const CampaignManagement = () => {
         }
     };
 
-    const filteredCampaigns = campaigns.filter(campaign =>
-        campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (campaign.targetGrade + '').includes(searchTerm)
-    );
+    const filteredCampaigns = campaigns
+        .filter(campaign =>
+            campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (campaign.targetGrade + '').includes(searchTerm)
+        )
+        .sort((a, b) => {
+            const orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 99;
+            const orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 99;
+            return orderA - orderB;
+        });
 
     const handleCreateCampaign = async () => {
         setLoading(true);
@@ -200,6 +212,7 @@ const CampaignManagement = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>ID</TableHead>
                                 <TableHead>Tên chiến dịch</TableHead>
                                 <TableHead>Mô tả</TableHead>
                                 <TableHead>Ngày kiểm tra</TableHead>
@@ -215,6 +228,7 @@ const CampaignManagement = () => {
                         <TableBody>
                             {filteredCampaigns.map((campaign) => (
                                 <TableRow key={campaign.id} className="cursor-pointer" onClick={() => { setSelectedDetail(campaign); setIsDetailModalOpen(true); }}>
+                                    <TableCell className="font-medium">{campaign.id}</TableCell>
                                     <TableCell className="font-medium">{campaign.name}</TableCell>
                                     <TableCell>{campaign.description}</TableCell>
                                     <TableCell>{campaign.checkDate}</TableCell>

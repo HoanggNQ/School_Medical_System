@@ -36,10 +36,22 @@ const VaccinationManagement = () => {
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const filteredVaccinations = vaccinations.filter(vaccination =>
-    vaccination.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (vaccination.targetGrade + '').includes(searchTerm)
-  );
+  const statusOrder = {
+    'ACTIVE': 0, // Đang diễn ra
+    'PENDING': 1, // Chờ duyệt
+    'DONE': 2    // Đã xong
+  };
+
+  const filteredVaccinations = vaccinations
+    .filter(vaccination =>
+      vaccination.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (vaccination.targetGrade + '').includes(searchTerm)
+    )
+    .sort((a, b) => {
+      const orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 99;
+      const orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 99;
+      return orderA - orderB;
+    });
 
   
   useEffect(() => {
@@ -204,6 +216,7 @@ const fetchVaccinations = async () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Tên chiến dịch</TableHead>
                 <TableHead>Loại vắc xin</TableHead>
                 <TableHead>Ngày bắt đầu</TableHead>
@@ -222,6 +235,7 @@ const fetchVaccinations = async () => {
                   className="cursor-pointer"
                   onClick={() => { setSelectedDetail(vaccination); setIsDetailModalOpen(true); }}
                 >
+                  <TableCell className="font-medium">{vaccination.id}</TableCell>
                   <TableCell className="font-medium">{vaccination.name}</TableCell>
                   <TableCell>{vaccination.vaccineType}</TableCell>
                   <TableCell>{vaccination.startDate}</TableCell>
