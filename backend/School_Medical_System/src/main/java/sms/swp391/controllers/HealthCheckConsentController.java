@@ -36,7 +36,7 @@ public class HealthCheckConsentController {
             @PathVariable Long id,
             @RequestBody HealthCheckConsentRequestDTO request,
             @AuthenticationPrincipal UserEntity parentId) {
-        if (parentId == null || !RoleEnum.PARENT.name().equals(parentId.getRoleName()) || parentId.getRoleName() == null ) {
+        if (parentId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")

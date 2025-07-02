@@ -27,7 +27,7 @@ public class VaccinationCampaignController {
     public ResponseEntity<ResponseObject> createCampaign(
             @RequestBody VaccinationCampaignRequestDTO request,
             @AuthenticationPrincipal UserEntity createdById) {
-        if (createdById == null || createdById.getRoleName() == null || !RoleEnum.ADMIN.name().equals(createdById.getRoleName())) {
+        if (createdById == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
