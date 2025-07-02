@@ -8,8 +8,8 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -60,7 +60,7 @@ public class HealthCheckCampaignEntity {
 
     @ColumnDefault("now()")
     @Column(name = "created_at")
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "healthCheckCampaign")
     private Set<HealthCheckConsentEntity> healthCheckConsents = new LinkedHashSet<>();

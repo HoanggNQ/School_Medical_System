@@ -140,10 +140,12 @@ public class StudentController {
     @GetMapping("/students/{studentId}/events")
     public ResponseEntity<ResponseObject> getEvents(
             @PathVariable Long studentId,
+            @RequestParam(required = false, defaultValue = "") String campaignName,
+            @RequestParam(required = false) String type,
             @ParameterObject @PageableDefault(size = 10) Pageable pageable) {
 
         Page<StudentHealthEventResponseDTO> page =
-                studentService.getPagedEvents(studentId, pageable);
+                studentService.getPagedEvents(studentId, campaignName,type,pageable);
 
         return ResponseEntity.ok(
                 ResponseObject.builder()
