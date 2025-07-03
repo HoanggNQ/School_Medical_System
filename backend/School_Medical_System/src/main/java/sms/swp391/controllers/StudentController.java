@@ -9,8 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.requests.StudentUpdateRequest;
 import sms.swp391.models.dtos.responses.*;
@@ -155,5 +157,11 @@ public class StudentController {
                         .isSuccess(true)
                         .data(PageUtils.toPagedResponse(page))
                         .build());
+    }
+
+    @Operation(summary = "Import danh sách học sinh từ file Excel", description = "Cho phép import học sinh từ file Excel (.xlsx)")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseObject> importStudents(@RequestParam("file") MultipartFile file) {
+        return studentService.importStudentsFromExcel(file);
     }
 }

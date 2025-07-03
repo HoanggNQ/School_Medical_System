@@ -1,6 +1,8 @@
 package sms.swp391.services.impl;
 
+import jakarta.validation.ConstraintViolation;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
@@ -21,24 +25,27 @@ import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.*;
 import sms.swp391.repositories.UserRepository;
 import sms.swp391.services.FileDatabaseService;
-import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 import sms.swp391.utils.UserMapper;
 
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static sms.swp391.utils.ExcelExporter.parseUsersFromExcel;
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-
     private final UserRepository userRepository;
-    private final OTPService oTPService;
     private final PasswordEncoder passwordEncoder;
     private final FileDatabaseService fileDatabaseService;
+    private final Validator validator;
 
     @Override
     public List<UserResponse> getListUser() {
@@ -290,6 +297,61 @@ public class UserServiceImpl implements UserService {
         }
         userEntity.setRoleName(role);
         userRepository.save(userEntity);
+    }
+    @Override
+    @Transactional
+    public List<UserResponse> importUsersFromExcel(MultipartFile excelFile) throws IOException {
+        if (excelFile.isEmpty()) {
+            throw new IllegalArgumentException("Excel file must not be empty");
+        }
+
+        List<UserRegisterDTO> dtos;
+        try (InputStream in = excelFile.getInputStream()) {
+            dtos = parseUsersFromExcel(in);
+        }
+
+        return bulkCreateUsers(dtos);
+    }
+    @Override
+    @Transactional
+    public List<UserResponse> bulkCreateUsers(List<UserRegisterDTO> dtos) {
+
+        List<UserResponse> result = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        for (int i = 0; i < dtos.size(); i++) {
+            UserRegisterDTO dto = dtos.get(i);
+            int rowNum = i + 2; // header Excel ở dòng 1
+
+            Set<ConstraintViolation<UserRegisterDTO>> violations = validator.validate(dto);
+            if (!violations.isEmpty()) {
+                String msg = violations.stream()
+                        .map(ConstraintViolation::getMessage)
+                        .collect(Collectors.joining("; "));
+                errors.add("Row " + rowNum + ": " + msg);
+                continue;
+            }
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                errors.add("Row " + rowNum + ": email '" + dto.getEmail() + "' already exists");
+                continue;
+            }
+            if (userRepository.existsByPhoneNumber(dto.getPhoneNumber())) {
+                errors.add("Row " + rowNum + ": phone '" + dto.getPhoneNumber() + "' already exists");
+                continue;
+            }
+            UserEntity entity = UserMapper.toEntity(dto);
+            entity.setRoleName(dto.getRoleName());
+            entity.setPassword(passwordEncoder.encode(dto.getPassword()));
+            entity.setStatus(StatusEnum.ACTIVE);
+
+            userRepository.save(entity);
+            result.add(UserMapper.toDTO(entity));
+        }
+        if (!errors.isEmpty()) {
+            log.warn("Bulk import completed with {} errors: {}", errors.size(), errors);
+        }
+
+        return result;
     }
 
 }

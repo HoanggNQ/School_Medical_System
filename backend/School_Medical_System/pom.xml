@@ -35,6 +35,11 @@
             <artifactId>firebase-admin</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.cloudinary</groupId>
             <artifactId>cloudinary-http43</artifactId>
             <version>1.38.0</version>

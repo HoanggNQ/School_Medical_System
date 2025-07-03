@@ -15,7 +15,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class UserResponse  {
     Long userId;
-    String userName;
     String fullName;
     String email;
     String phoneNumber;
@@ -25,7 +24,5 @@ public class UserResponse  {
     RoleEnum roleName;
     String avatarUrl;
     String status;
-    LocalDate dateCreated;
-    LocalDate updatedAt;
 
 }

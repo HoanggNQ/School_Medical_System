@@ -19,7 +19,7 @@ import sms.swp391.models.dtos.responses.MedicationResponseDTO;
 import sms.swp391.models.entities.MedicationEntity;
 import sms.swp391.repositories.MedicationRepository;
 import sms.swp391.services.MedicationService;
-import sms.swp391.utils.MedicationExcelExporter;
+import sms.swp391.utils.ExcelExporter;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.utils.PageUtils;
 
@@ -172,7 +172,7 @@ public class MedicationController {
     public ResponseEntity<byte[]> exportExcel() {
         try {
             List<MedicationEntity> list = medicationRepository.findAll();
-            ByteArrayInputStream in = MedicationExcelExporter.export(list);
+            ByteArrayInputStream in = ExcelExporter.export(list);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=medications.xlsx");
