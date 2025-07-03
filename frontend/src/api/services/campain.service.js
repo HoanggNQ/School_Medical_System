@@ -54,6 +54,14 @@ export const campaignService = {
         } catch (error) {
             throw handleApiError(error);
         }
+    },
+    deleteCampaign: async (campaignId) => {
+        try {
+            const response = await axiosInstance.delete(API_ENDPOINTS.CAMPAIGN_ENDPOINTS.DELETE(campaignId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
     }
 };
 

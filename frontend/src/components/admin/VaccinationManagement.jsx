@@ -36,6 +36,8 @@ const VaccinationManagement = () => {
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  const [errors, setErrors] = useState({});
+
   const statusOrder = {
     'ACTIVE': 0, // Đang diễn ra
     'PENDING': 1, // Chờ duyệt
@@ -73,56 +75,142 @@ const fetchVaccinations = async () => {
     }
 };
 
-  const handleCreateVaccination = async () => {
-    const newVaccination = {
-   
-      ...formData,
-      targetGrade: Number(formData.targetGrade),
-      status: 'Scheduled'
+const validate = () => {
+    const newErrors = {};
+    const today = new Date();
+    const minStartDate = new Date(today.setHours(0,0,0,0));
+    minStartDate.setDate(minStartDate.getDate() + 30);
+
+    const startDate = new Date(formData.startDate);
+    const endDate = new Date(formData.endDate);
+
+    // Định dạng ngày dd/mm/yyyy
+    const formatVNDate = (date) => {
+        const d = new Date(date);
+        const day = d.getDate().toString().padStart(2, '0');
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
     };
-    const response = await vaccinationService.createVaccination(newVaccination, user.id);
-    console.log(response);
-    fetchVaccinations();
-    setIsCreateModalOpen(false);
-    setFormData({
-      name: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-      targetGrade: 0,
-      notes: '',
-      vaccineType: ''
-    });
-    toast({
-      title: 'Thành công!',
-      description: 'Lịch tiêm chủng mới đã được tạo.',
-    });
-  };
+
+    if (!formData.name || formData.name.trim() === "") {
+        newErrors.name = "Vui lòng nhập tên chiến dịch.";
+    }
+    if (!formData.description || formData.description.trim() === "") {
+        newErrors.description = "Vui lòng nhập mô tả.";
+    }
+    if (!formData.targetGrade && formData.targetGrade !== 0) {
+        newErrors.targetGrade = "Vui lòng nhập khối lớp.";
+    }
+    if (!formData.notes || formData.notes.trim() === "") {
+        newErrors.notes = "Vui lòng nhập ghi chú.";
+    }
+    if (!formData.vaccineType || formData.vaccineType.trim() === "") {
+        newErrors.vaccineType = "Vui lòng nhập loại vắc xin.";
+    }
+
+    if (!formData.startDate) {
+        newErrors.startDate = "Vui lòng chọn ngày bắt đầu.";
+    } else if (startDate < minStartDate) {
+        newErrors.startDate = `Ngày bắt đầu phải ít nhất sau ngày hôm nay 30 ngày, tức là từ ngày ${formatVNDate(minStartDate)} trở đi.`;
+    }
+
+    if (!formData.endDate) {
+        newErrors.endDate = "Vui lòng chọn ngày kết thúc.";
+    } else if (formData.startDate && endDate < startDate) {
+        newErrors.endDate = "Ngày kết thúc không được trước ngày bắt đầu.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+};
+
+  const handleCreateVaccination = async () => {
+    setLoading(true);
+    const newVaccination = {
+        ...formData,
+        targetGrade: Number(formData.targetGrade),
+        status: 'Scheduled'
+    };
+    try {
+        if (!validate()) return;
+        const response = await vaccinationService.createVaccination(newVaccination, user.id);
+        console.log(response);
+        fetchVaccinations();
+        setIsCreateModalOpen(false);
+        setFormData({
+            name: '',
+            description: '',
+            startDate: '',
+            endDate: '',
+            targetGrade: 0,
+            notes: '',
+            vaccineType: ''
+        });
+        toast({
+            title: 'Thành công!',
+            description: 'Lịch tiêm chủng mới đã được tạo.',
+        });
+    } catch (error) {
+        console.error(error);
+        let errorMsg = 'Đã xảy ra lỗi.';
+        if (error.response && error.response.data && error.response.data.message) {
+            errorMsg = error.response.data.message;
+        } else if (error.message) {
+            errorMsg = error.message;
+        } else {
+            errorMsg = error.toString();
+        }
+        toast({
+            title: 'Tạo lịch tiêm chủng thất bại',
+            description: errorMsg,
+        });
+    } finally {
+        setLoading(false);
+    }
+};
 
   const handleEditVaccination = async () => {
     const updatedVaccination = {
-      ...formData,
-      targetGrade: Number(formData.targetGrade)
+        ...formData,
+        targetGrade: Number(formData.targetGrade)
     };
-    const response = await vaccinationService.editVaccination(selectedVaccination.id, updatedVaccination);
-    console.log(response);
-    fetchVaccinations();
-    setIsEditModalOpen(false);
-    setSelectedVaccination(null);
-    setFormData({
-      name: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-      targetGrade: 0,
-      notes: '',
-      vaccineType: ''
-    });
-    toast({
-      title: 'Thành công!',
-      description: 'Lịch tiêm chủng đã được cập nhật.',
-    });
-  };
+    try {
+        if (!validate()) return;
+        const response = await vaccinationService.editVaccination(selectedVaccination.id, updatedVaccination);
+        console.log(response);
+        fetchVaccinations();
+        setIsEditModalOpen(false);
+        setSelectedVaccination(null);
+        setFormData({
+            name: '',
+            description: '',
+            startDate: '',
+            endDate: '',
+            targetGrade: 0,
+            notes: '',
+            vaccineType: ''
+        });
+        toast({
+            title: 'Thành công!',
+            description: 'Lịch tiêm chủng đã được cập nhật.',
+        });
+    } catch (error) {
+        console.error(error);
+        let errorMsg = 'Đã xảy ra lỗi.';
+        if (error.response && error.response.data && error.response.data.message) {
+            errorMsg = error.response.data.message;
+        } else if (error.message) {
+            errorMsg = error.message;
+        } else {
+            errorMsg = error.toString();
+        }
+        toast({
+            title: 'Cập nhật lịch tiêm chủng thất bại',
+            description: errorMsg,
+        });
+    }
+};
 
   const handleDeleteVaccination = (vaccinationId) => {
     setVaccinations(vaccinations.filter(vaccination => vaccination.id !== vaccinationId));
@@ -193,6 +281,13 @@ const fetchVaccinations = async () => {
               isEdit={false}
               loading={loading}
             />
+            {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
+            {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+            {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
+            {errors.notes && <div className="text-red-500 text-sm">{errors.notes}</div>}
+            {errors.vaccineType && <div className="text-red-500 text-sm">{errors.vaccineType}</div>}
+            {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
+            {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
           </DialogContent>
         </Dialog>
       </div>
@@ -250,15 +345,14 @@ const fetchVaccinations = async () => {
                       vaccination.status === 'DONE' ? 'bg-gray-400 text-white' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {vaccination.status === 'PENDING' ? 'Chờ duyệt' :
+                      {vaccination.status === 'PENDING' ? 'Chờ diễn ra' :
                         vaccination.status === 'ACTIVE' ? 'Đang diễn ra' :
                         vaccination.status === 'DONE' ? 'Đã xong' :
                         vaccination.status}
                     </span>
                   </TableCell>
                   <TableCell>
-                    {/* <div className="flex space-x-2"> */}
-                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                    {vaccination.status === 'PENDING' && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -266,6 +360,8 @@ const fetchVaccinations = async () => {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
+                    )}
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                       <Button
                         variant="outline"
                         size="sm"
@@ -276,12 +372,12 @@ const fetchVaccinations = async () => {
                       </Button>
                       {vaccination.status === 'PENDING' && (
                         <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartVaccination(vaccination.id)} disabled={loading}>
-                          Bắt đầu chiến dịch
+                          Bắt đầu 
                         </Button>
                       )}
                       {vaccination.status === 'ACTIVE' && (
                         <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndVaccination(vaccination.id)} disabled={loading}>
-                          Kết thúc chiến dịch
+                          Kết thúc 
                         </Button>
                       )}
                     </div>
@@ -306,6 +402,13 @@ const fetchVaccinations = async () => {
             isEdit={true}
             loading={loading}
           />
+          {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
+          {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+          {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
+          {errors.notes && <div className="text-red-500 text-sm">{errors.notes}</div>}
+          {errors.vaccineType && <div className="text-red-500 text-sm">{errors.vaccineType}</div>}
+          {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
+          {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
         </DialogContent>
       </Dialog>
 
@@ -369,7 +472,7 @@ const fetchVaccinations = async () => {
                   selectedDetail.status === 'DONE' ? 'bg-gray-400 text-white' :
                   'bg-red-100 text-gray-800'
                 }`}>
-                  {selectedDetail.status === 'PENDING' ? 'Chờ duyệt' :
+                  {selectedDetail.status === 'PENDING' ? 'Chờ diễn ra' :
                     selectedDetail.status === 'APPROVED' ? 'Đang diễn ra' :
                     selectedDetail.status === 'DONE' ? 'Đã xong' :
                     selectedDetail.status}

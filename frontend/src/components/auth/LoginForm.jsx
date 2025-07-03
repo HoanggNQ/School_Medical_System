@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Heart } from 'lucide-react';
@@ -32,6 +31,19 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
       setLoading(false);
     } catch (error) {
       console.error(error);
+      let errorMsg = 'Đã xảy ra lỗi.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = error.toString();
+      }
+      toast({
+        title: "Đăng nhập thất bại",
+        description: errorMsg,
+      });
+      setLoading(false);
     }
   };
 
@@ -114,7 +126,7 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
             >
               Quên mật khẩu?
             </button>
-            <div className="text-center text-white/60">
+            {/* <div className="text-center text-white/60">
               Chưa có tài khoản?{' '}
               <button
                 onClick={onSwitchToRegister}
@@ -122,7 +134,7 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
               >
                 Đăng ký ngay
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* <div className="mt-6 p-4 bg-white/10 rounded-lg">

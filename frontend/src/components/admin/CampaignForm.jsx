@@ -25,14 +25,25 @@ const CampaignForm = ({ formData, setFormData }) => (
         </div>
         <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <Label htmlFor="checkDate">Ngày kiểm tra</Label>
+                <Label htmlFor="startDate">Ngày bắt đầu(phải sau ngày hôm nay ít nhất 30 ngày )</Label>
                 <Input
-                    id="checkDate"
+                    id="startDate"
                     type="date"
-                    value={formData.checkDate}
-                    onChange={(e) => setFormData({ ...formData, checkDate: e.target.value })}
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 />
             </div>
+            <div className="space-y-2">
+                <Label htmlFor="endDate">Ngày kết thúc</Label>
+                <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                />
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
                 <Label htmlFor="targetGrade">Khối lớp</Label>
                 <Input
