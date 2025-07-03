@@ -20,11 +20,9 @@ FROM (
           hcc.consent_id AS consent_id,
           hccam.name AS campaign,
           hccam.description AS description,
-          hccam.check_date AS check_date,
           hccam.created_at AS created_at,
           stuUser.fullname AS student_name,
           hccam.location AS location,
-          hccam.required_equipment AS requirement_equipment,
           hcc.consent_status AS consent_status,
           CASE WHEN hcr.result_id IS NOT NULL THEN true ELSE false END AS completed,
           CASE
