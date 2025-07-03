@@ -13,7 +13,6 @@ public class UserMapper {
 
         return UserResponse.builder()
                 .userId(entity.getUserId())
-                .userName(entity.getUsername())
                 .gender(entity.getGender())
                 .phoneNumber(entity.getPhoneNumber())
                 .dob(entity.getDob())
@@ -30,13 +29,14 @@ public class UserMapper {
 
         return UserEntity.builder()
                 .username(request.getUsername())
-                .fullname(request.getFullname())
+                .fullname(request.getFullName())
                 .address(request.getAddress())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .dob(request.getDob())
                 .gender(request.getGender())
                 .password(request.getPassword()) // You should hash this elsewhere!
+                .roleName(request.getRoleName())
                 .build();
     }
 
@@ -50,7 +50,8 @@ public class UserMapper {
                 .phoneNumber(dto.getPhoneNumber())
                 .dob(dto.getDob())
                 .email(dto.getEmail())
-                .fullname(dto.getFullname())
+                .fullname(dto.getFullName())
+                .roleName(dto.getRoleName())
                 .build();
     }
 }

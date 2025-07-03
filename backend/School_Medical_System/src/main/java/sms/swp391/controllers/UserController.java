@@ -26,6 +26,7 @@ import sms.swp391.models.exception.ConflictException;
 import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -96,6 +97,7 @@ public class UserController {
                         .build()
         );
     }
+
     @GetMapping
     public ResponseEntity<ResponseObject> getUsers(
             @RequestParam(value = "search", required = false) String search,
@@ -115,6 +117,7 @@ public class UserController {
                         .build()
         );
     }
+
     @GetMapping("/searchByRole")
     public ResponseEntity<ResponseObject> getUsersByRoles(
             @RequestParam(value = "search", required = false) RoleEnum search,
@@ -205,50 +208,111 @@ public class UserController {
 
     @PostMapping("/createNurse")
     public ResponseEntity<ResponseObject> createNurse(@RequestBody UserRegisterDTO request) {
-     try {
-         UserResponse user = userService.createNurse(request);
-         return ResponseEntity.ok(
-                 ResponseObject.builder()
-                         .code("CREATE OK")
-                         .message("CREATE OK")
-                         .status(HttpStatus.OK)
-                         .isSuccess(true)
-                         .data(user)
-                         .build()
-         );
+        try {
+            UserResponse user = userService.createNurse(request);
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("CREATE OK")
+                            .message("CREATE OK")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(user)
+                            .build()
+            );
 
-     }catch (ConflictException e) {
-         return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                 ResponseObject.builder()
-                         .code("CREATE_CONFLICT")
-                         .message(e.getMessage())
-                         .status(HttpStatus.CONFLICT)
-                         .isSuccess(false)
-                         .data(null)
-                         .build()
-         );
+        } catch (ConflictException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    ResponseObject.builder()
+                            .code("CREATE_CONFLICT")
+                            .message(e.getMessage())
+                            .status(HttpStatus.CONFLICT)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
 
-     } catch (ActionFailedException e) {
-         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                 ResponseObject.builder()
-                         .code("CREATE_FAILED")
-                         .message(e.getMessage())
-                         .status(HttpStatus.BAD_REQUEST)
-                         .isSuccess(false)
-                         .data(null)
-                         .build()
-         );
+        } catch (ActionFailedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("CREATE_FAILED")
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
 
-     } catch (Exception e) {
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                 ResponseObject.builder()
-                         .code("CREATE_FAILED")
-                         .message("Internal error: " + e.getMessage())
-                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                         .isSuccess(false)
-                         .data(null)
-                         .build()
-         );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("CREATE_FAILED")
+                            .message("Internal error: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
     }
-}
+    @PostMapping(
+            path = "/import/excel",
+            consumes = { MediaType.MULTIPART_FORM_DATA_VALUE },
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseObject> importUsersFromExcel(
+            @RequestPart("file") MultipartFile file) {
+
+        try {
+            List<UserResponse> created = userService.importUsersFromExcel(file);
+
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("IMPORT_EXCEL_SUCCESS")
+                            .message("Imported " + created.size() + " users.")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(created)
+                            .build()
+            );
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("IMPORT_EXCEL_FAILED")
+                            .message("Cannot read Excel file: " + e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("IMPORT_EXCEL_FAILED")
+                            .message("Internal error: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
+
+    @PostMapping(
+            path = "/import/json",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseObject> importUsersFromJson(
+            @RequestBody List<UserRegisterDTO> users) {
+
+        List<UserResponse> created = userService.bulkCreateUsers(users);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("IMPORT_JSON_SUCCESS")
+                        .message("Imported " + created.size() + " users.")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(created)
+                        .build()
+        );
+    }
+
 }
