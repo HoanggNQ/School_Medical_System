@@ -4,6 +4,7 @@ import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,7 +17,7 @@ public class VaccinationCampaignResponse {
     private String description;
     private LocalDate startDate;
     private MedicalStatus status;
-    private Integer targetGrade;
+    private List<String> targetGrade;
     private String notes;
     private String vaccineType;
     private Long createdById;

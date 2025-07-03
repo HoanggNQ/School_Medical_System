@@ -148,4 +148,39 @@ public class SendMailServiceIplm implements SendMailService {
             throw new RuntimeException("Error while sending email: " + exception.getMessage());
         }
     }
+    @Override
+    public void sendReminderEmail(String toEmail,
+                                  String parentName,
+                                  String studentName,
+                                  String campaignName,
+                                  String startDate,
+                                  String endDate,
+                                  String location) {
+
+        try {
+            Context context = new Context();
+            context.setVariable("parentName",  parentName);
+            context.setVariable("studentName", studentName);
+            context.setVariable("campaignName", campaignName);
+            context.setVariable("startDate",   startDate);
+            context.setVariable("endDate",     endDate);
+            context.setVariable("location",    location);
+
+            String content = templateEngine.process("ConsentReminderEmailTemplate", context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF‑8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Nhắc nhở xác nhận khám sức khỏe cho " + studentName);
+            helper.setText(content, true);
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error sending reminder email: " + e.getMessage());
+        }
+    }
+
 }

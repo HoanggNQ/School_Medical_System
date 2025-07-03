@@ -5,17 +5,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
-import sms.swp391.services.HealthCheckService;
+import sms.swp391.services.HealthCheckResultService;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/health-check-result")
 @RequiredArgsConstructor
 public class HealthCheckResultController {
-    private final HealthCheckService healthCheckService;
+    private final HealthCheckResultService healthCheckService;
     @Operation(summary = "Lưu kết quả khám sức khỏe", description = "Lưu kết quả khám sức khỏe cho học sinh kèm theo ID của người thực hiện.")
     @PostMapping("/results")
     public ResponseEntity<ResponseObject> saveResult(
@@ -34,7 +32,7 @@ public class HealthCheckResultController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
-                            .message("Hãy đăng nhập bằng tài khoản nurse")
+                            .message("Hãy đăng nhập bằng tài khoản nurse ")
                             .status(HttpStatus.UNAUTHORIZED)
                             .isSuccess(false)
                             .data(null)

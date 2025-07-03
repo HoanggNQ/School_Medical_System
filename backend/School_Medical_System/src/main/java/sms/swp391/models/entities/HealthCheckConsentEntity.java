@@ -1,6 +1,5 @@
 package sms.swp391.models.entities;
 
-import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,7 +8,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
@@ -41,7 +39,6 @@ public class HealthCheckConsentEntity {
     @JoinColumn(name = "parent_id", nullable = false)
     private UserEntity parent;
 
-    @Size(max = 20)
     @NotNull
     @Column(name = "consent_status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
@@ -52,9 +49,6 @@ public class HealthCheckConsentEntity {
 
     @Column(name = "notes", length = Integer.MAX_VALUE)
     private String notes;
-
-    @Column(name = "special_requests", length = Integer.MAX_VALUE)
-    private String specialRequests;
 
     @Size(max = 9)
     @NotNull

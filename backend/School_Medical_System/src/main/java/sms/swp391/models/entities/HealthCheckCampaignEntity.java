@@ -39,14 +39,14 @@ public class HealthCheckCampaignEntity {
     @NotNull
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
-    @Size(max = 20)
+
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private MedicalStatus status;
 
     @Column(name = "target_grade")
-    private Integer targetGrade;
+    private String targetGrade;
 
     @Size(max = 100)
     @Column(name = "location", length = 100)

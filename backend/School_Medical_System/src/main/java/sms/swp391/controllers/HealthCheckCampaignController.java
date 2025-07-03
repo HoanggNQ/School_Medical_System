@@ -1,6 +1,7 @@
 package sms.swp391.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -11,14 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 import sms.swp391.models.dtos.responses.PaginatedHealthCheckConsentResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.NotFoundException;
-import sms.swp391.services.HealthCheckService;
+import sms.swp391.services.HealthCheckCampaignService;
+import sms.swp391.services.HealthCheckConsentService;
 
 import java.util.List;
 
@@ -26,20 +27,21 @@ import java.util.List;
 @RequestMapping("/api/v1/health-check-campaign")
 @RequiredArgsConstructor
 public class HealthCheckCampaignController {
-    private final HealthCheckService healthCheckService;
+    private final HealthCheckCampaignService healthCheckService;
+    private final HealthCheckConsentService healthCheckConsentService;
 
 
     @Operation(summary = "Tạo chiến dịch khám sức khỏe", description = "Khởi tạo một chiến dịch khám sức khỏe mới với thông tin từ người tạo.")
 
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(
-            @RequestBody HealthCheckCampaignRequestDTO request,
+            @Valid @RequestBody HealthCheckCampaignRequestDTO request,
             @AuthenticationPrincipal UserEntity createdById) {
         if (createdById == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
-                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .message("Hãy đăng nhập bằng tài khoản Admin để tạo chiến dịch khám sức khỏe")
                             .status(HttpStatus.UNAUTHORIZED)
                             .isSuccess(false)
                             .data(null)
@@ -77,6 +79,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
     @Operation(summary = "Cập nhật chiến dịch khám", description = "Chỉnh sửa thông tin chiến dịch khám sức khỏe theo ID.")
 
     @PutMapping("/campaigns/{id}")
@@ -148,6 +151,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
     @Operation(summary = "Lấy chiến dịch theo ID", description = "Trả về thông tin chiến dịch khám sức khỏe theo ID.")
     @GetMapping("/campaigns/{id}")
     public ResponseEntity<ResponseObject> getCampaignById(@PathVariable Long id) {
@@ -182,6 +186,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
     @Operation(summary = "Lấy tất cả chiến dịch khám", description = "Trả về danh sách tất cả chiến dịch khám sức khỏe.")
     @GetMapping("/campaigns")
     public ResponseEntity<ResponseObject> getAllCampaigns() {
@@ -207,6 +212,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
     @Operation(summary = "Kết thúc chiến dịch khám", description = "Đổi trạng thái chiến dịch sang 'đã ket thuc'.")
     @PostMapping("/campaigns/{id}/end")
     public ResponseEntity<ResponseObject> endCampaign(@PathVariable Long id) {
@@ -240,6 +246,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
     @Operation(summary = "Lấy tất cả chiến dịch khám đang bắt đầu", description = "Trả về danh sách tất cả chiến dịch khám sức khỏe.")
     @GetMapping("/campaignsStart")
     public ResponseEntity<ResponseObject> getAllCampaignsStart() {
@@ -280,6 +287,7 @@ public class HealthCheckCampaignController {
                         .build()
         );
     }
+
     @Operation(summary = "Lấy danh sách consent đã đồng ý theo campaign id", description = "Trả về danh sách consent đã đồng ý theo campaign id với phân trang và sắp xếp" +
             " bao gồm: student.id, parent,userId.")
     @GetMapping("/campaigns/{campaignId}/consents/approved")
@@ -291,7 +299,7 @@ public class HealthCheckCampaignController {
                     @SortDefault(sort = "id", direction = Sort.Direction.ASC)
             }) Pageable pageable) {
         try {
-            PaginatedHealthCheckConsentResponse vaccinationConsentResponse = healthCheckService.getApprovedConsentsByCampaign(campaignId, pageable);
+            PaginatedHealthCheckConsentResponse vaccinationConsentResponse = healthCheckConsentService.getApprovedConsentsByCampaign(campaignId, pageable);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("GET_APPROVED_CONSENTS_SUCCESS")
@@ -306,6 +314,45 @@ public class HealthCheckCampaignController {
                     ResponseObject.builder()
                             .code("GET_APPROVED_CONSENTS_FAILED")
                             .message("Failed to get approved consents: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
+    @Operation(
+            summary = "Nhắc nhở phụ huynh chưa xác nhận",
+            description = "Gửi lại email + notification cho tất cả phụ huynh còn trạng thái PENDING của chiến dịch."
+    )
+    @PostMapping("/campaigns/{id}/remind")
+    public ResponseEntity<ResponseObject> remindUnconfirmedParents(@PathVariable Long id) {
+        try {
+            // Gọi service để gửi mail + push notification
+            healthCheckService.remindUnconfirmedParents(id);
+
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("REMIND_SUCCESS")
+                            .message("Đã gửi nhắc nhở thành công")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .build()
+            );
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .code("CAMPAIGN_NOT_FOUND")
+                            .message(e.getMessage())
+                            .status(HttpStatus.NOT_FOUND)
+                            .isSuccess(false)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("REMIND_FAILED")
+                            .message("Lỗi gửi nhắc nhở: " + e.getMessage())
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .isSuccess(false)
                             .build()
