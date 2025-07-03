@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
-import sms.swp391.models.entities.VaccinationConsentEntity;
 
 import java.util.List;
 
@@ -30,11 +29,11 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
             "OR LOWER(hc.healthCheckCampaign.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) ")
     Page<HealthCheckConsentEntity> searchHealthCheckConsents(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT v FROM HealthCheckConsentEntity v WHERE v.consentStatus = 'APPROVED'")
-    Page<HealthCheckConsentEntity> findApprovedStudent(Pageable pageable);
 
     @Query("SELECT vc FROM HealthCheckConsentEntity vc " +
             "WHERE vc.healthCheckCampaign.id = :campaignId " +
             "AND vc.consentStatus = 'APPROVED'")
     Page<HealthCheckConsentEntity> findApprovedConsentsByCampaignId(@Param("campaignId") Long campaignId, Pageable pageable);
+
+    List<HealthCheckConsentEntity> findByHealthCheckCampaign_IdAndConsentStatus(Long healthCheckCampaignId, MedicalStatus consentStatus);
 }

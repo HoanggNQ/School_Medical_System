@@ -81,7 +81,12 @@ public class VaccinationServiceImpl implements VaccinationService {
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
         campaign.setStartDate(request.getStartDate());
-        campaign.setTargetGrade(request.getTargetGrade());
+        campaign.setTargetGrade(
+                request.getTargetGrade() != null
+                        ? String.join(",", request.getTargetGrade())
+                        : campaign.getTargetGrade()
+        );
+
         campaign.setNotes(request.getNotes());
         campaign.setVaccineType(request.getVaccineType());
 
@@ -90,7 +95,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         /* 3. Lấy danh sách HS theo khối mới */
         List<StudentEntity> targetStudents =
-                studentRepository.findByClassEntity_GradeWithUserAndParent(updatedCampaign.getTargetGrade());
+                studentRepository.findByClassEntity_GradeWithUserAndParent(updatedCampaign.getTargetGrade().toString());
 
         /* 4. Gửi thông báo cho PH (loại bỏ trùng lặp) */
         Set<Long> notifiedParents = new HashSet<>();

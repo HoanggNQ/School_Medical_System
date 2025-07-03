@@ -5,6 +5,9 @@ import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
 import sms.swp391.models.entities.VaccinationCampaignEntity;
 
+import java.util.Arrays;
+import java.util.List;
+
 @RequiredArgsConstructor
 public class VaccinationCampaignMapper {
     public static VaccinationCampaignResponse toDTO(VaccinationCampaignEntity entity) {
@@ -16,7 +19,7 @@ public class VaccinationCampaignMapper {
                 .description(entity.getDescription())
                 .startDate(entity.getStartDate())
                 .status(entity.getStatus())
-                .targetGrade(entity.getTargetGrade())
+                .targetGrade(entity.getTargetGrade()!= null ? Arrays.asList(entity.getTargetGrade().split(",")) : List.of())
                 .vaccineType(entity.getVaccineType())
                 .notes(entity.getNotes())
                 .location(entity.getLocation())
@@ -32,7 +35,7 @@ public class VaccinationCampaignMapper {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setStartDate(dto.getStartDate());
-        entity.setTargetGrade(dto.getTargetGrade());
+        entity.setTargetGrade(String.join(",", dto.getTargetGrade()));
         entity.setVaccineType(dto.getVaccineType());
         entity.setLocation(dto.getLocation());
         entity.setNotes(dto.getNotes());

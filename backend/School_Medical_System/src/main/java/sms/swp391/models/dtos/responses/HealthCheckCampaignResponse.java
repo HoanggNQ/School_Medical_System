@@ -4,6 +4,7 @@ import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,7 +18,7 @@ public class HealthCheckCampaignResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private MedicalStatus status;
-    private Integer targetGrade;
+    private List<String> targetGrade;
     private String location;
     private String requiredEquipment;
     private Long createdById;

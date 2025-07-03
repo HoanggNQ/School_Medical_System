@@ -49,14 +49,13 @@ public class VaccinationCampaignEntity {
     @Column(name = "manufacturer", length = 100)
     private String manufacturer;
 
-    @Size(max = 20)
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private MedicalStatus status;
 
     @Column(name = "target_grade")
-    private Integer targetGrade;
+    private String targetGrade;
 
     @Size(max = 100)
     @NotNull

@@ -20,10 +20,9 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
             "JOIN FETCH s.parent p " +
             "JOIN FETCH s.user u " +
             "WHERE s.classEntity.grade = :grade")
-    List<StudentEntity> findByClassEntity_GradeWithUserAndParent(Integer grade);
+    List<StudentEntity> findByClassEntity_GradeWithUserAndParent(String grade);
 
 
-    Optional<StudentEntity> findByStudentCode(String studentCode);
     Optional<StudentEntity> findByUser_Email(String email);
 
     boolean existsByStudentCode(String sc);
@@ -38,14 +37,15 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
            "AND s.user.status = 'ACTIVE'")
     Page<StudentEntity> searchStudents(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT s FROM StudentEntity s WHERE " +
-           "LOWER(s.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "AND s.user.status = 'ACTIVE' " +
-           "ORDER BY " +
-           "CASE WHEN :direction = 'asc' THEN s.user.fullname END ASC, " +
-           "CASE WHEN :direction = 'desc' THEN s.user.fullname END DESC")
-    Page<StudentEntity> searchStudentsSorted(@Param("keyword") String keyword, @Param("direction") String direction, Pageable pageable);
-
     @Query("SELECT s FROM StudentEntity s WHERE s.user.status = 'ACTIVE'")
     Page<StudentEntity> findAllActive(Pageable pageable);
+
+    @Query("""
+               SELECT s FROM StudentEntity s
+               JOIN FETCH s.user
+               JOIN FETCH s.parent p
+               WHERE s.classEntity.grade IN :grades
+            """)
+    List<StudentEntity> findByGradesWithUserAndParent(@Param("grades") List<String> grades);
+
 }

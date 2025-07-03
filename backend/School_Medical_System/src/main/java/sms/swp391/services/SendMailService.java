@@ -7,5 +7,5 @@ public interface SendMailService {
     void sendOtpEmail(String toEmail, String otp,String template);
     void sendConsultationScheduleEmail(String toEmail, String studentName, String scheduleTime, String reason);
     void sendConsentRequestEmail(String toEmail, String parentName, String studentName, String campaignName, String startDate,String endDate, String location);
-
+    void sendReminderEmail(String toEmail, String parentName, String studentName, String campaignName, String startDate, String endDate, String location);
 }

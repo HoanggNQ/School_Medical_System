@@ -8,7 +8,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
@@ -40,7 +39,6 @@ public class VaccinationConsentEntity {
     @JoinColumn(name = "parent_id", nullable = false)
     private UserEntity parent;
 
-    @Size(max = 20)
     @NotNull
     @Column(name = "consent_status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)

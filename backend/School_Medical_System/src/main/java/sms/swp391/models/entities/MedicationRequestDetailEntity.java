@@ -2,18 +2,14 @@ package sms.swp391.models.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.type.SqlTypes;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 @Getter
 @Setter
 @Entity
@@ -64,7 +60,6 @@ public class MedicationRequestDetailEntity {
     @Column(name = "provided_by_parent")
     private Boolean providedByParent;
 
-    @Size(max = 20)
     @Column(name = "status", length = 20)
     @Enumerated(EnumType.STRING)
     private MedicalStatus status;

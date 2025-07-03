@@ -1,12 +1,12 @@
 package sms.swp391.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
@@ -25,13 +25,13 @@ public class VaccinationCampaignController {
     @Operation(summary = "Tạo chiến dịch tiêm vaccine", description = "Khởi tạo một chiến tiêm vaccine mới với thông tin từ người tạo.")
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(
-            @RequestBody VaccinationCampaignRequestDTO request,
+            @Valid @RequestBody VaccinationCampaignRequestDTO request,
             @AuthenticationPrincipal UserEntity createdById) {
         if (createdById == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
-                            .message("Hãy đăng nhập bằng tài khoản PARENT")
+                            .message("Hãy đăng nhập bằng tài khoản admin để tạo chiến dịch tiêm vaccine.")
                             .status(HttpStatus.UNAUTHORIZED)
                             .isSuccess(false)
                             .data(null)
@@ -235,6 +235,7 @@ public class VaccinationCampaignController {
             );
         }
     }
+
     @Operation(summary = "Lấy tất cả chiến dịch tiêm vaccine đang bắt đầu", description = "Trả về danh sách tất cả chiến dịch tiêm vaccine.")
     @GetMapping("/campaignsStart")
     public ResponseEntity<ResponseObject> getAllCampaignsStart() {
