@@ -7,10 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 @Getter
 @Setter
@@ -46,7 +44,6 @@ public class MedicationRequestEntity {
     @Column(name = "review_date")
     private LocalDate reviewDate;
 
-    @Size(max = 20)
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)

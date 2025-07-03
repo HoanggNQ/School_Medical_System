@@ -11,16 +11,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.HealthCheckConsentRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckConsentResponse;
 import sms.swp391.models.dtos.responses.PaginatedHealthCheckConsentResponse;
-import sms.swp391.models.dtos.responses.PaginatedVaccinationConsentResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.NotFoundException;
-import sms.swp391.services.HealthCheckService;
+import sms.swp391.services.HealthCheckConsentService;
 
 import java.util.List;
 
@@ -28,7 +26,7 @@ import java.util.List;
 @RequestMapping("/api/v1/health-check-consent")
 @RequiredArgsConstructor
 public class HealthCheckConsentController {
-    private final HealthCheckService healthCheckService;
+    private final HealthCheckConsentService healthCheckService;
 
     @Operation(summary = "Cập nhật đồng ý khám sức khỏe", description = "Phụ huynh xác nhận hoặc từ chối đồng ý cho con em tham gia chiến dịch khám.")
     @PutMapping("/consents/{id}")
@@ -87,6 +85,7 @@ public class HealthCheckConsentController {
             );
         }
     }
+
     @Operation(summary = "Lấy danh sách đồng ý theo chiến dịch (đang chờ)", description = "Trả về danh sách các đồng ý khám sức khỏe đang ở trạng thái chờ theo chiến dịch.")
 
     @GetMapping("/campaigns/{campaignId}/consents/pending")
@@ -113,6 +112,7 @@ public class HealthCheckConsentController {
             );
         }
     }
+
     @Operation(summary = "Lấy đồng ý khám sức khỏe theo ID", description = "Trả về chi tiết đồng ý khám sức khỏe theo ID.")
 
     @GetMapping("/consents/{id}")
@@ -148,6 +148,7 @@ public class HealthCheckConsentController {
             );
         }
     }
+
     @Operation(summary = "Lấy danh sách đồng ý đang chờ của phụ huynh", description = "Trả về các đơn đồng ý khám của phụ huynh đang ở trạng thái chờ.")
 
     @GetMapping("/parents/{parentId}/consents/pending")
@@ -174,6 +175,7 @@ public class HealthCheckConsentController {
             );
         }
     }
+
     @Operation(summary = "Lấy danh sách đã đồng ý của phụ huynh", description = "Trả về các đơn đồng ý khám của phụ huynh đang ở trạng thái đồng ý.")
 
     @GetMapping("/parents/{parentId}/consents/approved")
