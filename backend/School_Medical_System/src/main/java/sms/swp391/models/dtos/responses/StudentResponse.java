@@ -14,16 +14,14 @@ public class StudentResponse {
     private Long id;
     private UserResponse user;      // All user attributes
     private Long classId;
-    private UserResponse parent;    // All parent user attributes
+    private String className;
+    private Long parentId;
+    private String parentName;
     private String studentCode;
     private String bloodType;
     private String geneticDiseases;
-    private String otherMedicalNotes;
     private LocalDate createdAt;
     private LocalDate updatedAt;
-    private String emergencyContactName;
-    private String emergencyContactPhone;
-    private String currentMedications;
     private String chronicDiseases;
     private String allergies;
     private BigDecimal height;
