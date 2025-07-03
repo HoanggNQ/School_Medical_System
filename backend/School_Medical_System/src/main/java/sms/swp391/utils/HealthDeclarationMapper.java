@@ -27,8 +27,6 @@ public class HealthDeclarationMapper {
         dto.setGeneticDiseases(entity.getGeneticDiseases());
         dto.setAllergies(entity.getAllergies());
         dto.setChronicDiseases(entity.getChronicDiseases());
-        dto.setCurrentMedications(entity.getCurrentMedications());
-        dto.setOtherMedicalNotes(entity.getOtherMedicalNotes());
         return dto;
     }
     public static HealthDeclarationResponseDTO toDTO(HealthDeclarationEntity entity) {
@@ -51,9 +49,6 @@ public class HealthDeclarationMapper {
                 .bloodType(profile != null ? profile.getBloodType() : null)
                 .allergies(profile != null ? profile.getAllergies() : null)
                 .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
-                .currentMedications(profile != null ? profile.getCurrentMedications() : null)
-                .emergencyContactName(student.getEmergencyContactName())
-                .emergencyContactPhone(student.getEmergencyContactPhone())
                 .build();
     }
 
@@ -99,10 +94,7 @@ public class HealthDeclarationMapper {
         if (dto.getBloodType() != null) profile.setBloodType(dto.getBloodType());
         if (dto.getAllergies() != null) profile.setAllergies(dto.getAllergies());
         if (dto.getChronicDiseases() != null) profile.setChronicDiseases(dto.getChronicDiseases());
-        if (dto.getCurrentMedications() != null) profile.setCurrentMedications(dto.getCurrentMedications());
 
-        student.setEmergencyContactName(dto.getEmergencyContactName());
-        student.setEmergencyContactPhone(dto.getEmergencyContactPhone());
     }
 
     private static void updateStudentHealthInfoFromUpdateDTO(StudentEntity student,
@@ -114,12 +106,7 @@ public class HealthDeclarationMapper {
         if (dto.getBloodType() != null) profile.setBloodType(dto.getBloodType());
         if (dto.getAllergies() != null) profile.setAllergies(dto.getAllergies());
         if (dto.getChronicDiseases() != null) profile.setChronicDiseases(dto.getChronicDiseases());
-        if (dto.getCurrentMedications() != null) profile.setCurrentMedications(dto.getCurrentMedications());
 
-        if (dto.getEmergencyContactName() != null)
-            student.setEmergencyContactName(dto.getEmergencyContactName());
-        if (dto.getEmergencyContactPhone() != null)
-            student.setEmergencyContactPhone(dto.getEmergencyContactPhone());
     }
 
     private static StudentHealthProfileEntity getOrCreateProfile(StudentEntity student) {

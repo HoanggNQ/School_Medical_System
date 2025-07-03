@@ -14,7 +14,6 @@ public class MedicationRequestResponseDTO {
     private Long studentId;
     private String studentName;       // optional nếu chỉ cần studentId
     private String academicYear;
-    private String priority;
     private MedicalStatus status;
     private String notes;
     private LocalDate requestDate;

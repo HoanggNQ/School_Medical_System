@@ -14,7 +14,6 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    Optional<UserEntity> findByUsername(String username);
     boolean existsByUsername(String username);
 
 
@@ -27,17 +26,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Page<UserEntity> searchUsers(@Param("keyword") String keyword, Pageable pageable);
 
 
-    @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'STUDENT'")
-    Optional<UserEntity> findByStudentIdAndRoleName(@Param("userId") Long userId);
-
     @Query("SELECT u FROM UserEntity u WHERE u.roleName = :role")
     Page<UserEntity> searchUsersByRoleName(@Param("role") RoleEnum role, Pageable pageable);
 
 
-
-    @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.roleName = 'PARENT'")
-    Optional<UserEntity> findByParentIdAndRoleName(@Param("userId") Long userId);
-    Optional<UserEntity> findByEmail(String email);
+    @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.studentEntity WHERE u.email = :email")
+    Optional<UserEntity> findByEmail(@Param("email") String email);
 
     Optional<UserEntity> findByPhoneNumber(String phoneNumber);
 

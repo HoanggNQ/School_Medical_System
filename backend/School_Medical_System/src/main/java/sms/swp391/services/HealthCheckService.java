@@ -44,4 +44,6 @@ public interface HealthCheckService {
     void deleteCampaign(Long campaignId);
 
     PaginatedHealthCheckConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable);
+
+
 }

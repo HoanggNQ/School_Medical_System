@@ -1,6 +1,5 @@
 package sms.swp391.models.entities;
 
-import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,8 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -35,9 +34,11 @@ public class HealthCheckCampaignEntity {
     private String description;
 
     @NotNull
-    @Column(name = "check_date", nullable = false)
-    private LocalDate checkDate;
-
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+    @NotNull
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
     @Size(max = 20)
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
@@ -51,16 +52,13 @@ public class HealthCheckCampaignEntity {
     @Column(name = "location", length = 100)
     private String location;
 
-    @Column(name = "required_equipment", length = Integer.MAX_VALUE)
-    private String requiredEquipment;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private UserEntity createdBy;
 
     @ColumnDefault("now()")
     @Column(name = "created_at")
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "healthCheckCampaign")
     private Set<HealthCheckConsentEntity> healthCheckConsents = new LinkedHashSet<>();

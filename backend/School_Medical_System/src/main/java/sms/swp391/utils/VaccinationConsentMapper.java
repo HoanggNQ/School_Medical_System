@@ -25,16 +25,8 @@ public class VaccinationConsentMapper {
                 .notes(entity.getNotes())
                 .responseDate(entity.getResponseDate())
                 .academicYear(entity.getAcademicYear())
-                .consentFormUrl(entity.getConsentFormUrl())
                 .consentStatus(entity.getConsentStatus())
                 .build();
     }
 
-    public static VaccinationConsentEntity fromRequestDTO(VaccinationConsentRequestDTO dto) {
-        if (dto == null) return null;
-
-        VaccinationConsentEntity entity = new VaccinationConsentEntity();
-        entity.setConsentStatus(dto.getConsentStatus());
-        return entity;
-    }
 }

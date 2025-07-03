@@ -17,56 +17,19 @@ public class StudentMapper {
                 .user(UserMapper.toDTO(entity.getUser()))
                 .classId(entity.getClassEntity() != null ? entity.getClassEntity().getId() : null)
                 .parent(UserMapper.toDTO(entity.getParent()))
-                .studentCode(entity.getStudentCode())
                 /* profile */
                 .bloodType(profile != null ? profile.getBloodType() : null)
                 .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
-                .otherMedicalNotes(profile != null ? profile.getOtherMedicalNotes() : null)
-                .currentMedications(profile != null ? profile.getCurrentMedications() : null)
                 .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
                 .allergies(profile != null ? profile.getAllergies() : null)
                 .height(profile != null ? profile.getHeight() : null)
                 .weight(profile != null ? profile.getWeight() : null)
                 /* hành chính */
-                .emergencyContactPhone(entity.getEmergencyContactPhone())
-                .emergencyContactName(entity.getEmergencyContactName())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 
-    public static StudentEntity fromRequest(StudentRequest req,
-                                            UserEntity user,
-                                            ClassEntity clazz,
-                                            UserEntity parent) {
-        if (req == null) return null;
-
-        // 1. StudentEntity
-        StudentEntity student = StudentEntity.builder()
-                .user(user)
-                .classEntity(clazz)
-                .parent(parent)
-                .studentCode(req.getStudentCode())
-                .emergencyContactName(req.getEmergencyContactName())
-                .emergencyContactPhone(req.getEmergencyContactPhone())
-                .build();
-
-        // 2. Health profile
-        StudentHealthProfileEntity profile = StudentHealthProfileEntity.builder()
-                .student(student)
-                .bloodType(req.getBloodType())
-                .geneticDiseases(req.getGeneticDiseases())
-                .otherMedicalNotes(req.getOtherMedicalNotes())
-                .currentMedications(req.getCurrentMedications())
-                .chronicDiseases(req.getChronicDiseases())
-                .allergies(req.getAllergies())
-                .height(req.getHeight())
-                .weight(req.getWeight())
-                .build();
-
-        student.setHealthProfile(profile);
-        return student;
-    }
 
     public static StudentGetResponse toStudentGetResponse(StudentEntity student) {
         UserEntity user = student.getUser();
@@ -83,14 +46,10 @@ public class StudentMapper {
                 .studentCode(student.getStudentCode())
                 .bloodType(profile != null ? profile.getBloodType() : null)
                 .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
-                .otherMedicalNotes(profile != null ? profile.getOtherMedicalNotes() : null)
-                .currentMedications(profile != null ? profile.getCurrentMedications() : null)
                 .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
                 .allergies(profile != null ? profile.getAllergies() : null)
                 .height(profile != null ? profile.getHeight() : null)
                 .weight(profile != null ? profile.getWeight() : null)
-                .emergencyContactPhone(student.getEmergencyContactPhone())
-                .emergencyContactName(student.getEmergencyContactName())
                 .build();
     }
 }

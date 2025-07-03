@@ -14,11 +14,11 @@ public class HealthCheckCampaignMapper {
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
-                .checkDate(entity.getCheckDate())
+                .startDate(entity.getStartDate())
+                .endDate(entity.getEndDate())
                 .status(entity.getStatus())
                 .targetGrade(entity.getTargetGrade())
                 .location(entity.getLocation())
-                .requiredEquipment(entity.getRequiredEquipment())
                 .createdById(entity.getCreatedBy().getUserId())
                 .createdAt(entity.getCreatedAt())
                 .build();
@@ -30,10 +30,10 @@ public class HealthCheckCampaignMapper {
         HealthCheckCampaignEntity entity = new HealthCheckCampaignEntity();
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
-        entity.setCheckDate(dto.getCheckDate());
+        entity.setStartDate(dto.getStartDate());
+        entity.setEndDate(dto.getEndDate());
         entity.setTargetGrade(dto.getTargetGrade());
         entity.setLocation(dto.getLocation());
-        entity.setRequiredEquipment(dto.getRequiredEquipment());
         return entity;
     }
 }

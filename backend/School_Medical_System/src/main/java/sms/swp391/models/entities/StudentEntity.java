@@ -43,12 +43,6 @@ public class StudentEntity {
     @Column(name = "student_code", nullable = false, length = 50, unique = true)
     private String studentCode;
 
-    @Column(name = "emergency_contact_name")
-    private String emergencyContactName;
-
-    @Column(name = "emergency_contact_phone")
-    private String emergencyContactPhone;
-
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private StudentHealthProfileEntity healthProfile;
 
