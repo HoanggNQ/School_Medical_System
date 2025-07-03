@@ -23,12 +23,8 @@ public class VaccinationRecordMapper {
                 .administrationByName(entity.getAdministeredBy().getFullname())
                 .administrationDate(entity.getAdministrationDate())
                 .academicYear(entity.getAcademicYear())
-                .expirationDate(entity.getExpirationDate())
-                .followUpRequired(entity.getFollowUpRequired())
                 .nextDoseDate(entity.getNextDoseDate())
                 .injectionSite(entity.getInjectionSite())
-                .lotNumber(entity.getLotNumber())
-                .vaccineBatch(entity.getVaccineBatch())
                 .vaccineName(entity.getVaccineName())
                 .followUpNotes(entity.getFollowUpNotes())
                 .reactionNotes(entity.getReactionNotes())
@@ -39,12 +35,8 @@ public class VaccinationRecordMapper {
         if (dto == null) return null;
 
         VaccinationRecordEntity entity = new VaccinationRecordEntity();
-        entity.setExpirationDate(dto.getExpirationDate());
-        entity.setFollowUpRequired(dto.getFollowUpRequired());
         entity.setNextDoseDate(dto.getNextDoseDate());
         entity.setInjectionSite(dto.getInjectionSite());
-        entity.setLotNumber(dto.getLotNumber());
-        entity.setVaccineBatch(dto.getVaccineBatch());
         entity.setVaccineName(dto.getVaccineName());
         entity.setFollowUpNotes(dto.getFollowUpNotes());
         entity.setReactionNotes(dto.getReactionNotes());

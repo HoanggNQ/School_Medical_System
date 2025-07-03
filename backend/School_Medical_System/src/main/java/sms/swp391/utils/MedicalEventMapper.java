@@ -21,7 +21,6 @@ public class MedicalEventMapper {
                 .reportedBy(reporter)
                 .student(student)
                 .eventDate(dto.getEventDate() != null ? dto.getEventDate() : null)
-                .followUpRequired(dto.getFollowUpRequired())
                 .followUpNotes(dto.getFollowUpNotes())
                 .build();
     }
@@ -37,7 +36,6 @@ public class MedicalEventMapper {
                 .studentId(entity.getStudent() != null ? entity.getStudent().getId() : null)
                 .eventDate(entity.getEventDate() != null ? entity.getEventDate() : null)
                 .status(entity.getStatus() != null ? entity.getStatus() : null)
-                .followUpRequired(entity.getFollowUpRequired())
                 .followUpNotes(entity.getFollowUpNotes())
                 .build();
     }

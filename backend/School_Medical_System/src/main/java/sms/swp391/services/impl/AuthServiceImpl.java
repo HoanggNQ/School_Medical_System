@@ -7,13 +7,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.LoginDTO;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
-import sms.swp391.models.dtos.responses.FileObjectResponse;
 import sms.swp391.models.dtos.responses.JwtResponse;
 import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.entities.UserEntity;
@@ -39,7 +37,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OTPService oTPService;
-    private final FileDatabaseService fileDatabaseService;
 
     @Override
     public UserResponse registerUser(UserRegisterDTO userRegisterDTO) {
@@ -110,7 +107,8 @@ public class AuthServiceImpl implements AuthService {
                     principalId,
                     userEntity.getUsername(),
                     userEntity.getEmail(),
-                    userEntity.getRoleName().toString()
+                    userEntity.getRoleName().toString(),
+                    userEntity.getAvatarurl()
             );
 
             return new JwtResponse(

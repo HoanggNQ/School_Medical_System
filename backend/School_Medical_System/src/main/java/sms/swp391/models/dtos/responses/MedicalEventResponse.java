@@ -17,6 +17,5 @@ public class MedicalEventResponse {
     private Long studentId;
     private LocalDateTime eventDate;
     private MedicalStatus status;
-    private Boolean followUpRequired;
     private String followUpNotes;
 }

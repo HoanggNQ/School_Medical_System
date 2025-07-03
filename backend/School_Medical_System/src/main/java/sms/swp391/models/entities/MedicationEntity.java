@@ -25,10 +25,6 @@ public class MedicationEntity {
     @Column(name = "medication_id", nullable = false)
     private Long id;
 
-    @NotNull
-    @ColumnDefault("true")
-    @Column(name = "prescription_required", nullable = false)
-    private Boolean prescriptionRequired = false;
 
     @Size(max = 100)
     @Column(name = "country_of_origin", length = 100)
@@ -59,6 +55,10 @@ public class MedicationEntity {
     @Column(name = "medication_name", nullable = false)
     private String medicationName;
 
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "EXP", nullable = false)
+    private String  EXP;
     @Column(name = "medication_img", length = Integer.MAX_VALUE)
     private String medicationImg;
 

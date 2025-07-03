@@ -138,6 +138,7 @@ public class VaccinationServiceImpl implements VaccinationService {
                     student.getUser().getFullname(),
                     campaign.getName(),
                     campaign.getStartDate().toString(),
+                    campaign.getEndDate().toString(),
                     campaign.getVaccineType()
             );
 

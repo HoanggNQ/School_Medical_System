@@ -10,7 +10,6 @@ import sms.swp391.models.entities.HealthCheckConsentEntity;
 
 public interface StudentEventRepository extends JpaRepository<HealthCheckConsentEntity, Long> {
     @Query(value = """
-/* gói toàn bộ trong một sub‑query để tránh đụng độ alias của Spring */
 SELECT *
 FROM (
   /* ---------- HEALTH CHECK ---------- */
@@ -34,7 +33,6 @@ FROM (
               WHEN hcc.consent_id IS NULL   THEN 'NO_CONSENT'
               ELSE 'PENDING'
           END AS result_status,
-          /* 🆕 priority để sort */
           CASE
               WHEN hcc.consent_status = 'APPROVED' THEN 0
               WHEN hcc.consent_status = 'PENDING'  THEN 1
@@ -74,7 +72,6 @@ FROM (
               WHEN vc.consent_id IS NULL   THEN 'NO_CONSENT'
               ELSE 'PENDING'
           END AS result_status,
-          /* 🆕 priority khớp với nhánh trên */
           CASE
               WHEN vc.consent_status = 'APPROVED' THEN 0
               WHEN vc.consent_status = 'PENDING'  THEN 1

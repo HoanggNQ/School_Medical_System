@@ -65,12 +65,6 @@ public class StudentHealthProfileEntity {
     @Column(name = "chronic_diseases", columnDefinition = "TEXT")
     private String chronicDiseases;
 
-    @Column(name = "current_medications", columnDefinition = "TEXT")
-    private String currentMedications;
-
-    @Column(name = "other_medical_notes", columnDefinition = "TEXT")
-    private String otherMedicalNotes;
-
     @Column(name = "updated_by_user_id")
     private Long updatedBy;
 
