@@ -8,6 +8,7 @@ import sms.swp391.models.dtos.requests.UserUpdateDTO;
 import sms.swp391.models.dtos.responses.PaginatedUserResponse;
 import sms.swp391.models.dtos.responses.UserResponse;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
@@ -34,4 +35,7 @@ public interface UserService {
     UserResponse createNurse(UserRegisterDTO userRegisterDTO);
     UserResponse setPasswordForget(String email, String newPassword, String newPasswordConfirm);
     void chooseRole(String email , RoleEnum role);
+
+    List<UserResponse> importUsersFromExcel(MultipartFile excelFile) throws IOException;
+    List<UserResponse> bulkCreateUsers(List<UserRegisterDTO> dtos);
 }

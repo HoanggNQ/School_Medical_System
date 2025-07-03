@@ -16,19 +16,21 @@ public class StudentMapper {
                 .id(entity.getId())
                 .user(UserMapper.toDTO(entity.getUser()))
                 .classId(entity.getClassEntity() != null ? entity.getClassEntity().getId() : null)
-                .parent(UserMapper.toDTO(entity.getParent()))
-                /* profile */
+                .className(entity.getClassEntity() != null ? entity.getClassEntity().getClassName() : null)
+                .parentId(entity.getParent() != null ? entity.getParent().getUserId() : null)
+                .parentName(entity.getParent() != null ? entity.getParent().getFullname() : null)
+                .studentCode(entity.getStudentCode())
                 .bloodType(profile != null ? profile.getBloodType() : null)
                 .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
                 .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
                 .allergies(profile != null ? profile.getAllergies() : null)
                 .height(profile != null ? profile.getHeight() : null)
                 .weight(profile != null ? profile.getWeight() : null)
-                /* hành chính */
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
+
 
 
     public static StudentGetResponse toStudentGetResponse(StudentEntity student) {

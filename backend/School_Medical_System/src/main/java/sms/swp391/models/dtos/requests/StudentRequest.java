@@ -19,6 +19,7 @@ public class StudentRequest {
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String chronicDiseases;
+    private String geneticDiseases;
     private String allergies;
     private BigDecimal height;
     private BigDecimal weight;

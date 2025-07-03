@@ -94,59 +94,59 @@ public class AuthController {
     }
 
 
-    @PostMapping(
-            value = "/register",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseObject> register(
-            @RequestPart("user") @Valid UserRegisterDTO userRegisterDTO) {
-        try {
-            UserResponse userResponse = authService.registerUser(userRegisterDTO);
-            otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.ACCOUNT.toString());
-
-            return ResponseEntity.ok().body(
-                    ResponseObject.builder()
-                            .code("REGISTER_SUCCESS")
-                            .message("Create user successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(userResponse)
-                            .build()
-            );
-
-        } catch (ConflictException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                    ResponseObject.builder()
-                            .code("REGISTER_CONFLICT")
-                            .message(e.getMessage())
-                            .status(HttpStatus.CONFLICT)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-
-        } catch (ActionFailedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    ResponseObject.builder()
-                            .code("REGISTER_FAILED")
-                            .message(e.getMessage())
-                            .status(HttpStatus.BAD_REQUEST)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .code("REGISTER_FAILED")
-                            .message("Internal error: " + e.getMessage())
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .isSuccess(false)
-                            .data(null)
-                            .build()
-            );
-        }
-    }
+//    @PostMapping(
+//            value = "/register",
+//            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<ResponseObject> register(
+//            @RequestPart("user") @Valid UserRegisterDTO userRegisterDTO) {
+//        try {
+//            UserResponse userResponse = authService.registerUser(userRegisterDTO);
+//            otpService.generateOTPCode(userResponse.getEmail(), TemplateEnum.ACCOUNT.toString());
+//
+//            return ResponseEntity.ok().body(
+//                    ResponseObject.builder()
+//                            .code("REGISTER_SUCCESS")
+//                            .message("Create user successfully")
+//                            .status(HttpStatus.OK)
+//                            .isSuccess(true)
+//                            .data(userResponse)
+//                            .build()
+//            );
+//
+//        } catch (ConflictException e) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+//                    ResponseObject.builder()
+//                            .code("REGISTER_CONFLICT")
+//                            .message(e.getMessage())
+//                            .status(HttpStatus.CONFLICT)
+//                            .isSuccess(false)
+//                            .data(null)
+//                            .build()
+//            );
+//
+//        } catch (ActionFailedException e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+//                    ResponseObject.builder()
+//                            .code("REGISTER_FAILED")
+//                            .message(e.getMessage())
+//                            .status(HttpStatus.BAD_REQUEST)
+//                            .isSuccess(false)
+//                            .data(null)
+//                            .build()
+//            );
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+//                    ResponseObject.builder()
+//                            .code("REGISTER_FAILED")
+//                            .message("Internal error: " + e.getMessage())
+//                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                            .isSuccess(false)
+//                            .data(null)
+//                            .build()
+//            );
+//        }
+//    }
 
 
 }

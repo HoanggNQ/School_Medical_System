@@ -18,9 +18,10 @@ public class StudentGetResponse {
     private String address;
     private String studentCode;
     private String bloodType;
+    private BigDecimal height;
+    private BigDecimal weight;
     private String geneticDiseases;
     private String chronicDiseases;
     private String allergies;
-    private BigDecimal height;
-    private BigDecimal weight;
+
 }

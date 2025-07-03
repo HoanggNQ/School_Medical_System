@@ -65,9 +65,4 @@ public class StudentHealthProfileEntity {
     @Column(name = "chronic_diseases", columnDefinition = "TEXT")
     private String chronicDiseases;
 
-    @Column(name = "updated_by_user_id")
-    private Long updatedBy;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 }
