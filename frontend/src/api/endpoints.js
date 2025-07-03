@@ -57,7 +57,7 @@ const API_ENDPOINTS = {
     CREATE: 'api/v1/health-check-campaign/campaigns',
     GET_ALL: 'api/v1/health-check-campaign/campaigns',
     UPDATE: (id) => `api/v1/health-check-campaign/campaigns/${id}`,
-    DELETE: (id) => `api/v1/health-check-campaign/campaigns/${id}`,
+    DELETE: (id) => `api/v1/health-check-campaign/delete/${id}`,
     GET_BY_ID: (id) => `api/v1/health-check-campaign/campaigns/${id}`,
     START: (id) => `api/v1/health-check-campaign/campaigns/${id}/start`,
     END: (id) => `api/v1/health-check-campaign/campaigns/${id}/end`,

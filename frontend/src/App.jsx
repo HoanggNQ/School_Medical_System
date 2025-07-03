@@ -9,6 +9,7 @@ import VerificationForm from '@/components/auth/VerificationForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+// import PublicHeader from '@/components/layout/PublicHeader';
 import Dashboard from '@/components/dashboard/Dashboard';
 import UserManagement from '@/components/admin/UserManagement';
 import VaccinationManagement from '@/components/admin/VaccinationManagement';
@@ -30,6 +31,7 @@ import HealthCheck from './components/nurse/HealthCheck';
 import Event from './components/nurse/Event';
 import PlaceholderPage from './components/nurse/PlaceholderPage';
 import CampaignsNurse from './components/nurse/CampaignsNurse';
+import HomePage from './components/auth/HomePage';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -135,7 +137,7 @@ const AppLayout = () => {
       {/* <TestSidebar activeTab={activeTab} setActiveTab={setActiveTab} /> */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        {/* <Header /> */}
         <main className="flex-1 overflow-y-auto p-6">
           <motion.div
             key={location.pathname}
@@ -179,83 +181,76 @@ const NotFoundPage = () => (
 
 function App() {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="loading-spinner w-8 h-8"></div>
-      </div>
-    );
-  }
+  // Các trang tĩnh/public
+  const isPublicPage = ['/auth', '/', '/blog', '/homepage'].includes(location.pathname);
+
+  if (loading) return null;
 
   return (
-    <Routes>
-      <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+    <>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Navigate to="/homepage" replace />} />
+        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
 
-      <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE', 'STUDENT', 'PARENT']} />}>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Navigate to="/dashboard" />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="profile" element={<ProfileForm />} />
-          <Route path="change-password" element={<ChangePasswordForm />} />
+        <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE', 'STUDENT', 'PARENT']} />}>
+          <Route path="/" element={<AppLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="profile" element={<ProfileForm />} />
+            <Route path="change-password" element={<ChangePasswordForm />} />
 
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
-            <Route path="users" element={<UserManagement />} />
-          </Route>
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
+              <Route path="users" element={<UserManagement />} />
+            </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
+              <Route path="vaccinations" element={<VaccinationManagement />} />
+            </Route>
+            
+            <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
+              <Route path="medicines" element={<MedicineManagement />} />
+              <Route path="health-records" element={<PlaceholderPage />} />
+              <Route path="management-vaccine" element={<ManagementVaccine />} />
+              <Route path="health-check" element={<HealthCheck />} />
+              <Route path="event" element={<Event />} />
+            </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
+              <Route path="medicines" element={<MedicineManagement />} />
+              <Route path="campaigns-nurse" element={<CampaignsNurse />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
-            <Route path="vaccinations" element={<VaccinationManagement />} />
-          </Route>
-          
-          <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
-            <Route path="medicines" element={<MedicineManagement />} />
-            <Route path="health-records" element={<PlaceholderPage />} />
-            <Route path="management-vaccine" element={<ManagementVaccine />} />
-            <Route path="health-check" element={<HealthCheck />} />
-            <Route path="event" element={<Event />} />
-          </Route>
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
+              <Route path="reports" element={<PlaceholderPage title="Trang báo cáo" />} />
+            </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+              <Route path="settings" element={<PlaceholderPage title="Trang cài đặt" />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
-            <Route path="medicines" element={<MedicineManagement />} />
-            <Route path="campaigns-nurse" element={<CampaignsNurse />} />
-            {/* <Route path="health-records" element={<PlaceholderPage title="Trang hồ sơ sức khỏe" />} /> */}
-          </Route>
+            <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
+              <Route path="health-profile" element={<StudentHealthProfile />} />
+              <Route path="vaccination-history" element={<StudentVaccinationHistory />} />
+              <Route path="appointments" element={<StudentAppointments />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
-            <Route path="reports" element={<PlaceholderPage title="Trang báo cáo" />} />
-          </Route>
+            <Route element={<ProtectedRoute allowedRoles={['PARENT']} />}>
+              <Route path="children-health" element={<ParentChildrenHealth />} />
+              <Route path="vaccination-schedule" element={<ParentVaccinationSchedule />} />
+              <Route path="notifications" element={<ParentNotifications />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
-            <Route path="settings" element={<PlaceholderPage title="Trang cài đặt" />} />
-          </Route>
-
-          <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
-
-            <Route path="health-profile" element={<StudentHealthProfile />} />
-            <Route path="vaccination-history" element={<StudentVaccinationHistory />} />
-            <Route path="appointments" element={<StudentAppointments />} />
-          </Route>
-
-          <Route element={<ProtectedRoute allowedRoles={['PARENT']} />}>
-
-            <Route path="children-health" element={<ParentChildrenHealth />} />
-            <Route path="vaccination-schedule" element={<ParentVaccinationSchedule />} />
-            <Route path="notifications" element={<ParentNotifications />} />
-            {/* <Route path="notifications" element={<ParentNotifications />} /> */}
-
-          </Route>
-
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
-            <Route path="campaigns" element={<CampaignManagement />} />
-            {/* <Route path="campaigns" element={<CampaignManagement />} /> */}
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
+              <Route path="campaigns" element={<CampaignManagement />} />
+            </Route>
           </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   );
 }
 

@@ -21,7 +21,8 @@ const CampaignManagement = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        checkDate: '',
+        startDate: '',
+        endDate: '',
         targetGrade: 0,
         location: '',
         requiredEquipment: ''
@@ -30,6 +31,7 @@ const CampaignManagement = () => {
     const [loading, setLoading] = useState(false);
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const statusOrder = {
         'APPROVED': 0, // Đang diễn ra
@@ -73,24 +75,42 @@ const CampaignManagement = () => {
             ...formData,
             targetGrade: Number(formData.targetGrade),
         };
-
-        const response = await campaignService.createCampaign(newCampaign);
-        console.log(response);
-        fetchCampaigns();
-        setIsCreateModalOpen(false);
-        setFormData({
-            name: '',
-            description: '',
-            checkDate: '',
-            targetGrade: 0,
-            location: '',
-            requiredEquipment: ''
-        });
-        toast({
-            title: 'Thành công!',
-            description: 'Chiến dịch mới đã được tạo.',
-        });
-        setLoading(false);
+        try {
+            if (!validate()) return;
+            const response = await campaignService.createCampaign(newCampaign);
+            console.log(response);
+            fetchCampaigns();
+            setIsCreateModalOpen(false);
+            setFormData({
+                name: '',
+                description: '',
+                startDate: '',
+                endDate: '',
+                targetGrade: 0,
+                location: '',
+                requiredEquipment: ''
+            });
+            toast({
+                title: 'Thành công!',
+                description: 'Chiến dịch mới đã được tạo.',
+            });
+        } catch (error) {
+            console.error(error);
+            let errorMsg = 'Đã xảy ra lỗi.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            } else {
+                errorMsg = error.toString();
+            }
+            toast({
+                title: 'Tạo chiến dịch thất bại',
+                description: errorMsg,
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleEditCampaign = async () => {
@@ -99,31 +119,71 @@ const CampaignManagement = () => {
             ...formData,
             targetGrade: Number(formData.targetGrade),
         };
-        const response = await campaignService.editCampaign(selectedCampaign.id, updatedCampaign);
-        console.log(response);
-        fetchCampaigns();
-        setIsEditModalOpen(false);
-        setSelectedCampaign(null);
-        setFormData({
-            name: '',
-            description: '',
-            checkDate: '',
-            targetGrade: 0,
-            location: '',
-            requiredEquipment: ''
-        });
-        toast({
-            title: 'Thành công!',
-            description: 'Chiến dịch đã được cập nhật.',
-        });
+        try {
+            if (!validate()) return;
+            const response = await campaignService.editCampaign(selectedCampaign.id, updatedCampaign);
+            console.log(response);
+            fetchCampaigns();
+            setIsEditModalOpen(false);
+            setSelectedCampaign(null);
+            setFormData({
+                name: '',
+                description: '',
+                startDate: '',
+                endDate: '',
+                targetGrade: 0,
+                location: '',
+                requiredEquipment: ''
+            });
+            toast({
+                title: 'Thành công!',
+                description: 'Chiến dịch đã được cập nhật.',
+            });
+        } catch (error) {
+            console.error(error);
+            let errorMsg = 'Đã xảy ra lỗi.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            } else {
+                errorMsg = error.toString();
+            }
+            toast({
+                title: 'Cập nhật chiến dịch thất bại',
+                description: errorMsg,
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleDeleteCampaign = (campaignId) => {
-        setCampaigns(campaigns.filter(campaign => campaign.id !== campaignId));
-        toast({
-            title: 'Thành công!',
-            description: 'Chiến dịch đã được xóa.',
-        });
+    const handleDeleteCampaign = async (campaignId) => {
+        setLoading(true);
+        try {
+            await campaignService.deleteCampaign(campaignId);
+            await fetchCampaigns();
+            toast({
+                title: 'Thành công!',
+                description: 'Chiến dịch đã được xóa    .',
+            });
+        } catch (error) {
+            console.error(error);
+            let errorMsg = 'Đã xảy ra lỗi.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            } else {
+                errorMsg = error.toString();
+            }
+            toast({
+                title: 'Xóa chiến dịch thất bại',
+                description: errorMsg,
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleStartCampaign = async (campaignId) => {
@@ -151,12 +211,63 @@ const CampaignManagement = () => {
         setFormData({
             name: campaign.name,
             description: campaign.description,
-            checkDate: campaign.checkDate,
+            startDate: campaign.startDate,
+            endDate: campaign.endDate,
             targetGrade: campaign.targetGrade,
             location: campaign.location,
             requiredEquipment: campaign.requiredEquipment
         });
         setIsEditModalOpen(true);
+    };
+
+    const validate = () => {
+        const newErrors = {};
+        const today = new Date();
+        const minStartDate = new Date(today.setHours(0,0,0,0));
+        minStartDate.setDate(minStartDate.getDate() + 30);
+
+        const startDate = new Date(formData.startDate);
+        const endDate = new Date(formData.endDate);
+
+        // Định dạng ngày dd/mm/yyyy
+        const formatVNDate = (date) => {
+            const d = new Date(date);
+            const day = d.getDate().toString().padStart(2, '0');
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        };
+
+        if (!formData.name || formData.name.trim() === "") {
+            newErrors.name = "Vui lòng nhập tên chiến dịch.";
+        }
+        if (!formData.description || formData.description.trim() === "") {
+            newErrors.description = "Vui lòng nhập mô tả.";
+        }
+        if (!formData.targetGrade && formData.targetGrade !== 0) {
+            newErrors.targetGrade = "Vui lòng nhập khối lớp.";
+        }
+        if (!formData.location || formData.location.trim() === "") {
+            newErrors.location = "Vui lòng nhập địa điểm tổ chức.";
+        }
+        if (!formData.requiredEquipment || formData.requiredEquipment.trim() === "") {
+            newErrors.requiredEquipment = "Vui lòng nhập thiết bị y tế, vật tư.";
+        }
+
+        if (!formData.startDate) {
+            newErrors.startDate = "Vui lòng chọn ngày bắt đầu.";
+        } else if (startDate < minStartDate) {
+            newErrors.startDate = `Ngày bắt đầu phải ít nhất sau ngày hôm nay 30 ngày, tức là từ ngày ${formatVNDate(minStartDate)} trở đi.`;
+        }
+
+        if (!formData.endDate) {
+            newErrors.endDate = "Vui lòng chọn ngày kết thúc.";
+        } else if (formData.startDate && endDate < startDate) {
+            newErrors.endDate = "Ngày kết thúc không được trước ngày bắt đầu.";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     return (
@@ -172,11 +283,19 @@ const CampaignManagement = () => {
                     <p className="text-gray-600 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
                 </div>
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Tạo chiến dịch mới</DialogTitle>
                         </DialogHeader>
-                        <CampaignForm formData={formData} setFormData={setFormData} loading={loading} />
+                       
+                        <CampaignForm formData={formData} setFormData={setFormData} loading={loading}/>
+                        {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
+                        {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                        {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
+                        {errors.location && <div className="text-red-500 text-sm">{errors.location}</div>}
+                        {errors.requiredEquipment && <div className="text-red-500 text-sm">{errors.requiredEquipment}</div>}
+                        {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
+                        {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
                         <div className="flex justify-end gap-2 mt-4">
                             <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                                 Hủy
@@ -214,10 +333,11 @@ const CampaignManagement = () => {
                             <TableRow>
                                 <TableHead>ID</TableHead>
                                 <TableHead>Tên chiến dịch</TableHead>
-                                <TableHead>Mô tả</TableHead>
-                                <TableHead>Ngày kiểm tra</TableHead>
+                                {/* <TableHead>Mô tả</TableHead> */}
+                                <TableHead>Ngày bắt đầu</TableHead>
+                                <TableHead>Ngày kết thúc</TableHead>
                                 <TableHead>Địa điểm</TableHead>
-                                <TableHead>Thiết bị yêu cầu</TableHead>
+                                {/* <TableHead>Thiết bị yêu cầu</TableHead> */}
                                 <TableHead>Khối lớp</TableHead>
                                 <TableHead>Trạng thái</TableHead>
                                 <TableHead>Ngày tạo</TableHead>
@@ -230,40 +350,47 @@ const CampaignManagement = () => {
                                 <TableRow key={campaign.id} className="cursor-pointer" onClick={() => { setSelectedDetail(campaign); setIsDetailModalOpen(true); }}>
                                     <TableCell className="font-medium">{campaign.id}</TableCell>
                                     <TableCell className="font-medium">{campaign.name}</TableCell>
-                                    <TableCell>{campaign.description}</TableCell>
-                                    <TableCell>{campaign.checkDate}</TableCell>
+                                    {/* <TableCell>{campaign.description}</TableCell> */}
+                                    <TableCell>{campaign.startDate}</TableCell>
+                                    <TableCell>{campaign.endDate}</TableCell>
                                     <TableCell>{campaign.location}</TableCell>
-                                    <TableCell>{campaign.requiredEquipment}</TableCell>
-                                    <TableCell>{campaign.targetGrade === 0 ? 'Toàn trường' : `Khối ${campaign.targetGrade}`}</TableCell>
+                                    {/* <TableCell>{campaign.requiredEquipment}</TableCell> */}
+                                    <TableCell>{campaign.targetGrade === 0 ? 'Toàn trường' : ` ${campaign.targetGrade}`}</TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                                 campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                                                     campaign.status === 'DONE' ? 'bg-orange-500 text-white' :
-                                                        'bg-gray-100 text-gray-800'
+                                                        campaign.status === 'REJECTED' ? 'bg-gray-400 text-white' :
+                                                            'bg-gray-100 text-gray-800'
                                             }`}>
-                                            {campaign.status === 'PENDING' ? 'Chờ duyệt' :
+                                            {campaign.status === 'PENDING' ? 'Chờ diễn ra' :
                                                 campaign.status === 'APPROVED' ? 'Đang diễn ra' :
                                                     campaign.status === 'DONE' ? 'Đã xong' :
+                                                        campaign.status === 'REJECTED' ? 'Đã xóa' :
                                                         campaign.status}
                                         </span>
                                     </TableCell>
                                     <TableCell>{campaign.createdAt}</TableCell>
                                     <TableCell>
-                                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                            <Button size="icon" variant="outline" onClick={() => openEditModal(campaign)}>
-                                                <Edit className="w-4 h-4" />
-                                            </Button>
-                                            <Button size="icon" variant="outline" onClick={() => handleDeleteCampaign(campaign.id)}>
-                                                <Trash2 className="w-4 h-4 text-red-500" />
-                                            </Button>
+                                        <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                            {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
+                                                <Button size="icon" variant="outline" onClick={() => openEditModal(campaign)}>
+                                                    <Edit className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                            {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
+                                                <Button size="icon" variant="outline" onClick={() => handleDeleteCampaign(campaign.id)}>
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                </Button>
+                                            )}
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
                                                 <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartCampaign(campaign.id)} disabled={loading}>
-                                                    Bắt đầu chiến dịch
+                                                    Bắt Đầu 
                                                 </Button>
                                             )}
                                             {campaign.status === 'APPROVED' && (
                                                 <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndCampaign(campaign.id)} disabled={loading}>
-                                                    Kết thúc chiến dịch
+                                                    Kết Thúc 
                                                 </Button>
                                             )}
                                         </div>
@@ -275,11 +402,18 @@ const CampaignManagement = () => {
                 </CardContent>
             </Card>
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Chỉnh sửa chiến dịch</DialogTitle>
                     </DialogHeader>
                     <CampaignForm formData={formData} setFormData={setFormData} />
+                    {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
+                    {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                    {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
+                    {errors.location && <div className="text-red-500 text-sm">{errors.location}</div>}
+                    {errors.requiredEquipment && <div className="text-red-500 text-sm">{errors.requiredEquipment}</div>}
+                    {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
+                    {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
                     <div className="flex justify-end gap-2 mt-4">
                         <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
                             Hủy
@@ -292,13 +426,13 @@ const CampaignManagement = () => {
                 </DialogContent>
             </Dialog>
             <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-                <DialogContent className="max-w-xl">
+                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Chi tiết chiến dịch</DialogTitle>
                     </DialogHeader>
                     {selectedDetail && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 py-2">
-                            <div className="flex items-center gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y- py-4">
+                            <div className="flex items-center gap-1">
                                 <Info className="w-4 h-4 text-blue-500" />
                                 <span className="font-semibold text-gray-700">Tên chiến dịch:</span>
                             </div>
@@ -308,13 +442,19 @@ const CampaignManagement = () => {
                                 <ClipboardList className="w-4 h-4 text-blue-500" />
                                 <span className="font-semibold text-gray-700">Mô tả:</span>
                             </div>
-                            <div className="truncate">{selectedDetail.description}</div>
+                            <div className="break-words whitespace-pre-line">{selectedDetail.description}</div>
 
                             <div className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Ngày kiểm tra:</span>
+                                <span className="font-semibold text-gray-700">Ngày bắt đầu:</span>
                             </div>
-                            <div>{selectedDetail.checkDate}</div>
+                            <div>{selectedDetail.startDate}</div>
+
+                            <div className="flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-blue-500" />
+                                <span className="font-semibold text-gray-700">Ngày kết thúc:</span>
+                            </div>
+                            <div>{selectedDetail.endDate}</div>
 
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-blue-500" />
@@ -326,7 +466,7 @@ const CampaignManagement = () => {
                                 <Package className="w-4 h-4 text-blue-500" />
                                 <span className="font-semibold text-gray-700">Thiết bị yêu cầu:</span>
                             </div>
-                            <div className="truncate">{selectedDetail.requiredEquipment}</div>
+                            <div className="break-words whitespace-pre-line">{selectedDetail.requiredEquipment}</div>
 
                             <div className="flex items-center gap-2">
                                 <Layers className="w-4 h-4 text-blue-500" />
@@ -343,11 +483,13 @@ const CampaignManagement = () => {
                                     selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                     selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                                     selectedDetail.status === 'DONE' ? 'bg-orange-500 text-white' :
+                                    selectedDetail.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                                     'bg-gray-100 text-gray-800'
                                 }`}>
-                                    {selectedDetail.status === 'PENDING' ? 'Chờ duyệt' :
+                                    {selectedDetail.status === 'PENDING' ? 'Chờ diễn ra' :
                                         selectedDetail.status === 'APPROVED' ? 'Đang diễn ra' :
                                         selectedDetail.status === 'DONE' ? 'Đã xong' :
+                                        selectedDetail.status === 'REJECTED' ? 'Đã xóa' :
                                         selectedDetail.status}
                                 </span>
                             </div>

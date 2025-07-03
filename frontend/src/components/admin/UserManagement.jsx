@@ -19,6 +19,8 @@ const UserManagement = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -321,7 +323,7 @@ const UserManagement = () => {
                 </TableRow>
               ) : (
                 filteredUsers.map((user) => (
-                  <TableRow key={user.userId}>
+                  <TableRow key={user.userId} className="cursor-pointer" onClick={() => { setSelectedDetail(user); setIsDetailModalOpen(true); }}>
                     <TableCell className="font-medium">{user.fullName || 'N/A'}</TableCell>
                     <TableCell>{user.email || user.userName || 'N/A'}</TableCell>
                     <TableCell>{user.dob || 'N/A'}</TableCell>
@@ -345,7 +347,7 @@ const UserManagement = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2" onClick={e => e.stopPropagation()}>
                         <Button
                           variant="outline"
                           size="sm"
@@ -386,6 +388,55 @@ const UserManagement = () => {
             onCancel={() => setIsEditModalOpen(false)}
             onSubmit={handleEditUser}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Chi tiết người dùng</DialogTitle>
+          </DialogHeader>
+          {selectedDetail && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Họ và tên:</span>
+              </div>
+              <div>{selectedDetail.fullName || 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Email:</span>
+              </div>
+              <div>{selectedDetail.email || selectedDetail.userName || 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Ngày sinh:</span>
+              </div>
+              <div>{selectedDetail.dob || 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Vai trò:</span>
+              </div>
+              <div>{selectedDetail.roleName || 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Số điện thoại:</span>
+              </div>
+              <div>{selectedDetail.phoneNumber || 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Địa chỉ:</span>
+              </div>
+              <div>{selectedDetail.address || 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Trạng thái:</span>
+              </div>
+              <div>{userStatus[selectedDetail.status] || selectedDetail.status}</div>
+            </div>
+          )}
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>Đóng</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </motion.div>

@@ -25,8 +25,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const getMenuItems = () => {
     const baseItems = [
       { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
-      { id: 'profile', label: 'Hồ sơ cá nhân', icon: User, path: '/profile' },
-      { id: 'change-password', label: 'Đổi mật khẩu', icon: Settings, path: '/change-password' }
+  
     ];
 
     switch (user?.role) {
@@ -36,8 +35,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
           { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
           { id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
-          { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
-          { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' }
+      
         ];
       case 'MANAGER':
         return [
@@ -91,17 +89,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       transition={{ duration: 0.3 }}
       className="w-64 bg-white shadow-lg h-full flex flex-col"
     >
-      <div className="p-6 border-b border-gray-200">
-        <Link to="/dashboard" className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-blue-600 rounded-lg flex items-center justify-center">
-            <Heart className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <span className="text-lg font-bold text-gradient">HealthCare</span>
-            <p className="text-xs text-gray-500">Quản lý sức khỏe</p>
-          </div>
-        </Link>
-      </div>
+   
 
       <nav className="flex-1 p-4">
         <div className="space-y-2">
@@ -130,7 +118,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         </div>
       </nav>
 
-      <div className="p-4 border-t border-gray-200">
+      {/* <div className="p-4 border-t border-gray-200">
         <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
           <div className="w-8 h-8 bg-gradient-to-br from-sky-400 to-blue-600 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-bold">
@@ -150,7 +138,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
     </motion.div>
   );
 };
