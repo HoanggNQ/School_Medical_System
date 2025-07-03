@@ -11,8 +11,8 @@ import java.time.LocalDate;
 public class HealthCheckCampaignRequestDTO {
     private String name;
     private String description;
-    private LocalDate checkDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Integer targetGrade;
     private String location;
-    private String requiredEquipment;
 }

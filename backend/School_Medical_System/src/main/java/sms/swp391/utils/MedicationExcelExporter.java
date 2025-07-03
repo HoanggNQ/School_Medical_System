@@ -33,7 +33,6 @@ public class MedicationExcelExporter {
                 row.createCell(1).setCellValue(med.getMedicationName());
                 row.createCell(2).setCellValue(med.getCategory());
                 row.createCell(3).setCellValue(med.getDosageForm());
-                row.createCell(4).setCellValue(med.getPrescriptionRequired() ? "Yes" : "No");
                 row.createCell(5).setCellValue(med.getCountryOfOrigin());
                 row.createCell(6).setCellValue(med.getManufacturer());
             }

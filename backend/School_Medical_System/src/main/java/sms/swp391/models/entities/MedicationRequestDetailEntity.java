@@ -61,9 +61,6 @@ public class MedicationRequestDetailEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "attachment_url", length = Integer.MAX_VALUE)
-    private String attachmentUrl;
-
     @Column(name = "provided_by_parent")
     private Boolean providedByParent;
 

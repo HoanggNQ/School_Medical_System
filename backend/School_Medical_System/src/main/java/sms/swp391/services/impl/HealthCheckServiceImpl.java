@@ -87,10 +87,10 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         // 1. Cập nhật thông tin
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
-        campaign.setCheckDate(request.getCheckDate());
+        campaign.setStartDate(request.getStartDate());
+        campaign.setEndDate(request.getEndDate());
         campaign.setTargetGrade(request.getTargetGrade());
         campaign.setLocation(request.getLocation());
-        campaign.setRequiredEquipment(request.getRequiredEquipment());
 
         // 2. Lưu campaign trước rồi mới đẩy thông báo
         HealthCheckCampaignEntity updatedCampaign = campaignRepository.save(campaign);
@@ -143,13 +143,14 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     student.getParent().getFullname(),
                     student.getUser().getFullname(),
                     campaign.getName(),
-                    campaign.getCheckDate().toString(),
+                    campaign.getStartDate().toString(),
+                    campaign.getEndDate().toString(),
                     campaign.getLocation()
             );
 
             String campaignName = campaign.getName().toUpperCase();
             String studentName = student.getUser().getFullname().toUpperCase();
-            String checkDate = campaign.getCheckDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String checkDate = campaign.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
             String content = "Vui lòng xem và xác nhận cho chiến dịch " +
                     campaignName + " của học sinh " + studentName +
@@ -245,7 +246,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                         + " đã sẵn sàng Phụ huynh có xem chi tiết ở Mail."
         );
 
-        if (Boolean.TRUE.equals(savedResult.getFollowUpRequired()) || isAbnormal(savedResult)) {
+        if (isAbnormal(savedResult)) {
             LocalDateTime scheduleTime;
             if (request.getScheduleTime() != null) {
                 scheduleTime = request.getScheduleTime();

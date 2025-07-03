@@ -28,13 +28,14 @@ public class SendMailServiceIplm implements SendMailService {
     private JavaMailSender mailSender;
 
     @Override
-    public void sendConsentRequestEmail(String toEmail, String parentName, String studentName, String campaignName, String date, String location) {
+    public void sendConsentRequestEmail(String toEmail, String parentName, String studentName, String campaignName, String startDate,String endDate, String location) {
         try {
             Context context = new Context();
             context.setVariable("parentName", parentName);
             context.setVariable("studentName", studentName);
             context.setVariable("campaignName", campaignName);
-            context.setVariable("date", date);
+            context.setVariable("startDate", startDate);
+            context.setVariable("endDate", endDate);
             context.setVariable("location", location);
 
             String content = templateEngine.process("ConsentRequestEmailTemplate", context);

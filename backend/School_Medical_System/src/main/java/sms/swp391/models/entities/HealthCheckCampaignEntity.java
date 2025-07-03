@@ -1,6 +1,5 @@
 package sms.swp391.models.entities;
 
-import com.google.cloud.Date;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -35,9 +34,11 @@ public class HealthCheckCampaignEntity {
     private String description;
 
     @NotNull
-    @Column(name = "check_date", nullable = false)
-    private LocalDate checkDate;
-
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+    @NotNull
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
     @Size(max = 20)
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
@@ -50,9 +51,6 @@ public class HealthCheckCampaignEntity {
     @Size(max = 100)
     @Column(name = "location", length = 100)
     private String location;
-
-    @Column(name = "required_equipment", length = Integer.MAX_VALUE)
-    private String requiredEquipment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")

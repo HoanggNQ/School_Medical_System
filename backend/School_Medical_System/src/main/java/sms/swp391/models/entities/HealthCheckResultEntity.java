@@ -23,7 +23,6 @@ public class HealthCheckResultEntity {
     @Column(name = "result_id")
     private Long resultId;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private StudentEntity student;
@@ -49,8 +48,6 @@ public class HealthCheckResultEntity {
     @Column(name = "recommendation", columnDefinition = "TEXT")
     private String recommendation;
 
-    @Column(name = "follow_up_required")
-    private Boolean followUpRequired;
 
     @Column(name = "follow_up_notes", columnDefinition = "TEXT")
     private String followUpNotes;
