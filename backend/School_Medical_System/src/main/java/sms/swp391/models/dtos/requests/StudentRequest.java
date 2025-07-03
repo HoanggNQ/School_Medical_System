@@ -14,14 +14,10 @@ import java.util.Map;
 public class StudentRequest {
     private Long classId;
     private Long parentId;
-    private String studentCode;
     private String bloodType;
-    private String geneticDiseases;
-    private String otherMedicalNotes;
     private UserRegisterDTO userRegister;
     private String emergencyContactName;
     private String emergencyContactPhone;
-    private String currentMedications;
     private String chronicDiseases;
     private String allergies;
     private BigDecimal height;

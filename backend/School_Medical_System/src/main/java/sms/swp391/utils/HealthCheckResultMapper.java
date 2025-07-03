@@ -43,9 +43,7 @@ public class HealthCheckResultMapper {
                 .bloodPressure(profile != null ? profile.getBloodPressure() : null)
                 .pulse(profile != null ? profile.getPulse() : null)
                 .temperature(profile != null ? profile.getTemperature() : null)
-                .otherNotes(profile != null ? profile.getOtherMedicalNotes() : null)
                 .recommendation(entity.getRecommendation())
-                .followUpRequired(entity.getFollowUpRequired())
                 .followUpNotes(entity.getFollowUpNotes())
                 .overallHealthRating(entity.getOverallHealthRating())
                 .academicYear(entity.getAcademicYear())
@@ -57,7 +55,6 @@ public class HealthCheckResultMapper {
 
         return HealthCheckResultEntity.builder()
                 .recommendation(dto.getRecommendation())
-                .followUpRequired(dto.getFollowUpRequired())
                 .followUpNotes(dto.getFollowUpNotes())
                 .overallHealthRating(dto.getOverallHealthRating())
                 .build();

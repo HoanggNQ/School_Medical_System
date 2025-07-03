@@ -65,7 +65,6 @@ public class MedicalEventServiceImpl implements MedicalEventService {
         if (request.getStatus() != null) {
             entity.setStatus(request.getStatus());
         }
-        entity.setFollowUpRequired(request.getFollowUpRequired());
         entity.setFollowUpNotes(request.getFollowUpNotes());
 
         if (request.getStudentId() != null) {

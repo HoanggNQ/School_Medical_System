@@ -14,7 +14,8 @@ public class HealthCheckCampaignResponse {
     private Long id;
     private String name;
     private String description;
-    private LocalDate checkDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private MedicalStatus status;
     private Integer targetGrade;
     private String location;

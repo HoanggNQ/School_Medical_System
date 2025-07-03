@@ -54,10 +54,6 @@ public class MedicalEventEntity {
     @Column(name = "status", nullable = false, length = Integer.MAX_VALUE)
     private MedicalStatus status;
 
-    @ColumnDefault("false")
-    @Column(name = "follow_up_required")
-    private Boolean followUpRequired;
-
     @Column(name = "follow_up_notes", length = Integer.MAX_VALUE)
     private String followUpNotes;
 }

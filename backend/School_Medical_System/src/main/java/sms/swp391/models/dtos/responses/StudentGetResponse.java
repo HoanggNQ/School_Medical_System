@@ -19,10 +19,6 @@ public class StudentGetResponse {
     private String studentCode;
     private String bloodType;
     private String geneticDiseases;
-    private String otherMedicalNotes;
-    private String emergencyContactName;
-    private String emergencyContactPhone;
-    private String currentMedications;
     private String chronicDiseases;
     private String allergies;
     private BigDecimal height;
