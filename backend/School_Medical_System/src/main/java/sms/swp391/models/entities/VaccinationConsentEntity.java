@@ -52,9 +52,6 @@ public class VaccinationConsentEntity {
     @Column(name = "notes", length = Integer.MAX_VALUE)
     private String notes;
 
-    @Column(name = "consent_form_url", length = Integer.MAX_VALUE)
-    private String consentFormUrl;
-
     @Size(max = 9)
     @NotNull
     @Column(name = "academic_year", nullable = false, length = 9)

@@ -7,7 +7,6 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -38,9 +37,17 @@ public class VaccinationCampaignEntity {
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
+    @NotNull
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
+
     @Size(max = 100)
     @Column(name = "location", length = 100)
     private String location;
+
+    @Size(max = 100)
+    @Column(name = "manufacturer", length = 100)
+    private String manufacturer;
 
     @Size(max = 20)
     @NotNull

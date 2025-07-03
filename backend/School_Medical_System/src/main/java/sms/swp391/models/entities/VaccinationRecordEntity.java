@@ -38,11 +38,6 @@ public class VaccinationRecordEntity {
     @Column(name = "vaccine_name", nullable = false)
     private String vaccineName;
 
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "vaccine_batch", nullable = false, length = 100)
-    private String vaccineBatch;
-
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "administered_by", nullable = false)
@@ -58,23 +53,12 @@ public class VaccinationRecordEntity {
     @Column(name = "reaction_notes", length = Integer.MAX_VALUE)
     private String reactionNotes;
 
-    @ColumnDefault("false")
-    @Column(name = "follow_up_required")
-    private Boolean followUpRequired;
-
     @Column(name = "follow_up_notes", length = Integer.MAX_VALUE)
     private String followUpNotes;
 
     @Size(max = 50)
     @Column(name = "injection_site", length = 50)
     private String injectionSite;
-
-    @Size(max = 100)
-    @Column(name = "lot_number", length = 100)
-    private String lotNumber;
-
-    @Column(name = "expiration_date")
-    private LocalDate expirationDate;
 
     @Size(max = 9)
     @NotNull

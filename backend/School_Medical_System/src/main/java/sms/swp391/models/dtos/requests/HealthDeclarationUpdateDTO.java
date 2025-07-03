@@ -26,9 +26,5 @@ public class HealthDeclarationUpdateDTO {
     private String bloodType;
     private String allergies;
     private String chronicDiseases;
-    private String currentMedications;
-    private String emergencyContactName;
-    private String emergencyContactPhone;
-
 
 }

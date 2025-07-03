@@ -17,7 +17,6 @@ public class MedicationMapper {
                 .medicationName(entity.getMedicationName())
                 .category(entity.getCategory())
                 .dosageForm(entity.getDosageForm())
-                .prescriptionRequired(entity.getPrescriptionRequired())
                 .countryOfOrigin(entity.getCountryOfOrigin())
                 .description(entity.getDescription())
                 .medicationInformation(entity.getMedicationInformation())
@@ -36,7 +35,6 @@ public class MedicationMapper {
                 .medicationName(dto.getMedicationName())
                 .category(dto.getCategory())
                 .dosageForm(dto.getDosageForm())
-                .prescriptionRequired(dto.getPrescriptionRequired())
                 .countryOfOrigin(dto.getCountryOfOrigin())
                 .description(dto.getDescription())
                 .medicationInformation(dto.getMedicationInformation())
@@ -53,7 +51,6 @@ public class MedicationMapper {
         entity.setMedicationName(dto.getMedicationName());
         entity.setCategory(dto.getCategory());
         entity.setDosageForm(dto.getDosageForm());
-        entity.setPrescriptionRequired(dto.getPrescriptionRequired());
         entity.setCountryOfOrigin(dto.getCountryOfOrigin());
         entity.setDescription(dto.getDescription());
         entity.setMedicationInformation(dto.getMedicationInformation());

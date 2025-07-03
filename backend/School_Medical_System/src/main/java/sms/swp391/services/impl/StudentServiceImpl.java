@@ -44,10 +44,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentResponse createStudent(StudentRequest request) {
         try {
-            if (studentRepository.findByStudentCode(request.getStudentCode()).isPresent()) {
-                throw new ActionFailedException("Student code already exists");
-            }
-            if (studentRepository.findByUser_Email(request.getUserRegister().getEmail()).isPresent()){
+            if (studentRepository.findByUser_Email(request.getUserRegister().getEmail()).isPresent()) {
                 throw new ActionFailedException("Student email already exists");
 
             }
@@ -83,17 +80,12 @@ public class StudentServiceImpl implements StudentService {
                     .classEntity(classEntity)
                     .parent(parent)
                     .studentCode(generateStudentCode())
-                    .emergencyContactName(request.getEmergencyContactName())
-                    .emergencyContactPhone(request.getEmergencyContactPhone())
                     .build();
 
 // Tạo hồ sơ sức khỏe
             StudentHealthProfileEntity profile = StudentHealthProfileEntity.builder()
                     .student(student)
                     .bloodType(request.getBloodType())
-                    .geneticDiseases(request.getGeneticDiseases())
-                    .otherMedicalNotes(request.getOtherMedicalNotes())
-                    .currentMedications(request.getCurrentMedications())
                     .chronicDiseases(request.getChronicDiseases())
                     .allergies(request.getAllergies())
                     .height(request.getHeight())
@@ -139,8 +131,6 @@ public class StudentServiceImpl implements StudentService {
         }
 
 
-        existing.setEmergencyContactName(request.getEmergencyContactName());
-        existing.setEmergencyContactPhone(request.getEmergencyContactPhone());
         StudentHealthProfileEntity profile = existing.getHealthProfile();
         if (profile == null) {
             profile = new StudentHealthProfileEntity();
@@ -150,8 +140,6 @@ public class StudentServiceImpl implements StudentService {
 
         profile.setBloodType(request.getBloodType());
         profile.setGeneticDiseases(request.getGeneticDiseases());
-        profile.setOtherMedicalNotes(request.getOtherMedicalNotes());
-        profile.setCurrentMedications(request.getCurrentMedications());
         profile.setChronicDiseases(request.getChronicDiseases());
         profile.setAllergies(request.getAllergies());
         profile.setHeight(request.getHeight());
@@ -283,9 +271,10 @@ public class StudentServiceImpl implements StudentService {
         List<StudentEntity> students = studentRepository.findByParent_UserId(parentId);
         return students.stream().map(StudentMapper::toDTO).toList();
     }
+
     @Override
     @Transactional
-    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId,String campaignName,String type, Pageable pageable) {
+    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId, String campaignName, String type, Pageable pageable) {
         // Gọi repository để lấy projection từ native query
         Page<StudentHealthEventProjection> page =
                 studentEventRepository.findAllHealthEventsByStudent(

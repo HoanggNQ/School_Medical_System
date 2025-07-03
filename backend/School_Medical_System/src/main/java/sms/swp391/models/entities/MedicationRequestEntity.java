@@ -55,10 +55,6 @@ public class MedicationRequestEntity {
     @Column(name = "notes", length = Integer.MAX_VALUE)
     private String notes;
 
-    @Size(max = 20)
-    @Column(name = "priority", length = 20)
-    private String priority;
-
     @Size(max = 9)
     @NotNull
     @Column(name = "academic_year", nullable = false, length = 9)
