@@ -24,7 +24,6 @@ public class HealthCheckResultRequestDTO {
     private BigDecimal temperature;
     private String otherNotes;
     private String recommendation;
-    private Boolean followUpRequired;
     private String followUpNotes;
     private String overallHealthRating;
     private LocalDateTime scheduleTime;

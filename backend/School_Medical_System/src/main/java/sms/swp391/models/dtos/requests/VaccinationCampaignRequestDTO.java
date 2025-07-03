@@ -11,7 +11,6 @@ import java.time.LocalDate;
 public class VaccinationCampaignRequestDTO {
     private String name;
     private String description;
-    private LocalDate endDate;
     private LocalDate startDate;
     private Integer targetGrade;
     private String notes;

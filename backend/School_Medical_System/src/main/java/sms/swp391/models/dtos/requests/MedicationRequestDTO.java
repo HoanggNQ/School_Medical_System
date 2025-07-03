@@ -27,9 +27,6 @@ public class MedicationRequestDTO {
     @Size(max = 100, message = "Dosage form must not exceed 100 characters")
     private String dosageForm;
 
-    @NotNull(message = "Prescription required field is required")
-    private Boolean prescriptionRequired;
-
     @Size(max = 100, message = "Country of origin must not exceed 100 characters")
     private String countryOfOrigin;
 

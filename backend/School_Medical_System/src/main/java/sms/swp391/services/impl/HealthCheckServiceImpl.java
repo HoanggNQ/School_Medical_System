@@ -72,7 +72,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         HealthCheckCampaignEntity campaign = HealthCheckCampaignMapper.fromRequestDTO(request);
         campaign.setCreatedBy(creator);
         campaign.setStatus(MedicalStatus.PENDING);
-        campaign.setCreatedAt(LocalDate.now());
+        campaign.setCreatedAt(LocalDateTime.now().withSecond(0).withNano(0));
 
         HealthCheckCampaignEntity savedCampaign = campaignRepository.save(campaign);
         return HealthCheckCampaignMapper.toDTO(savedCampaign);
@@ -87,10 +87,10 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         // 1. Cập nhật thông tin
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
-        campaign.setCheckDate(request.getCheckDate());
+        campaign.setStartDate(request.getStartDate());
+        campaign.setEndDate(request.getEndDate());
         campaign.setTargetGrade(request.getTargetGrade());
         campaign.setLocation(request.getLocation());
-        campaign.setRequiredEquipment(request.getRequiredEquipment());
 
         // 2. Lưu campaign trước rồi mới đẩy thông báo
         HealthCheckCampaignEntity updatedCampaign = campaignRepository.save(campaign);
@@ -143,13 +143,14 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     student.getParent().getFullname(),
                     student.getUser().getFullname(),
                     campaign.getName(),
-                    campaign.getCheckDate().toString(),
+                    campaign.getStartDate().toString(),
+                    campaign.getEndDate().toString(),
                     campaign.getLocation()
             );
 
             String campaignName = campaign.getName().toUpperCase();
             String studentName = student.getUser().getFullname().toUpperCase();
-            String checkDate = campaign.getCheckDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String checkDate = campaign.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
             String content = "Vui lòng xem và xác nhận cho chiến dịch " +
                     campaignName + " của học sinh " + studentName +
@@ -245,7 +246,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                         + " đã sẵn sàng Phụ huynh có xem chi tiết ở Mail."
         );
 
-        if (Boolean.TRUE.equals(savedResult.getFollowUpRequired()) || isAbnormal(savedResult)) {
+        if (isAbnormal(savedResult)) {
             LocalDateTime scheduleTime;
             if (request.getScheduleTime() != null) {
                 scheduleTime = request.getScheduleTime();
@@ -408,6 +409,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
 
     @Override
     public PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable) {
+        // Chỉ cho phép sort theo các trường hợp hợp lệ
         Sort validatedSort = pageable.getSort().stream()
                 .filter(order -> {
                     String property = order.getProperty();
@@ -415,10 +417,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                             property.equals("student.user.fullname") ||
                             property.equals("healthCheckCampaign.name");
                 })
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        Sort::by
-                ));
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
 
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
@@ -426,12 +425,10 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 validatedSort
         );
 
-        Page<HealthCheckConsentEntity> healthCheckConsentPage;
-        if (search != null && !search.isEmpty()) {
-            healthCheckConsentPage = healthCheckConsentRepository.searchHealthCheckConsents(search, validatedPageable);
-        } else {
-            healthCheckConsentPage = healthCheckConsentRepository.findApprovedStudent(validatedPageable);
-        }
+        Page<HealthCheckConsentEntity> healthCheckConsentPage =
+                (search != null && !search.isBlank())
+                        ? healthCheckConsentRepository.searchHealthCheckConsents(search, validatedPageable)
+                        : healthCheckConsentRepository.findAll(validatedPageable); // ← sửa ở đây
 
         List<HealthCheckConsentResponse> healthCheckConsentDTOs = healthCheckConsentPage.stream()
                 .map(HealthCheckConsentMapper::toDTO)
@@ -444,6 +441,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 .currentPage(healthCheckConsentPage.getNumber())
                 .build();
     }
+
 
     @Override
     public void deleteCampaign(Long campaignId) {

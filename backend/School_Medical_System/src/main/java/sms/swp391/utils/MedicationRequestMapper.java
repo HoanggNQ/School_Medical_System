@@ -21,7 +21,6 @@ public class MedicationRequestMapper {
                 .requestDate(LocalDate.now())
                 .academicYear(academicYear)
                 .status(MedicalStatus.PENDING)
-                .priority(dto.getPriority())
                 .notes(dto.getNotes())
                 .build();
     }
@@ -46,7 +45,6 @@ public class MedicationRequestMapper {
                 .studentId(entity.getStudent().getId())
                 .studentName(entity.getStudent().getUser().getFullname())
                 .academicYear(entity.getAcademicYear())
-                .priority(entity.getPriority())
                 .status(entity.getStatus())
                 .notes(entity.getNotes())
                 .requestDate(entity.getRequestDate())

@@ -27,8 +27,7 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
 
     @Query("SELECT hc FROM HealthCheckConsentEntity hc " +
             "WHERE (LOWER(hc.student.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(hc.healthCheckCampaign.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-            "AND hc.consentStatus = 'APPROVED'")
+            "OR LOWER(hc.healthCheckCampaign.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) ")
     Page<HealthCheckConsentEntity> searchHealthCheckConsents(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("SELECT v FROM HealthCheckConsentEntity v WHERE v.consentStatus = 'APPROVED'")
