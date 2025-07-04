@@ -143,11 +143,11 @@ public class StudentController {
     public ResponseEntity<ResponseObject> getEvents(
             @PathVariable Long studentId,
             @RequestParam(required = false, defaultValue = "") String campaignName,
-            @RequestParam(required = false) String type,
-            @ParameterObject @PageableDefault(size = 10) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
 
         Page<StudentHealthEventResponseDTO> page =
-                studentService.getPagedEvents(studentId, campaignName,type,pageable);
+                studentService.getPagedEvents(studentId, campaignName,pageable);
 
         return ResponseEntity.ok(
                 ResponseObject.builder()
@@ -156,7 +156,8 @@ public class StudentController {
                         .status(HttpStatus.OK)
                         .isSuccess(true)
                         .data(PageUtils.toPagedResponse(page))
-                        .build());
+                        .build()
+        );
     }
 
     @Operation(summary = "Import danh sách học sinh từ file Excel", description = "Cho phép import học sinh từ file Excel (.xlsx)")

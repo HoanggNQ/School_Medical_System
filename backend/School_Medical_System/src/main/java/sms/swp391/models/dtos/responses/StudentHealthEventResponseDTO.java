@@ -2,24 +2,21 @@ package sms.swp391.models.dtos.responses;
 import lombok.*;
 
 import java.time.LocalDate;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class StudentHealthEventResponseDTO {
-    private String type;                    // "HEALTH_CHECK" / "VACCINATION"
-    private Long eventId;
+    private String type;
+    private Long campaignId;
+    private String campaignName;
     private Long consentId;
     private String consentStatusText;
-    private String campaignName;
-    private String description;
-    private LocalDate checkDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String consentStatus;
     private String studentName;
     private String location;
-    private String requirementEquipment;
-    private String consentStatus;
-    private boolean completed;
     private String resultStatus;
 }
