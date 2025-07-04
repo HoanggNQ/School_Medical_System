@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sms.swp391.models.dtos.enums.MedicalStatus;
+import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
 import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 
@@ -36,4 +37,22 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
     Page<HealthCheckConsentEntity> findApprovedConsentsByCampaignId(@Param("campaignId") Long campaignId, Pageable pageable);
 
     List<HealthCheckConsentEntity> findByHealthCheckCampaign_IdAndConsentStatus(Long healthCheckCampaignId, MedicalStatus consentStatus);
+
+    Long countByHealthCheckCampaign_Id(Long healthCheckCampaignId);
+
+    Long countByHealthCheckCampaign_IdAndConsentStatus(Long healthCheckCampaignId, MedicalStatus consentStatus);
+    // HealthCheckConsentRepository
+    @Query("""
+    SELECT new sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO(
+        COUNT(h),
+        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.APPROVED THEN 1 ELSE 0 END),
+        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.REJECTED THEN 1 ELSE 0 END),
+        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.PENDING  THEN 1 ELSE 0 END),
+        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.DONE     THEN 1 ELSE 0 END)
+    )
+    FROM HealthCheckConsentEntity h
+""")
+    CampaignConsentStatisticsResponseDTO fetchOverallHealthConsentStats();
+
+
 }
