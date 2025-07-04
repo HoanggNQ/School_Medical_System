@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import sms.swp391.models.dtos.enums.RoleEnum;
+import sms.swp391.models.dtos.responses.UserDashboardStatsDTO;
 import sms.swp391.models.entities.UserEntity;
 
 import java.util.List;
@@ -38,4 +39,21 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findByRoleName(RoleEnum roleName);
 
     boolean existsByEmail(String email);
+    @Query("""
+        SELECT new sms.swp391.models.dtos.responses.UserDashboardStatsDTO(
+            COUNT(u),
+
+            SUM(CASE WHEN u.roleName = :#{T(sms.swp391.models.dtos.enums.RoleEnum).STUDENT}      THEN 1 ELSE 0 END),
+            SUM(CASE WHEN u.roleName = :#{T(sms.swp391.models.dtos.enums.RoleEnum).PARENT}       THEN 1 ELSE 0 END),
+            SUM(CASE WHEN u.roleName = :#{T(sms.swp391.models.dtos.enums.RoleEnum).SCHOOL_NURSE} THEN 1 ELSE 0 END),
+            SUM(CASE WHEN u.roleName = :#{T(sms.swp391.models.dtos.enums.RoleEnum).ADMIN}        THEN 1 ELSE 0 END),
+
+            SUM(CASE WHEN u.status = :#{T(sms.swp391.models.dtos.enums.StatusEnum).ACTIVE}  THEN 1 ELSE 0 END),
+            SUM(CASE WHEN u.status = :#{T(sms.swp391.models.dtos.enums.StatusEnum).VERIFY}  THEN 1 ELSE 0 END),
+            SUM(CASE WHEN u.status = :#{T(sms.swp391.models.dtos.enums.StatusEnum).BAN}     THEN 1 ELSE 0 END),
+            SUM(CASE WHEN u.status = :#{T(sms.swp391.models.dtos.enums.StatusEnum).DELETED} THEN 1 ELSE 0 END)
+        )
+        FROM UserEntity u
+    """)
+    UserDashboardStatsDTO fetchUserDashboardStats();
 }
