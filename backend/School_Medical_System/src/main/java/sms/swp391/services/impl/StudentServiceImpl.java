@@ -2,6 +2,9 @@ package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,12 +29,9 @@ import sms.swp391.services.StudentService;
 import sms.swp391.utils.ExcelExporter;
 import sms.swp391.utils.StudentMapper;
 import sms.swp391.utils.UserMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,12 +43,11 @@ public class StudentServiceImpl implements StudentService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final ClassRepository classRepository;
-    private final StudentEventRepository studentEventRepository;
     private final PasswordEncoder passwordEncoder;
+    private final HealthCheckCampaignRepository   hcRepo;
+    private final VaccinationCampaignRepository   vacRepo;
+    private final StudentHealthEventMapper        mapper;
 
-    // -----------------------------------------------------------------------------
-// StudentServiceImpl.java
-// -----------------------------------------------------------------------------
     @Override
     @Transactional
     public StudentResponse createStudent(StudentRequest request) {
@@ -264,33 +263,42 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @Transactional
-    public Page<StudentHealthEventResponseDTO> getPagedEvents(Long studentId, String campaignName, String type, Pageable pageable) {
-        // Gọi repository để lấy projection từ native query
-        Page<StudentHealthEventProjection> page =
-                studentEventRepository.findAllHealthEventsByStudent(
-                        studentId,
-                        campaignName == null ? "" : campaignName.trim(),
-                        type,
-                        pageable);
+    public Page<StudentHealthEventResponseDTO> getPagedEvents(
+            Long studentId, String campaignName, Pageable pageable) {
 
+        String keyword = (campaignName == null) ? "" : campaignName.trim();
 
-        // Chuyển projection thành DTO
-        return page.map(p -> StudentHealthEventResponseDTO.builder()
-                .type(p.getType())
-                .eventId(p.getEventId())
-                .campaignName(p.getCampaign())
-                .description(p.getDescription())
-                .consentId(p.getConsentId())
-                .consentStatusText(p.getConsentId() == null ?
-                        "Chiến dịch chưa bắt đầu" : "Đã có consent")
-                .checkDate(p.getCheckDate())
-                .studentName(p.getStudentName())
-                .location(p.getLocation())
-                .requirementEquipment(p.getRequirementEquipment())
-                .consentStatus(p.getConsentStatus())
-                .resultStatus(p.getStatus())
-                .build());
+        List<StudentHealthEventProjection> merged = new ArrayList<>();
+        merged.addAll(hcRepo.findEvents(studentId, keyword, Pageable.unpaged()).getContent());
+        merged.addAll(vacRepo.findEvents(studentId, keyword, Pageable.unpaged()).getContent());
+
+        Comparator<StudentHealthEventProjection> comparator =
+                Comparator.comparing(StudentHealthEventProjection::getStartDate,
+                                Comparator.nullsLast(Comparator.naturalOrder()))
+                        .reversed();  // DESC
+        merged.sort(comparator);
+
+        int start = (int) pageable.getOffset();
+        int end   = Math.min(start + pageable.getPageSize(), merged.size());
+        if (start > end) {   // yêu cầu trang vượt quá tổng trang
+            return Page.empty(pageable);
+        }
+
+        List<StudentHealthEventResponseDTO> dtoPage = merged.subList(start, end).stream()
+                .map(mapper::toDto)
+                .toList();
+
+        return new PageImpl<>(dtoPage, pageable, merged.size());
+    }
+
+    @Mapper(componentModel = "spring")
+    public interface StudentHealthEventMapper {
+
+        @Mapping(expression = "java(p.getConsentId() == null ? \"Chiến dịch chưa bắt đầu\" : \"Đã có consent\")",
+                target = "consentStatusText")
+        @Mapping(expression = "java(p.getResultStatus() == null ? \"Chưa ghi nhập kết quả\" : p.getResultStatus())",
+                target = "resultStatus")
+        StudentHealthEventResponseDTO toDto(StudentHealthEventProjection p);
     }
     @Override
     public ResponseEntity<ResponseObject> importStudentsFromExcel(MultipartFile file) {
