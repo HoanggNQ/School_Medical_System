@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.entities.VaccinationCampaignEntity;
 
 import java.util.List;
@@ -44,4 +45,6 @@ public interface VaccinationCampaignRepository extends JpaRepository<Vaccination
             @Param("studentId") Long studentId,
             @Param("keyword")   String keyword,
             Pageable pageable);
+    @Query("SELECT v.status, COUNT(v) FROM VaccinationCampaignEntity v GROUP BY v.status")
+    List<Object[]> countCampaignsByStatus();
 }
