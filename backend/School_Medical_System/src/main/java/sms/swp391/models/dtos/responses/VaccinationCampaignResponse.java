@@ -16,6 +16,7 @@ public class VaccinationCampaignResponse {
     private String name;
     private String description;
     private LocalDate startDate;
+    private LocalDate endDate;
     private MedicalStatus status;
     private List<String> targetGrade;
     private String notes;
