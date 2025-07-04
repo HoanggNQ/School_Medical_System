@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
+import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.NotFoundException;
@@ -39,6 +40,8 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
                 .getAuthentication().getPrincipal();
         return principal.getUserId();
     }
+
+
 
     @Override
     public void endCampaign(Long campaignId) {

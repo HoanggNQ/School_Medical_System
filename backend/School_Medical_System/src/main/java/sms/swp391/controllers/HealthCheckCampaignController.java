@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
+import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 import sms.swp391.models.dtos.responses.PaginatedHealthCheckConsentResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
@@ -212,6 +213,7 @@ public class HealthCheckCampaignController {
             );
         }
     }
+
 
     @Operation(summary = "Kết thúc chiến dịch khám", description = "Đổi trạng thái chiến dịch sang 'đã ket thuc'.")
     @PostMapping("/campaigns/{id}/end")

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.VaccinationCampaignRequestDTO;
+import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
 import sms.swp391.models.dtos.responses.VaccinationCampaignResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VaccinationCampaignController {
     private final VaccinationService vaccinationService;
+
 
     @Operation(summary = "Tạo chiến dịch tiêm vaccine", description = "Khởi tạo một chiến tiêm vaccine mới với thông tin từ người tạo.")
     @PostMapping("/campaigns")

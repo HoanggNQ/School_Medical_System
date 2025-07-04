@@ -53,6 +53,7 @@ public class VaccinationServiceImpl implements VaccinationService {
         campaignRepository.save(campaign);
     }
 
+
     @Override
     @Transactional
     public VaccinationCampaignResponse createCampaign(VaccinationCampaignRequestDTO req,
