@@ -6,15 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
-import sms.swp391.models.entities.HealthCheckCampaignEntity;
-import sms.swp391.models.entities.HealthCheckConsentEntity;
-import sms.swp391.models.entities.StudentEntity;
-import sms.swp391.models.entities.UserEntity;
+import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.NotFoundException;
-import sms.swp391.repositories.HealthCheckCampaignRepository;
-import sms.swp391.repositories.HealthCheckConsentRepository;
-import sms.swp391.repositories.StudentRepository;
-import sms.swp391.repositories.UserRepository;
+import sms.swp391.repositories.*;
 import sms.swp391.services.HealthCheckCampaignService;
 import sms.swp391.services.NotificationService;
 import sms.swp391.services.SendMailService;
@@ -38,6 +32,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     private final NotificationService notificationService;
     private final HealthCheckConsentRepository healthCheckConsentRepository;
     private final SendMailService sendMailService;
+    private final HealthConsultationScheduleRepository healthConsultationScheduleRepository;
 
     private Long getCurrentUserId() {
         var principal = (UserEntity) org.springframework.security.core.context.SecurityContextHolder.getContext()
@@ -77,6 +72,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
         Set<Long> emailedParents = new HashSet<>();
 
         for (StudentEntity s : students) {
+
 
             HealthCheckConsentEntity consent = HealthCheckConsentEntity.builder()
                     .healthCheckCampaign(campaign)
