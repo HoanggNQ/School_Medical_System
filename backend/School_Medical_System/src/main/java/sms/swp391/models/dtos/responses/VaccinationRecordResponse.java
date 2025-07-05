@@ -18,14 +18,9 @@ public class VaccinationRecordResponse {
     private String administrationByName;
     private LocalDate administrationDate;
     private String academicYear;
-    private LocalDate expirationDate;
-    private Boolean followUpRequired;
     private LocalDate nextDoseDate;
     private String injectionSite;
-    private String lotNumber;
-    private String vaccineBatch;
     private String vaccineName;
     private String followUpNotes;
     private String reactionNotes;
-
 }

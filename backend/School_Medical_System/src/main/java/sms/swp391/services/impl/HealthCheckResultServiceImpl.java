@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
+import sms.swp391.models.dtos.requests.CreateHealthCheckResultListRequestDTO;
 import sms.swp391.models.dtos.requests.HealthCheckResultRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckResultResponse;
 import sms.swp391.models.entities.*;
@@ -19,7 +20,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +39,88 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
     private final HealthConsultationScheduleRepository consultationScheduleRepository;
     private final SendMailService sendMailService;
     private final NotificationService notificationService;
+
+    @Transactional
+    @Override
+    public List<HealthCheckResultResponse> createBulkResults(CreateHealthCheckResultListRequestDTO req,
+                                                             Long checkedById) {
+
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(req.getCampaignId())
+                .orElseThrow(() -> new NotFoundException("Campaign not found"));
+
+        UserEntity checker = userRepository.findById(checkedById)
+                .orElseThrow(() -> new NotFoundException("Checker not found"));
+
+        List<HealthCheckResultEntity> resultsToSave = new ArrayList<>();
+        List<HealthCheckResultResponse> responses   = new ArrayList<>();
+
+        for (HealthCheckResultRequestDTO dto : req.getResults()) {
+
+            if (dto.getStudentId() == null) continue;
+
+            StudentEntity student = studentRepository.findById(dto.getStudentId())
+                    .orElseThrow(() -> new NotFoundException("Student not found: " + dto.getStudentId()));
+
+            // 4. Kiểm tra consent APPROVED
+            HealthCheckConsentEntity consent = consentRepository
+                    .findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
+
+            if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
+                // Có thể skip hoặc throw exception – ở đây skip
+                continue;
+            }
+
+            // 5. Cập nhật hồ sơ sức khỏe
+            StudentHealthProfileEntity profile = Optional
+                    .ofNullable(student.getHealthProfile())
+                    .orElseGet(() -> {
+                        StudentHealthProfileEntity p = new StudentHealthProfileEntity();
+                        p.setStudent(student);
+                        student.setHealthProfile(p);
+                        return p;
+                    });
+
+            profile.setHeight(dto.getHeightCm());
+            profile.setWeight(dto.getWeightKg());
+            profile.setVisionLeft(dto.getVisionLeft());
+            profile.setVisionRight(dto.getVisionRight());
+            profile.setHearing(dto.getHearing());
+            profile.setDentalHealth(dto.getDentalHealth());
+            profile.setBloodPressure(dto.getBloodPressure());
+            profile.setPulse(dto.getPulse());
+            profile.setTemperature(dto.getTemperature());
+
+            // 6. Tạo entity kết quả
+            HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(dto);
+            result.setHealthCheckCampaign(campaign);
+            result.setStudent(student);
+            result.setCheckDate(LocalDate.now());
+            result.setCheckedBy(checker);
+            result.setAcademicYear(getCurrentAcademicYear());
+            result.setConsent(consent);
+
+            // 7. Đánh dấu consent DONE
+            consent.setConsentStatus(MedicalStatus.DONE);
+
+            resultsToSave.add(result);
+        }
+
+        // 8. Lưu batch
+        resultRepository.saveAll(resultsToSave);
+        consentRepository.saveAll(
+                resultsToSave.stream().map(HealthCheckResultEntity::getConsent).toList()
+        );
+        studentRepository.saveAll(
+                resultsToSave.stream().map(HealthCheckResultEntity::getStudent).toList()
+        );
+
+        // 9. Trả response
+        for (HealthCheckResultEntity e : resultsToSave) {
+            responses.add(HealthCheckResultMapper.toDTO(e));
+        }
+        return responses;
+    }
+
 
     @Override
     public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
