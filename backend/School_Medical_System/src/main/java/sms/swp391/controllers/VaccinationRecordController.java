@@ -1,6 +1,7 @@
 package sms.swp391.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.VaccinationService;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -22,6 +24,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VaccinationRecordController {
     private final VaccinationService vaccinationService;
+
+    @Operation(summary = "Lưu kết quả tiêm chủng hàng loạt", description = "Lưu nhiều kết quả tiêm chủng cùng lúc.")
+    @PostMapping("/records/bulk")
+    public ResponseEntity<ResponseObject> createBulkVaccinationRecords(
+            @Valid @RequestBody CreateVaccinationRecordListRequestDTO request,
+            @AuthenticationPrincipal UserEntity nurse) {
+
+        List<VaccinationRecordResponse> saved = vaccinationService.createBulkRecords(request, nurse.getUserId());
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("SAVE_BULK_VACCINE_RESULT_SUCCESS")
+                        .message("Đã lưu " + saved.size() + " kết quả tiêm chủng")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(saved)
+                        .build()
+        );
+    }
 
     @Operation(summary = "Lưu kết quả tiêm vaccine", description = "Lưu kết quả tiêm vaccine cho học sinh kèm theo ID của người thực hiện.")
     @PostMapping("/records")
