@@ -25,6 +25,52 @@ import java.util.stream.Collectors;
     public class HealthCheckConsentServiceImpl implements HealthCheckConsentService {
 
     private final HealthCheckConsentRepository consentRepository;
+    @Transactional
+    @Override
+    public PaginatedHealthCheckConsentResponse getHealthCheckConsents(
+            Long campaignId,
+            String search,
+            Pageable pageable) {
+
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> List.of(
+                        "id",
+                        "student.user.fullname"
+                ).contains(order.getProperty()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
+
+        Pageable validatedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort);
+
+        Page<HealthCheckConsentEntity> consentPage;
+
+        if (campaignId != null) {
+            if (search != null && !search.isBlank()) {
+                consentPage = consentRepository
+                        .searchInCampaign(campaignId, search.trim(), validatedPageable);
+            } else {
+                consentPage = consentRepository
+                        .findByHealthCheckCampaign_Id(campaignId, validatedPageable);
+            }
+        } else {
+            consentPage = (search != null && !search.isBlank())
+                    ? consentRepository.searchHealthCheckConsents(search.trim(), validatedPageable)
+                    : consentRepository.findAll(validatedPageable);
+        }
+
+        List<HealthCheckConsentResponse> items = consentPage
+                .map(HealthCheckConsentMapper::toDTO)
+                .getContent();
+
+        return PaginatedHealthCheckConsentResponse.builder()
+                .healthCheckConsents(items)
+                .totalElements(consentPage.getTotalElements())
+                .totalPages(consentPage.getTotalPages())
+                .currentPage(consentPage.getNumber())
+                .build();
+    }
 
     @Override
     public HealthCheckConsentResponse updateConsent(Long consentId, HealthCheckConsentRequestDTO request, Long parentId) {
@@ -69,32 +115,7 @@ import java.util.stream.Collectors;
                 .toList();
     }
 
-    @Override
-    public PaginatedHealthCheckConsentResponse getAllHealthCheckConsents(String search, Pageable pageable) {
-        Sort validatedSort = pageable.getSort().stream()
-                .filter(order -> List.of("id", "student.user.fullname", "healthCheckCampaign.name")
-                        .contains(order.getProperty()))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
 
-        Pageable validatedPageable = PageRequest.of(
-                pageable.getPageNumber(), pageable.getPageSize(), validatedSort);
-
-        Page<HealthCheckConsentEntity> consentPage =
-                (search != null && !search.isBlank())
-                        ? consentRepository.searchHealthCheckConsents(search, validatedPageable)
-                        : consentRepository.findAll(validatedPageable);
-
-        List<HealthCheckConsentResponse> items = consentPage.stream()
-                .map(HealthCheckConsentMapper::toDTO)
-                .toList();
-
-        return PaginatedHealthCheckConsentResponse.builder()
-                .healthCheckConsents(items)
-                .totalElements(consentPage.getTotalElements())
-                .totalPages(consentPage.getTotalPages())
-                .currentPage(consentPage.getNumber())
-                .build();
-    }
 
     @Override
     public PaginatedHealthCheckConsentResponse getApprovedConsentsByCampaign(Long campaignId, Pageable pageable) {

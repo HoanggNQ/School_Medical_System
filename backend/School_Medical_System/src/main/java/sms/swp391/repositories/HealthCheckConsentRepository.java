@@ -54,5 +54,16 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
 """)
     CampaignConsentStatisticsResponseDTO fetchOverallHealthConsentStats();
 
+    Page<HealthCheckConsentEntity> findByHealthCheckCampaign_Id(Long campaignId, Pageable pageable);
+
+        @Query("""
+    SELECT c
+    FROM   HealthCheckConsentEntity c
+    WHERE  c.healthCheckCampaign.id = :campaignId
+      AND ( LOWER(c.student.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) )
+""")
+    Page<HealthCheckConsentEntity> searchInCampaign(@Param("campaignId") Long campaignId,
+                                                    @Param("keyword")   String keyword,
+                                                    Pageable pageable);
 
 }
