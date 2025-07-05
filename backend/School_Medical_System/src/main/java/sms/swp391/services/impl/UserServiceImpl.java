@@ -72,40 +72,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PaginatedUserResponse getUsers(String search, Pageable pageable) {
-        Sort validatedSort = pageable.getSort().stream()
-                .filter(order -> {
-                    String property = order.getProperty();
-                    return property.equals("fullname") || property.equals("username");
-                })
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        Sort::by
-                ));
 
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                validatedSort
+                Sort.unsorted()
         );
 
-        Page<UserEntity> userPage;
-        if (search != null && !search.isEmpty()) {
-            userPage = userRepository.searchUsers(search, validatedPageable);
-        } else {
-            userPage = userRepository.findAll(validatedPageable);
-        }
+        Page<UserEntity> userPage = (search != null && !search.isBlank())
+                ? userRepository.searchUsers(search.trim(), validatedPageable)
+                : userRepository.findAll(validatedPageable);
 
-        List<UserResponse> userDTOs = userPage.stream()
+        List<UserResponse> users = userPage
                 .map(UserMapper::toDTO)
                 .toList();
 
         return PaginatedUserResponse.builder()
-                .users(userDTOs)
+                .users(users)
                 .totalElements(userPage.getTotalElements())
                 .totalPages(userPage.getTotalPages())
                 .currentPage(userPage.getNumber())
                 .build();
     }
+
 
     @Override
     public PaginatedUserResponse getUsersByRoleName(RoleEnum search, Pageable pageable) {
