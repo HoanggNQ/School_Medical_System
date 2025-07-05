@@ -7,6 +7,9 @@ import java.util.List;
 
 public interface VaccinationService {
 
+    List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO req,
+                                                      Long nurseId);
+
     // Campaign Management
     void endCampaign(Long campaignId);
 
