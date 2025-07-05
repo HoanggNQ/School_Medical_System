@@ -1,7 +1,10 @@
 package sms.swp391.controllers;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,6 +30,7 @@ import sms.swp391.services.OTPService;
 import sms.swp391.services.UserService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -98,14 +102,16 @@ public class UserController {
         );
     }
 
-    @GetMapping
-    public ResponseEntity<ResponseObject> getUsers(
-            @RequestParam(value = "search", required = false) String search,
-            @PageableDefault(page = 0, size = 10)
-            @SortDefault.SortDefaults({
-                    @SortDefault(sort = "fullname", direction = Sort.Direction.ASC),
-                    @SortDefault(sort = "username", direction = Sort.Direction.DESC)
-            }) Pageable pageable) {
+    @Operation(summary = "Get list of users with pagination and sorting",
+            description = "Retrieve a paginated and sorted list of users, optionally filtered by search term.")
+    @GetMapping("/get-All-Users")
+    public ResponseEntity<ResponseObject> getUsers(@RequestParam(value = "search", required = false) String search,
+                                                   @ParameterObject
+                                                   @PageableDefault(page = 0, size = 10)
+                                                   @SortDefault.SortDefaults({
+                                                           @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+                                                   }) Pageable pageable) {
+
         PaginatedUserResponse userResponse = userService.getUsers(search, pageable);
         return ResponseEntity.ok(
                 ResponseObject.builder()
@@ -254,9 +260,10 @@ public class UserController {
             );
         }
     }
+
     @PostMapping(
             path = "/import/excel",
-            consumes = { MediaType.MULTIPART_FORM_DATA_VALUE },
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseObject> importUsersFromExcel(
             @RequestPart("file") MultipartFile file) {

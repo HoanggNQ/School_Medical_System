@@ -24,5 +24,4 @@ public class UserResponse  {
     RoleEnum roleName;
     String avatarUrl;
     String status;
-
 }
