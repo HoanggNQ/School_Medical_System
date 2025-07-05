@@ -1,6 +1,7 @@
 package sms.swp391.utils;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.entities.UserEntity;
@@ -54,4 +55,5 @@ public class UserMapper {
                 .roleName(dto.getRoleName())
                 .build();
     }
+
 }
