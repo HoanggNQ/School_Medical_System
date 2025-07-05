@@ -1,5 +1,6 @@
 package sms.swp391.models.dtos.requests;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -35,8 +38,6 @@ public class MedicationRequestDTO {
 
     private String medicationInformation;
 
-    private String medicationImg;
-
     @Size(max = 255, message = "Active ingredient must not exceed 255 characters")
     private String activeIngredient;
 
@@ -45,5 +46,8 @@ public class MedicationRequestDTO {
 
     @Min(value = 0, message = "Quantity must be greater than or equal to 0")
     private Integer quantity;
+    @NotNull(message = "Expiry date is required")
+    @JsonFormat(pattern = "yyyy-MM-dd")        // Chấp nhận định dạng ISO‑8601 từ JSON
+    private LocalDate exp;
 }
 
