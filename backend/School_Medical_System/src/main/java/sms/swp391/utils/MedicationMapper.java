@@ -17,6 +17,7 @@ public class MedicationMapper {
                 .medicationName(entity.getMedicationName())
                 .category(entity.getCategory())
                 .dosageForm(entity.getDosageForm())
+                .exp(entity.getEXP())
                 .countryOfOrigin(entity.getCountryOfOrigin())
                 .description(entity.getDescription())
                 .medicationInformation(entity.getMedicationInformation())
@@ -36,9 +37,9 @@ public class MedicationMapper {
                 .category(dto.getCategory())
                 .dosageForm(dto.getDosageForm())
                 .countryOfOrigin(dto.getCountryOfOrigin())
+                .EXP(dto.getExp())
                 .description(dto.getDescription())
                 .medicationInformation(dto.getMedicationInformation())
-                .medicationImg(dto.getMedicationImg())
                 .manufacturer(dto.getManufacturer())
                 .quantity(dto.getQuantity())
                 .createdAt(LocalDate.now())
@@ -52,9 +53,9 @@ public class MedicationMapper {
         entity.setCategory(dto.getCategory());
         entity.setDosageForm(dto.getDosageForm());
         entity.setCountryOfOrigin(dto.getCountryOfOrigin());
+        entity.setEXP(dto.getExp());
         entity.setDescription(dto.getDescription());
         entity.setMedicationInformation(dto.getMedicationInformation());
-        entity.setMedicationImg(dto.getMedicationImg());
         entity.setManufacturer(dto.getManufacturer());
         entity.setQuantity(dto.getQuantity());
         entity.setUpdatedAt(LocalDate.now());

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -26,9 +27,9 @@ public class MedicalEventEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @NotNull
     @ColumnDefault("now()")
-    @Column(name = "event_date", nullable = false)
+    @CreationTimestamp
+    @Column(name = "event_date", nullable = false, updatable = false)
     private LocalDateTime eventDate;
 
     @NotNull
