@@ -55,10 +55,10 @@ public class MedicationEntity {
     @Column(name = "medication_name", nullable = false)
     private String medicationName;
 
-    @Size(max = 255)
     @NotNull
     @Column(name = "EXP", nullable = false)
-    private String  EXP;
+    private LocalDate  EXP;
+
     @Column(name = "medication_img", length = Integer.MAX_VALUE)
     private String medicationImg;
 
@@ -70,6 +70,7 @@ public class MedicationEntity {
     @Column(name = "created_at")
     private LocalDate createdAt;
 
+    @ColumnDefault("now()")
     @Column(name = "updated_at")
     private LocalDate updatedAt;
 

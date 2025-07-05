@@ -9,12 +9,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
 import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
 import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.models.entities.UserEntity;
 import sms.swp391.services.MedicalEventService;
 
 @RestController
@@ -27,8 +29,22 @@ public class MedicalEventController {
     @Operation(summary = "Tạo medical event", description = "Khởi tạo một medical event. status bao gồm PENDING, APPROVED, REJECTED, DONE." +
             "LocalDateTime được định dạng (yyyy-MM-dd'T'HH:mm:ss). EX: 2023-10-01T10:00:00")
     @PostMapping("/create")
-    public ResponseEntity<ResponseObject> create(@RequestBody MedicalEventCreateRequestDTO request) {
-        MedicalEventResponse response = medicalEventService.create(request);
+    public ResponseEntity<ResponseObject> create(
+            @AuthenticationPrincipal UserEntity reportedById,
+            @RequestBody MedicalEventCreateRequestDTO request) {
+        if (reportedById == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản NURSE để thực hiện chức năng này")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        MedicalEventResponse response = medicalEventService.create(reportedById.getUserId(), request);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("CREATE_SUCCESS")
@@ -43,8 +59,22 @@ public class MedicalEventController {
     @Operation(summary = "Cập nhật medical event", description = "Chỉnh sửa thông tin medical event theo id. status bao gồm PENDING, APPROVED, REJECTED, DONE." +
             "LocalDateTime được định dạng (yyyy-MM-dd'T'HH:mm:ss). EX: 2023-10-01T10:00:00")
     @PutMapping("/update/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody MedicalEventUpdateRequestDTO request) {
-        MedicalEventResponse response = medicalEventService.update(id, request);
+    public ResponseEntity<ResponseObject> update(
+            @AuthenticationPrincipal UserEntity reportedById,
+            @PathVariable Long id,
+            @RequestBody MedicalEventUpdateRequestDTO request) {
+        if (reportedById == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản NURSE để thực hiện chức năng này")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+        MedicalEventResponse response = medicalEventService.update(reportedById.getUserId(),id, request);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("UPDATE_SUCCESS")
