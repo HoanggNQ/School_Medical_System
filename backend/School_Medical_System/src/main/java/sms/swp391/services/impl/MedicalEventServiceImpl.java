@@ -35,16 +35,16 @@ public class MedicalEventServiceImpl implements MedicalEventService {
     private final UserRepository userRepository;
 
     @Override
-    public MedicalEventResponse create(MedicalEventCreateRequestDTO request) {
+    public MedicalEventResponse create(Long reportedById, MedicalEventCreateRequestDTO request) {
         StudentEntity student = null;
         if (request.getStudentId() != null) {
             student = studentRepository.findById(request.getStudentId())
                     .orElseThrow(() -> new NotFoundException("Student not found: " + request.getStudentId()));
         }
         UserEntity reporter = null;
-        if (request.getReportedById() != null) {
-            reporter = userRepository.findById(request.getReportedById())
-                    .orElseThrow(() -> new NotFoundException("User not found: " + request.getReportedById()));
+        if (reportedById != null) {
+            reporter = userRepository.findById(reportedById)
+                    .orElseThrow(() -> new NotFoundException("User not found: " + reportedById));
         }
         MedicalEventEntity entity = MedicalEventMapper.toEntity(request, student, reporter);
         entity.setStatus(MedicalStatus.PENDING);
@@ -52,16 +52,10 @@ public class MedicalEventServiceImpl implements MedicalEventService {
     }
 
     @Override
-    public MedicalEventResponse update(Long id, MedicalEventUpdateRequestDTO request) {
+    public MedicalEventResponse update(Long reportedById,Long id, MedicalEventUpdateRequestDTO request) {
         MedicalEventEntity entity = medicalEventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Medical event not found"));
 
-        entity.setEventType(request.getEventType());
-        entity.setDescription(request.getDescription());
-        entity.setLocation(request.getLocation());
-        if (request.getEventDate() != null) {
-            entity.setEventDate(request.getEventDate());
-        }
         if (request.getStatus() != null) {
             entity.setStatus(request.getStatus());
         }
@@ -71,11 +65,6 @@ public class MedicalEventServiceImpl implements MedicalEventService {
             StudentEntity student = studentRepository.findById(request.getStudentId())
                     .orElseThrow(() -> new NotFoundException("Student not found"));
             entity.setStudent(student);
-        }
-        if (request.getReportedById() != null) {
-            UserEntity reporter = userRepository.findById(request.getReportedById())
-                    .orElseThrow(() -> new NotFoundException("Reporter not found"));
-            entity.setReportedBy(reporter);
         }
 
         return MedicalEventMapper.toDTO(medicalEventRepository.save(entity));
@@ -109,7 +98,6 @@ public class MedicalEventServiceImpl implements MedicalEventService {
                             property.equals("status") ||
                             "reportedBy.userId".equals(property) ||
                             "student.id".equals(property) ||
-                            property.equals("followUpRequired") ||
                             property.equals("followUpNotes");
                 })
                 .collect(Collectors.collectingAndThen(

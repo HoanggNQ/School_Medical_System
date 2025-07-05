@@ -2,6 +2,8 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Builder
@@ -12,12 +14,11 @@ public class MedicationResponseDTO {
     private String medicationName;
     private String category;
     private String dosageForm;
-    private Boolean prescriptionRequired;
+    private LocalDate exp;
     private String countryOfOrigin;
     private String description;
     private String medicationInformation;
     private String medicationImg;
-    private String activeIngredient;
     private String manufacturer;
     private Integer quantity;
     private String createdAt;

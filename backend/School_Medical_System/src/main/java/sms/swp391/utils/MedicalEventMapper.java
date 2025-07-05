@@ -20,7 +20,6 @@ public class MedicalEventMapper {
                 .location(dto.getLocation())
                 .reportedBy(reporter)
                 .student(student)
-                .eventDate(dto.getEventDate() != null ? dto.getEventDate() : null)
                 .followUpNotes(dto.getFollowUpNotes())
                 .build();
     }

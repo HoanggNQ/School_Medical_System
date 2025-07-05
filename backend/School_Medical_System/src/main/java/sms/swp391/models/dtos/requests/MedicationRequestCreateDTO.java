@@ -13,6 +13,5 @@ import java.util.List;
 public class MedicationRequestCreateDTO {
     private Long studentId;
     private String notes;
-    private String priority; // Optional: LOW / NORMAL / HIGH
     private List<MedicationRequestDetailDTO> medications;
 }
