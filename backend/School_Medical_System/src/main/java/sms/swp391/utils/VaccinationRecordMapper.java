@@ -11,35 +11,34 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class VaccinationRecordMapper {
-    public static VaccinationRecordResponse toDTO(VaccinationRecordEntity entity) {
-        if (entity == null) return null;
 
+    public static VaccinationRecordResponse toDTO(VaccinationRecordEntity e) {
         return VaccinationRecordResponse.builder()
-                .id(entity.getId())
-                .campaignId(entity.getVaccinationCampaign().getId())
-                .studentId(entity.getStudent().getId())
-                .studentName(Optional.ofNullable(entity.getStudent()).map(StudentEntity::getUser).map(UserEntity::getFullname).orElse(null))
-                .administrationById(entity.getAdministeredBy().getUserId())
-                .administrationByName(entity.getAdministeredBy().getFullname())
-                .administrationDate(entity.getAdministrationDate())
-                .academicYear(entity.getAcademicYear())
-                .nextDoseDate(entity.getNextDoseDate())
-                .injectionSite(entity.getInjectionSite())
-                .vaccineName(entity.getVaccineName())
-                .followUpNotes(entity.getFollowUpNotes())
-                .reactionNotes(entity.getReactionNotes())
+                .id(e.getId())
+                .campaignId(e.getVaccinationCampaign().getId())
+                .studentId(e.getStudent().getId())
+                .studentName(Optional.ofNullable(e.getStudent().getUser()).map(UserEntity::getFullname).orElse(null))
+                .administrationById(e.getAdministeredBy().getUserId())
+                .administrationByName(e.getAdministeredBy().getFullname())
+                .administrationDate(e.getAdministrationDate())
+                .academicYear(e.getAcademicYear())
+                .nextDoseDate(e.getNextDoseDate())
+                .injectionSite(e.getInjectionSite())
+                .vaccineName(e.getVaccineName())
+                .followUpNotes(e.getFollowUpNotes())
+                .reactionNotes(e.getReactionNotes())
                 .build();
     }
 
     public static VaccinationRecordEntity fromRequestDTO(VaccinationRecordRequestDTO dto) {
         if (dto == null) return null;
 
-        VaccinationRecordEntity entity = new VaccinationRecordEntity();
-        entity.setNextDoseDate(dto.getNextDoseDate());
-        entity.setInjectionSite(dto.getInjectionSite());
-        entity.setVaccineName(dto.getVaccineName());
-        entity.setFollowUpNotes(dto.getFollowUpNotes());
-        entity.setReactionNotes(dto.getReactionNotes());
-        return entity;
+        return VaccinationRecordEntity.builder()
+                .vaccineName(dto.getVaccineName())
+                .nextDoseDate(dto.getNextDoseDate())
+                .injectionSite(dto.getInjectionSite())
+                .followUpNotes(dto.getFollowUpNotes())
+                .reactionNotes(dto.getReactionNotes())
+                .build();
     }
 }

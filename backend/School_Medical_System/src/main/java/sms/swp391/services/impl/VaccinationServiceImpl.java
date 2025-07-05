@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,57 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final SendMailService sendMailService;
     private final NotificationService notificationService;
     private final VaccinationConsentRepository vaccinationConsentRepository;
+
+    @Override
+    @Transactional
+    public List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO req,
+                                                             Long nurseId) {
+
+        // 1. Campaign & nurse
+        VaccinationCampaignEntity campaign = campaignRepository.findById(req.getCampaignId())
+                .orElseThrow(() -> new NotFoundException("Campaign not found " + req.getCampaignId()));
+
+        UserEntity nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new NotFoundException("Nurse not found"));
+
+        List<VaccinationRecordEntity> toSave = new ArrayList<>();
+
+        for (VaccinationRecordRequestDTO dto : req.getRecords()) {
+
+            StudentEntity student = studentRepository.findById(dto.getStudentId())
+                    .orElseThrow(() -> new NotFoundException("Student not found: " + dto.getStudentId()));
+
+            VaccinationConsentEntity consent =
+                    consentRepository.findByVaccinationCampaignIdAndStudent(campaign.getId(), student);
+
+            if (consent == null || consent.getConsentStatus() != MedicalStatus.APPROVED) {
+                continue;
+            }
+
+            VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(dto);
+            record.setVaccinationCampaign(campaign);
+            record.setStudent(student);
+            record.setAdministeredBy(nurse);
+            record.setAdministrationDate(LocalDate.now());
+            record.setAcademicYear(getCurrentAcademicYear());
+            record.setConsent(consent);
+
+            consent.setConsentStatus(MedicalStatus.DONE);
+
+            toSave.add(record);
+        }
+
+        // 3. Lưu batch
+        recordRepository.saveAll(toSave);
+        consentRepository.saveAll(toSave.stream()
+                .map(VaccinationRecordEntity::getConsent)
+                .toList());
+
+        // 4. Trả kết quả
+        return toSave.stream()
+                .map(VaccinationRecordMapper::toDTO)
+                .toList();
+    }
 
     // Campaign Methods
     public void endCampaign(Long campaignId) {
@@ -221,48 +273,46 @@ public class VaccinationServiceImpl implements VaccinationService {
 
     // ------------ SAVE RECORD (STAFF) -------------
     @Override
+    @Transactional
     public VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request,
-                                                Long administeredById) {
+                                                Long nurseId) {
 
-        // 1. Lấy entity
         VaccinationCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
         StudentEntity student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new NotFoundException("Student not found"));
-        UserEntity checker = userRepository.findById(administeredById)
-                .orElseThrow(() -> new NotFoundException("Checker not found"));
+        UserEntity nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new NotFoundException("Nurse not found"));
 
-        // 2. Kiểm tra consent
         VaccinationConsentEntity consent =
                 consentRepository.findByVaccinationCampaignIdAndStudent(campaign.getId(), student);
 
-        if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
+        if (consent == null || consent.getConsentStatus() != MedicalStatus.APPROVED) {
             throw new BusinessException("Parent consent not approved for this vaccination");
         }
 
-        // 3. Tạo & lưu record
         VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(request);
         record.setVaccinationCampaign(campaign);
         record.setStudent(student);
-        record.setAdministeredBy(checker);
+        record.setAdministeredBy(nurse);
         record.setAdministrationDate(LocalDate.now());
         record.setAcademicYear(getCurrentAcademicYear());
         record.setConsent(consent);
 
-        VaccinationRecordEntity savedRecord = recordRepository.save(record);
+        VaccinationRecordEntity saved = recordRepository.save(record);
         consent.setConsentStatus(MedicalStatus.DONE);
         consentRepository.save(consent);
 
         notificationService.push(
-                administeredById,                         // creator  (NV y tế)
-                student.getParent().getUserId(),          // receiver (PH)
+                nurseId,
+                student.getParent().getUserId(),
                 "Kết quả tiêm chủng",
-                "Con bạn (" + student.getUser().getFullname() + ") đã được tiêm vắc xin "
-                        + campaign.getVaccineType() + " vào "
-                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "."
+                "Con bạn (" + student.getUser().getFullname() + ") đã được tiêm vắc‑xin "
+                        + record.getVaccineName() + " ngày "
+                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         );
 
-        return VaccinationRecordMapper.toDTO(savedRecord);
+        return VaccinationRecordMapper.toDTO(saved);
     }
 
     @Override

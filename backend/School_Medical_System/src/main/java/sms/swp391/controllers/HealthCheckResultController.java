@@ -2,6 +2,7 @@ package sms.swp391.controllers;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HealthCheckResultController {
     private final HealthCheckResultService healthCheckService;
+    @Operation(summary = "Lưu kết quả khám sức khỏe hàng loạt", description = "Lưu nhiều kết quả khám sức khỏe cùng lúc.")
+    @PostMapping("/results/bulk")
+    public ResponseEntity<ResponseObject> createBulkResults(
+            @Valid @RequestBody CreateHealthCheckResultListRequestDTO request,
+            @AuthenticationPrincipal UserEntity checker) {
+
+        List<HealthCheckResultResponse> saved = healthCheckService.createBulkResults(request, checker.getUserId());
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("SAVE_BULK_RESULT_SUCCESS")
+                        .message("Đã lưu " + saved.size() + " kết quả")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(saved)
+                        .build()
+        );
+    }
+
     @Operation(summary = "Lưu kết quả khám sức khỏe", description = "Lưu kết quả khám sức khỏe cho học sinh kèm theo ID của người thực hiện.")
     @PostMapping("/results")
     public ResponseEntity<ResponseObject> saveResult(
