@@ -66,4 +66,5 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
                                                     @Param("keyword")   String keyword,
                                                     Pageable pageable);
 
+    List<HealthCheckConsentEntity> findAllByHealthCheckCampaignId(Long healthCheckCampaignId);
 }

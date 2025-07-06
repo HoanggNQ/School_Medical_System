@@ -25,4 +25,5 @@ public interface HealthCheckCampaignService {
     void deleteCampaign(Long campaignId);
 
     void remindUnconfirmedParents(Long campaignId);
+    void sendConsentEmails(Long campaignId, Long triggeredByUserId);
 }
