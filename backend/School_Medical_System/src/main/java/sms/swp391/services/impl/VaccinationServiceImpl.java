@@ -268,7 +268,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         /* 3. Lấy danh sách HS theo khối mới */
         List<StudentEntity> targetStudents =
-                studentRepository.findByClassEntity_GradeWithUserAndParent(updatedCampaign.getTargetGrade().toString());
+                studentRepository.findByGradesWithUserAndParent(request.getTargetGrade());
 
         /* 4. Gửi thông báo cho PH (loại bỏ trùng lặp) */
         Set<Long> notifiedParents = new HashSet<>();
