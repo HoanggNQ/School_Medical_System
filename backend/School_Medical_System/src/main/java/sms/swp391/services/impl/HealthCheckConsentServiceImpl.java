@@ -81,7 +81,7 @@ import java.util.stream.Collectors;
             throw new BusinessException("Parent not authorized to update this consent");
         }
 
-        consent.setConsentStatus(request.getStatus());
+        consent.setConsentStatus(request.getConsentStatus());
         consent.setResponseDate(LocalDate.now());
 
         return HealthCheckConsentMapper.toDTO(consentRepository.save(consent));
