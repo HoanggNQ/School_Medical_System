@@ -33,7 +33,7 @@ public class HealthCheckConsentMapper {
         if (dto == null) return null;
 
         HealthCheckConsentEntity entity = new HealthCheckConsentEntity();
-        entity.setConsentStatus(dto.getStatus());
+        entity.setConsentStatus(dto.getConsentStatus());
         return entity;
     }
 }
