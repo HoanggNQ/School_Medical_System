@@ -16,13 +16,6 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
 
     Optional<StudentEntity> findById(Long id);
 
-    @Query("SELECT s FROM StudentEntity s " +
-            "JOIN FETCH s.parent p " +
-            "JOIN FETCH s.user u " +
-            "WHERE s.classEntity.grade = :grade")
-    List<StudentEntity> findByClassEntity_GradeWithUserAndParent(String grade);
-
-
     Optional<StudentEntity> findByUser_Email(String email);
 
     boolean existsByStudentCode(String sc);
