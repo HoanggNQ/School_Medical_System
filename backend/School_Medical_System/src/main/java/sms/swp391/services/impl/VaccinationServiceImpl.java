@@ -45,10 +45,49 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final NotificationService notificationService;
     private final VaccinationConsentRepository vaccinationConsentRepository;
 
+    private Long getCurrentUserId() {
+        var principal = (UserEntity) org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        return principal.getUserId();
+    }
+    @Transactional
+    @Override
+    public void remindUnconfirmedParents(Long campaignId) {
+        var campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Not found"));
+
+        List<VaccinationConsentEntity> pendingConsents =
+                vaccinationConsentRepository.findByVaccinationCampaign_IdAndConsentStatus(campaignId, MedicalStatus.PENDING);
+
+        for (var consent : pendingConsents) {
+            var parent = consent.getParent();
+            var student = consent.getStudent().getUser();
+
+            sendMailService.sendReminderEmail(
+                    parent.getEmail(),
+                    parent.getFullname(),
+                    student.getFullname(),
+                    campaign.getName(),
+                    campaign.getStartDate().toString(),
+                    campaign.getEndDate().toString(),
+                    campaign.getLocation()
+            );
+
+            notificationService.push(
+                    getCurrentUserId(),
+                    parent.getUserId(),
+                    "Nhắc nhở xác nhận tiêm vaccxin",
+                    "Bạn chưa xác nhận chiến dịch " + campaign.getName() + " của học sinh " + student.getFullname()
+            );
+        }
+    }
+
     @Override
     @Transactional
     public List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO req,
                                                              Long nurseId) {
+
+
 
         // 1. Campaign & nurse
         VaccinationCampaignEntity campaign = campaignRepository.findById(req.getCampaignId())

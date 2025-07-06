@@ -16,6 +16,7 @@ import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.services.SendMailService;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,13 @@ public class SendMailServiceIplm implements SendMailService {
     private JavaMailSender mailSender;
 
     @Override
-    public void sendConsentRequestEmail(String toEmail, String parentName, String studentName, String campaignName, String startDate,String endDate, String location) {
+    public void sendConsentRequestEmail(String toEmail,
+                                        String parentName,
+                                        String studentName,
+                                        String campaignName,
+                                        String startDate,
+                                        String endDate,
+                                        String location) {
         try {
             Context context = new Context();
             context.setVariable("parentName", parentName);
@@ -41,19 +48,20 @@ public class SendMailServiceIplm implements SendMailService {
             String content = templateEngine.process("ConsentRequestEmailTemplate", context);
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("Medical Examination Consent Required");
+            helper.setSubject("Yêu cầu xác nhận tham gia chiến dịch " + studentName);
             helper.setText(content, true);
 
             mailSender.send(mimeMessage);
 
         } catch (MessagingException e) {
-            throw new RuntimeException("Error sending consent request email: " + e.getMessage());
+            throw new RuntimeException("Lỗi gửi email xác nhận tham gia chiến dịch: " + e.getMessage(), e);
         }
     }
+
 
     @Override
     public void sendConsultationScheduleEmail(String toEmail, String studentName, String scheduleTime, String reason) {
@@ -169,7 +177,7 @@ public class SendMailServiceIplm implements SendMailService {
             String content = templateEngine.process("ConsentReminderEmailTemplate", context);
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF‑8");
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);

@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Yêu cầu xác nhận khám sức khỏe</title>
 </head>
-<body>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
 <p>Kính gửi <strong th:text="${parentName}">Tên phụ huynh</strong>,</p>
 
 <p>
-    Nhà trường kính đề nghị quý phụ huynh xác nhận sự đồng ý cho học sinh
+    Nhà trường trân trọng đề nghị quý phụ huynh xác nhận sự đồng ý cho học sinh
     <strong th:text="${studentName}">Tên học sinh</strong> tham gia đợt khám sức khỏe sắp tới:
 </p>
 
 <p>
     <strong>Chiến dịch:</strong> <span th:text="${campaignName}">Tên chiến dịch</span><br>
-    <strong>Thời gian:</strong> <span th:text="${date}">Ngày khám</span><br>
+    <strong>Thời gian:</strong> <span th:text="${startDate}">01/08/2025</span> đến <span th:text="${endDate}">03/08/2025</span><br>
     <strong>Địa điểm:</strong> <span th:text="${location}">Địa điểm</span>
 </p>
 
-<p>Vui lòng đăng nhập vào hệ thống để xác nhận và cung cấp thông tin nếu có yêu cầu đặc biệt.</p>
+<p>Vui lòng đăng nhập vào hệ thống để xác nhận và cung cấp thông tin y tế nếu cần thiết.</p>
 
 <p>Trân trọng,<br>
     Ban Y tế học đường</p>

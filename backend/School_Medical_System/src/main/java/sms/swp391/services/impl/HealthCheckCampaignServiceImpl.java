@@ -184,6 +184,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
         campaignRepository.save(campaign);
     }
     @Override
+    @Transactional
     public void remindUnconfirmedParents(Long campaignId) {
         var campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Not found"));
