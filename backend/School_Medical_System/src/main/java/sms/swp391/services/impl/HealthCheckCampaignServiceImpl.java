@@ -1,6 +1,7 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
@@ -8,6 +9,7 @@ import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 import sms.swp391.models.entities.*;
+import sms.swp391.models.exception.AuthFailedException;
 import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.HealthCheckCampaignService;
@@ -36,9 +38,11 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     private final HealthConsultationScheduleRepository healthConsultationScheduleRepository;
 
     private Long getCurrentUserId() {
-        var principal = (UserEntity) org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        return principal.getUserId();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserEntity u) return u.getUserId();
+        if (principal instanceof String anonymous)
+            throw new AuthFailedException("Unauthenticated user: " + anonymous);
+        throw new AuthFailedException("Invalid principal type: " + principal.getClass());
     }
 
 
@@ -155,7 +159,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
 
         HealthCheckCampaignEntity updated = campaignRepository.save(campaign);
 
-        List<StudentEntity> students = studentRepository.findByClassEntity_GradeWithUserAndParent(updated.getTargetGrade());
+        List<StudentEntity> students = studentRepository.findByGradesWithUserAndParent(request.getTargetGrade());
         Set<Long> notifiedParents = new HashSet<>();
         for (StudentEntity student : students) {
             Long parentId = student.getParent().getUserId();
