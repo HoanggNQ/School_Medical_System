@@ -20,7 +20,6 @@ public class HealthCheckCampaignResponse {
     private MedicalStatus status;
     private List<String> targetGrade;
     private String location;
-    private String requiredEquipment;
     private Long createdById;
     private LocalDateTime createdAt;
 }

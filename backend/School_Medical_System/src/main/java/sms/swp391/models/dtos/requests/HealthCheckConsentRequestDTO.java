@@ -9,6 +9,6 @@ import sms.swp391.models.dtos.enums.MedicalStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HealthCheckConsentRequestDTO {
-    private MedicalStatus status;
+    private MedicalStatus consentStatus;
 
 }
