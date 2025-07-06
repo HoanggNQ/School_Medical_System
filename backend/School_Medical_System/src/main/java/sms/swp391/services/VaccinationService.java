@@ -1,11 +1,15 @@
 package sms.swp391.services;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import java.util.List;
 
 public interface VaccinationService {
+
+    @Transactional
+    void remindUnconfirmedParents(Long campaignId);
 
     List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO req,
                                                       Long nurseId);

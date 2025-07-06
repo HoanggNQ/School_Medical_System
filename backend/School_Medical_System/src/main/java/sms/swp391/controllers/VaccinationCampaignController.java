@@ -23,7 +23,44 @@ import java.util.List;
 public class VaccinationCampaignController {
     private final VaccinationService vaccinationService;
 
+    @Operation(
+            summary = "Nhắc nhở phụ huynh chưa xác nhận",
+            description = "Gửi lại email + notification cho tất cả phụ huynh còn trạng thái PENDING của chiến dịch."
+    )
+    @PostMapping("/campaigns/{id}/remind")
+    public ResponseEntity<ResponseObject> remindUnconfirmedParents(@PathVariable Long id) {
+        try {
+            // Gọi service để gửi mail + push notification
+            vaccinationService.remindUnconfirmedParents(id);
 
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("REMIND_SUCCESS")
+                            .message("Đã gửi nhắc nhở thành công")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .build()
+            );
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .code("CAMPAIGN_NOT_FOUND")
+                            .message(e.getMessage())
+                            .status(HttpStatus.NOT_FOUND)
+                            .isSuccess(false)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("REMIND_FAILED")
+                            .message("Lỗi gửi nhắc nhở: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
     @Operation(summary = "Tạo chiến dịch tiêm vaccine", description = "Khởi tạo một chiến tiêm vaccine mới với thông tin từ người tạo.")
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(
