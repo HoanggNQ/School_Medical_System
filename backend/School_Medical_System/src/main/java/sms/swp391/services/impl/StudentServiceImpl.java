@@ -98,7 +98,8 @@ public class StudentServiceImpl implements StudentService {
                 .build();
 
         student.setHealthProfile(profile);
-        studentRepository.save(student);
+        studentRepository.saveAndFlush(student);
+        recalculateTotalStudent(classEntity);
         if (classEntity != null) {
             int count = studentRepository.countActiveStudentsByClassId(classEntity.getId());
             classEntity.setTotalstudent(count);
@@ -109,54 +110,44 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentResponse updateStudent(Long id, StudentUpdateRequest request) {
+
         StudentEntity existing = studentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Cannot find student with ID: " + id));
 
-        ClassEntity oldClass = existing.getClassEntity(); // để cập nhật sĩ số nếu đổi lớp
+        ClassEntity oldClass = existing.getClassEntity();   // lớp trước khi chỉnh
 
-        /* 1. Cập nhật Class */
         if (request.getClassId() != null) {
             ClassEntity newClass = classRepository.findById(request.getClassId())
                     .orElseThrow(() -> new NotFoundException("Class not found"));
             existing.setClassEntity(newClass);
         }
 
-        /* 2. Cập nhật Parent */
         if (request.getParentId() != null) {
             UserEntity parent = userRepository.findById(request.getParentId())
                     .orElseThrow(() -> new NotFoundException("Parent not found"));
             existing.setParent(parent);
         }
 
-        /* 3. Cập nhật/khởi tạo hồ sơ sức khỏe */
-        StudentHealthProfileEntity profile = existing.getHealthProfile();
-        if (profile == null) {
-            profile = new StudentHealthProfileEntity();
-            profile.setStudent(existing);
-            existing.setHealthProfile(profile);
-        }
-
+        StudentHealthProfileEntity profile =
+                existing.getHealthProfile() != null ? existing.getHealthProfile()
+                        : new StudentHealthProfileEntity();
+        profile.setStudent(existing);
         profile.setBloodType(request.getBloodType());
         profile.setGeneticDiseases(request.getGeneticDiseases());
         profile.setChronicDiseases(request.getChronicDiseases());
         profile.setAllergies(request.getAllergies());
         profile.setHeight(request.getHeight());
         profile.setWeight(request.getWeight());
+        existing.setHealthProfile(profile);
 
-        StudentEntity updated = studentRepository.save(existing);
+        StudentEntity updated = studentRepository.saveAndFlush(existing);
 
-        if (oldClass != null && (existing.getClassEntity() == null ||
-                !oldClass.getId().equals(existing.getClassEntity().getId()))) {
-            int countOld = studentRepository.countActiveStudentsByClassId(oldClass.getId());
-            oldClass.setTotalstudent(countOld);
-            classRepository.save(oldClass);
+        if (oldClass != null &&
+                (updated.getClassEntity() == null ||
+                        !oldClass.getId().equals(updated.getClassEntity().getId()))) {
+            recalculateTotalStudent(oldClass);
         }
-        if (existing.getClassEntity() != null) {
-            ClassEntity newClass = existing.getClassEntity();
-            int countNew = studentRepository.countActiveStudentsByClassId(newClass.getId());
-            newClass.setTotalstudent(countNew);
-            classRepository.save(newClass);
-        }
+        recalculateTotalStudent(updated.getClassEntity());
 
         return StudentMapper.toDTO(updated);
     }
@@ -241,8 +232,9 @@ public class StudentServiceImpl implements StudentService {
         try {
             if (student.getUser() != null) {
                 student.getUser().setStatus(StatusEnum.DELETED);
-                studentRepository.save(student); // cascade will handle User if set
+                studentRepository.saveAndFlush(student); // flush rồi mới đếm
             }
+            recalculateTotalStudent(student.getClassEntity());
         } catch (Exception e) {
             throw new ActionFailedException(String.format("Failed to delete student with ID: %s", id));
         }
@@ -251,7 +243,7 @@ public class StudentServiceImpl implements StudentService {
     private String generateStudentCode() {
         String SC;
         do {
-            SC = "SMS" + RandomStringUtils.randomNumeric(6);
+            SC = "SMS25" + RandomStringUtils.randomNumeric(4);
         } while (studentRepository.existsByStudentCode(SC));
         return SC;
     }
@@ -335,7 +327,12 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
-
+    private void recalculateTotalStudent(ClassEntity clazz) {
+        if (clazz == null) return;
+        int count = studentRepository.countActiveStudentsByClassId(clazz.getId());
+        clazz.setTotalstudent(count);
+        classRepository.save(clazz);
+    }
     private StudentRequest convertToStudentRequest(StudentImportDTO dto) {
         UserRegisterDTO user = UserRegisterDTO.builder()
                 .email(dto.getEmail())
