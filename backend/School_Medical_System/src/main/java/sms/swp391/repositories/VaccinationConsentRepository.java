@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
-import sms.swp391.models.entities.ContentEntity;
 import sms.swp391.models.entities.VaccinationConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 
@@ -58,6 +57,5 @@ public interface VaccinationConsentRepository extends JpaRepository<VaccinationC
     CampaignConsentStatisticsResponseDTO fetchOverallVaccinationConsentStats();
 
 
-
-
+    List<VaccinationConsentEntity> findByVaccinationCampaign_IdAndConsentStatus(Long campaignId,MedicalStatus consentStatus);
 }
