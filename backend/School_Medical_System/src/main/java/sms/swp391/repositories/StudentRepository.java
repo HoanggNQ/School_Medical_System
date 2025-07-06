@@ -29,7 +29,13 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
 
     List<StudentEntity> findByParent_UserId(Long parentId);
 
-    @Query("SELECT COUNT(s) FROM StudentEntity s WHERE s.classEntity.id = :classId AND s.user.status = 'ACTIVE'")
+    @Query("""
+    SELECT COUNT(s)
+    FROM StudentEntity s
+    JOIN s.user u
+    WHERE s.classEntity.id = :classId
+      AND u.status = sms.swp391.models.dtos.enums.StatusEnum.ACTIVE
+""")
     int countActiveStudentsByClassId(@Param("classId") Long classId);
 
     @Query("SELECT s FROM StudentEntity s WHERE " +
