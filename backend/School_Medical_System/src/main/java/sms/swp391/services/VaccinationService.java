@@ -21,6 +21,8 @@ public interface VaccinationService {
 
     VaccinationCampaignResponse updateCampaign(Long id, VaccinationCampaignRequestDTO request);
 
+    void sendConsentNotifications(Long campaignId, Long triggeredByUserId);
+
     void startCampaign(Long campaignId);
 
     VaccinationCampaignResponse getCampaignById(Long id);

@@ -24,10 +24,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -145,8 +144,8 @@ public class VaccinationServiceImpl implements VaccinationService {
     }
 
 
-    @Override
     @Transactional
+    @Override
     public VaccinationCampaignResponse createCampaign(VaccinationCampaignRequestDTO req,
                                                       Long createdById) {
 
@@ -159,55 +158,80 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         VaccinationCampaignEntity campaign = VaccinationCampaignMapper.fromRequestDTO(req);
         campaign.setCreatedBy(creator);
-        campaign.setCreatedAt(LocalDateTime.now().withSecond(0).withNano(0));
         campaign.setStatus(MedicalStatus.PENDING);
+        campaign.setCreatedAt(LocalDateTime.now().withSecond(0).withNano(0));
 
-        campaign = campaignRepository.save(campaign);   // cần ID
+        campaign = campaignRepository.save(campaign);
 
-        List<String> grades = req.getTargetGrade();
+        // Lấy HS theo khối và tạo consent
         List<StudentEntity> students =
-                studentRepository.findByGradesWithUserAndParent(grades);
+                studentRepository.findByGradesWithUserAndParent(req.getTargetGrade());
 
-        Set<Long> emailedParents = new HashSet<>();
-
+        List<VaccinationConsentEntity> consents = new ArrayList<>(students.size());
         for (StudentEntity s : students) {
-
-
-            VaccinationConsentEntity consent = VaccinationConsentEntity.builder()
+            consents.add(VaccinationConsentEntity.builder()
                     .vaccinationCampaign(campaign)
                     .student(s)
                     .parent(s.getParent())
                     .consentStatus(MedicalStatus.PENDING)
                     .academicYear(getCurrentAcademicYear())
-                    .build();
-            consentRepository.save(consent);
-
-            Long parentId = s.getParent().getUserId();
-            if (emailedParents.add(parentId)) {
-
-                sendMailService.sendConsentRequestEmail(
-                        s.getParent().getEmail(),
-                        s.getParent().getFullname(),
-                        s.getUser().getFullname(),
-                        campaign.getName(),
-                        req.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                        req.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                        campaign.getVaccineType()
-                );
-
-                notificationService.push(
-                        creator.getUserId(),
-                        parentId,
-                        "Yêu cầu đồng ý tiêm chủng",
-                        "Vui lòng xác nhận chiến dịch \"" + campaign.getName()
-                                + "\" (vắc xin: " + campaign.getVaccineType() + ")"
-                );
-
-            }
+                    .build());
         }
+        consentRepository.saveAll(consents);   // bulk‑insert
 
         return VaccinationCampaignMapper.toDTO(campaign);
     }
+    @Transactional
+    @Override
+    public void sendConsentNotifications(Long campaignId, Long triggeredByUserId) {
+
+        VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Campaign not found: " + campaignId));
+
+        UserEntity triggerUser = userRepository.findById(triggeredByUserId)
+                .orElseThrow(() -> new NotFoundException("User not found: " + triggeredByUserId));
+
+        // Lấy consent & gom theo phụ huynh (mỗi phụ huynh 1 thông báo/mail)
+        List<VaccinationConsentEntity> consents =
+                consentRepository.findAllByVaccinationCampaignId(campaignId);
+
+        Map<Long, VaccinationConsentEntity> perParent = new HashMap<>();
+        for (VaccinationConsentEntity c : consents) {
+            perParent.putIfAbsent(c.getParent().getUserId(), c);
+        }
+
+        // Thread pool hoặc @Async tuỳ nhu cầu
+        ExecutorService pool = Executors.newFixedThreadPool(10);
+
+        perParent.values().forEach(consent -> pool.submit(() -> {
+
+            UserEntity parent   = consent.getParent();
+            StudentEntity student = consent.getStudent();
+
+            // (1) Gửi email – nếu bạn đã có sendMailService riêng
+            sendMailService.sendConsentRequestEmail(
+                    parent.getEmail(),
+                    parent.getFullname(),
+                    student.getUser().getFullname(),
+                    campaign.getName(),
+                    campaign.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    campaign.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    campaign.getLocation()
+            );
+
+            // (2) Push notification
+            notificationService.push(
+                    triggerUser.getUserId(),
+                    parent.getUserId(),
+                    "Yêu cầu đồng ý tiêm chủng",
+                    "Vui lòng xác nhận chiến dịch \"" + campaign.getName()
+                            + "\" (vắc xin: " + campaign.getVaccineType() + ")"
+            );
+        }));
+
+        pool.shutdown();
+    }
+
 
     @Override
     public void startCampaign(Long campaignId) {
@@ -463,6 +487,13 @@ public class VaccinationServiceImpl implements VaccinationService {
         VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
         campaign.setStatus(MedicalStatus.REJECTED);
+
+        List<VaccinationConsentEntity> consentEntities=
+                consentRepository.findByVaccinationCampaignId(campaignId);
+        for (VaccinationConsentEntity c : consentEntities) {
+            c.setConsentStatus(MedicalStatus.REJECTED);
+        }
+        consentRepository.saveAll(consentEntities);
         campaignRepository.save(campaign);
     }
 
