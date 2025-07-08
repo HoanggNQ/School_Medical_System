@@ -2,25 +2,17 @@ package sms.swp391.controllers;
 
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import sms.swp391.models.dtos.enums.TemplateEnum;
 import sms.swp391.models.dtos.requests.LoginDTO;
-import sms.swp391.models.dtos.requests.UserRegisterDTO;
 import sms.swp391.models.dtos.responses.JwtResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
-import sms.swp391.models.dtos.responses.UserResponse;
 import sms.swp391.models.exception.ActionFailedException;
 import sms.swp391.models.exception.AuthFailedException;
-import sms.swp391.models.exception.ConflictException;
 import sms.swp391.services.AuthService;
-import sms.swp391.services.OTPService;
 
 
 @RestController
@@ -28,7 +20,6 @@ import sms.swp391.services.OTPService;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    private final OTPService otpService;
     @Operation(
             summary = "Login",
             description = "Login by Email"

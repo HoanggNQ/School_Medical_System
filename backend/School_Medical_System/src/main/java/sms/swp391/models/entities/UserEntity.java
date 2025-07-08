@@ -66,6 +66,9 @@ public class UserEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private StatusEnum status;
+    @Builder.Default
+    @Column(name = "is_first_login", nullable = false)
+    private boolean isFirstLogin = true;
 
     
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -74,6 +77,8 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ContentEntity> contents = new LinkedHashSet<>();
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
