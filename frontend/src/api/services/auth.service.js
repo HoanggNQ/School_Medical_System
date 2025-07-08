@@ -88,6 +88,15 @@ const AuthService = {
             throw error;
         }
     },
+
+    getDashboardOverview: async () => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD.OVERVIEW);
+            return response;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 };
 
 export default AuthService; 

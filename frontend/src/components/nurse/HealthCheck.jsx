@@ -1,4 +1,3 @@
-"use client"
 
 import { useEffect, useState } from "react"
 import { medicalService } from "@/api/services/medical.service"
@@ -39,6 +38,12 @@ const HealthCheck = () => {
 
   const location = useLocation()
   const campaignId = location.state?.campaignId
+
+  console.log("campaignId",campaignId);
+  console.log("location.state",location.state);
+  console.log("location",location);
+  
+
 
   useEffect(() => {
     if (!campaignId) {
@@ -133,7 +138,7 @@ const HealthCheck = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Stethoscope className="h-6 w-6 text-blue-600"/>Danh sách học sinh chuẩn bị khám sức khỏe</h2>
-        <form onSubmit={handleSearch} className="flex items-center gap-2">
+        {/* <form onSubmit={handleSearch} className="flex items-center gap-2">
           <Label htmlFor="search-campaign">Tìm kiếm chiến dịch</Label>
           <Input
             id="search-campaign"
@@ -145,7 +150,7 @@ const HealthCheck = () => {
             placeholder="Nhập mã chiến dịch khám sức khỏe"
           />
           <Button type="submit" variant="outline" className="flex items-center gap-1"><Search className="h-4 w-4"/>Tìm kiếm</Button>
-        </form>
+        </form> */}
       </div>
       {loadingHealth ? (
         <div className="flex items-center justify-center min-h-[120px]">

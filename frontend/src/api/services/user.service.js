@@ -14,10 +14,17 @@ const UserService = {
     },
 
     // Get all users
-    getAllUsers: async () => {
+    getAllUsers: async ({ page, sort, search = '' } = {}) => {
         try {
-            const response = await axiosInstance.get(API_ENDPOINTS.USER.GET_ALL);
-            return response;
+            const params = { page, size: 10 };
+            if (sort) {
+                params.sort = sort;
+            }
+            if (search) {
+                params.search = search;
+            }
+            const response = await axiosInstance.get(API_ENDPOINTS.USER.GET_ALL, { params });
+            return response.data;
         } catch (error) {
             throw handleApiError(error);
         }
@@ -145,6 +152,38 @@ const UserService = {
                 dob: nurseData.dob
             };
             const response = await axiosInstance.post('api/v1/user/createNurse', payload);
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+
+    getAllHealthCheckConsents: async ({ page, sort, search = '' } = {}) => {
+        try {
+            const params = { page, size: 10 };
+            if (sort) {
+                params.sort = sort;
+            }
+            if (search) {
+                params.search = search;
+            }
+            const response = await axiosInstance.get(API_ENDPOINTS.HealthCheck.GET_ALL_CONSENT, { params });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+    getAllStudentStudent: async ({ page, sort, search = '' } = {}) => {
+        try {
+            const params = { page, size: 10 };
+            if (sort) {
+                params.sort = sort;
+            }
+            if (search) {
+                params.search = search;
+            }
+            const response = await axiosInstance.get(API_ENDPOINTS.Student.GET_ALL_Student, { params });
             return response.data;
         } catch (error) {
             throw handleApiError(error);

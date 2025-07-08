@@ -13,7 +13,7 @@ const API_ENDPOINTS = {
     PROFILE: 'api/v1/user/profile',
     UPDATE_PROFILE: 'api/v1/user/update',
     CHANGE_PASSWORD: 'api/v1/user/change-password',
-    GET_ALL: 'api/v1/user',
+    GET_ALL: 'api/v1/user/get-All-Users',
     CREATE: 'api/v1/user',
     GET_BY_ID: (id) => `api/v1/user/${id}`,
     UPDATE: (id) => `api/v1/user/${id}`,
@@ -52,7 +52,14 @@ const API_ENDPOINTS = {
   HealthCheck: {
     GET_BY_CAM: (id) => `api/v1/health-check-campaign/campaigns/${id}/consents/approved`,
     CREATE: 'api/v1/health-check-result/results',
+    STATISTICS: (id) => `api/v1/dashboard/healthCheck/${id}/statistics`,
+    GET_ALL_CONSENT: 'api/v1/health-check-consent/getAll',
   },
+  Student: {
+   
+    GET_ALL_Student: 'api/v1/student/getAll',
+  },
+  
   CAMPAIGN_ENDPOINTS: {
     CREATE: 'api/v1/health-check-campaign/campaigns',
     GET_ALL: 'api/v1/health-check-campaign/campaigns',
@@ -61,15 +68,19 @@ const API_ENDPOINTS = {
     GET_BY_ID: (id) => `api/v1/health-check-campaign/campaigns/${id}`,
     START: (id) => `api/v1/health-check-campaign/campaigns/${id}/start`,
     END: (id) => `api/v1/health-check-campaign/campaigns/${id}/end`,
+    REMIND: (id)=> `api/v1/health-check-campaign/campaigns/${id}/remind`,
   },
   VACCINATION_ENDPOINTS: {
-    CREATE: (createdById) => `api/vaccination-campaign/campaigns?createdById=${createdById}`,
+    CREATE:   `api/vaccination-campaign/campaigns`,
     GET_ALL: 'api/vaccination-campaign/campaigns',
     UPDATE: (id) => `api/vaccination-campaign/campaigns/${id}`,
     DELETE: (id) => `api/vaccination-campaign/campaigns/${id}`,
     GET_BY_ID: (id) => `api/vaccination-campaign/campaigns/${id}`,
     START: (id) => `api/vaccination-campaign/campaigns/${id}/start`,
     END: (id) => `api/vaccination-campaign/campaigns/${id}/end`,
+  },
+  DASHBOARD: {
+    OVERVIEW: 'api/v1/dashboard/overview',
   },
 };
 
