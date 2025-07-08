@@ -55,6 +55,14 @@ export const campaignService = {
             throw handleApiError(error);
         }
     },
+    remindCampaign: async (campaignId) => {
+        try {
+            const response = await axiosInstance.post(API_ENDPOINTS.CAMPAIGN_ENDPOINTS.REMIND(campaignId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
     deleteCampaign: async (campaignId) => {
         try {
             const response = await axiosInstance.delete(API_ENDPOINTS.CAMPAIGN_ENDPOINTS.DELETE(campaignId));

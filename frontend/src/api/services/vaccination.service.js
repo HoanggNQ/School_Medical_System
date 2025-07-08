@@ -5,9 +5,9 @@ import { handleApiError } from '../../utils/api.helper';
 
 export const vaccinationService = {
     // Create a new medication
-    createVaccination: async (vaccinationData, createBy) => {
+    createVaccination: async (vaccinationData) => {
         try {
-            const response = await axiosInstance.post(API_ENDPOINTS.VACCINATION_ENDPOINTS.CREATE(createBy), vaccinationData);
+            const response = await axiosInstance.post(API_ENDPOINTS.VACCINATION_ENDPOINTS.CREATE, vaccinationData);
             return response.data;
         } catch (error) {
             throw handleApiError(error);

@@ -193,6 +193,15 @@ export const medicalService = {
       throw handleApiError(error);
     }
   },
+
+  getHealthCheckStatistics: async (campaignId) => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.HealthCheck.STATISTICS(campaignId));
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default medicalService;

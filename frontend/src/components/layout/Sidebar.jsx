@@ -33,9 +33,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         return [
           ...baseItems,
           { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
+          { id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
+
           { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
           { id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
       
+          { id: 'show-campaigns', label: 'Thống kê chiến dịch',  icon: ClipboardList, path: '/show-campaigns' },
         ];
       case 'MANAGER':
         return [

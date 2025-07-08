@@ -27,7 +27,8 @@ const VaccinationManagement = () => {
     endDate: '',
     targetGrade: 0,
     notes: '',
-    vaccineType: ''
+    vaccineType: '',
+    location: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -93,20 +94,36 @@ const validate = () => {
         return `${day}/${month}/${year}`;
     };
 
+    
+    let gradeStr = typeof formData.targetGrade === 'string' ? formData.targetGrade : '';
+    gradeStr = gradeStr.replace(/\s+/g, ''); 
+    const gradeArr = gradeStr.split(',').filter(Boolean);
+    if (gradeArr.length === 0) {
+        newErrors.targetGrade = "Vui lòng nhập khối lớp.";
+    } else {
+        const invalid = gradeArr.some(s => {
+            const n = Number(s);
+            return isNaN(n) || n < 1 || n > 12;
+        });
+        if (invalid) {
+            newErrors.targetGrade = "Chỉ được nhập các số từ 1 đến 12, phân tách bằng dấu phẩy.";
+        }
+    }
+
     if (!formData.name || formData.name.trim() === "") {
         newErrors.name = "Vui lòng nhập tên chiến dịch.";
     }
     if (!formData.description || formData.description.trim() === "") {
         newErrors.description = "Vui lòng nhập mô tả.";
     }
-    if (!formData.targetGrade && formData.targetGrade !== 0) {
-        newErrors.targetGrade = "Vui lòng nhập khối lớp.";
-    }
     if (!formData.notes || formData.notes.trim() === "") {
         newErrors.notes = "Vui lòng nhập ghi chú.";
     }
     if (!formData.vaccineType || formData.vaccineType.trim() === "") {
         newErrors.vaccineType = "Vui lòng nhập loại vắc xin.";
+    }
+    if (!formData.location || formData.location.trim() === "") {
+        newErrors.location = "Vui lòng nhập tên quốc gia.";
     }
 
     if (!formData.startDate) {
@@ -127,14 +144,18 @@ const validate = () => {
 
   const handleCreateVaccination = async () => {
     setLoading(true);
+    const targetGrades = String(formData.targetGrade || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
     const newVaccination = {
-        ...formData,
-        targetGrade: Number(formData.targetGrade),
-        status: 'Scheduled'
+      ...formData,
+      targetGrade: targetGrades,
+      status: 'Scheduled'
     };
     try {
         if (!validate()) return;
-        const response = await vaccinationService.createVaccination(newVaccination, user.id);
+        const response = await vaccinationService.createVaccination(newVaccination);
         console.log(response);
         fetchVaccinations();
         setIsCreateModalOpen(false);
@@ -145,7 +166,8 @@ const validate = () => {
             endDate: '',
             targetGrade: 0,
             notes: '',
-            vaccineType: ''
+            vaccineType: '',
+            location: ''
         });
         toast({
             title: 'Thành công!',
@@ -172,8 +194,11 @@ const validate = () => {
 
   const handleEditVaccination = async () => {
     const updatedVaccination = {
-        ...formData,
-        targetGrade: Number(formData.targetGrade)
+      ...formData,
+      targetGrade: String(formData.targetGrade || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean),
     };
     try {
         if (!validate()) return;
@@ -189,7 +214,8 @@ const validate = () => {
             endDate: '',
             targetGrade: 0,
             notes: '',
-            vaccineType: ''
+            vaccineType: '',
+            location: ''
         });
         toast({
             title: 'Thành công!',
@@ -245,7 +271,8 @@ const validate = () => {
       endDate: vaccination.endDate,
       targetGrade: vaccination.targetGrade,
       notes: vaccination.notes,
-      vaccineType: vaccination.vaccineType
+      vaccineType: vaccination.vaccineType,
+      location: vaccination.location
     });
     setIsEditModalOpen(true);
   };
@@ -280,14 +307,9 @@ const validate = () => {
               onSubmit={handleCreateVaccination}
               isEdit={false}
               loading={loading}
+              errors={errors}
             />
-            {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
-            {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
-            {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
-            {errors.notes && <div className="text-red-500 text-sm">{errors.notes}</div>}
-            {errors.vaccineType && <div className="text-red-500 text-sm">{errors.vaccineType}</div>}
-            {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
-            {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
+          
           </DialogContent>
         </Dialog>
       </div>
@@ -317,9 +339,8 @@ const validate = () => {
                 <TableHead>Ngày bắt đầu</TableHead>
                 <TableHead>Ngày kết thúc</TableHead>
                 <TableHead>Khối lớp</TableHead>
-                <TableHead>Ghi chú</TableHead>
-                <TableHead>Mô tả</TableHead>
                 <TableHead>Trạng thái</TableHead>
+                <TableHead>Ngày tạo</TableHead>
                 <TableHead>Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -335,40 +356,32 @@ const validate = () => {
                   <TableCell>{vaccination.vaccineType}</TableCell>
                   <TableCell>{vaccination.startDate}</TableCell>
                   <TableCell>{vaccination.endDate}</TableCell>
-                  <TableCell>{vaccination.targetGrade === 0 ? 'Toàn trường' : `Khối ${vaccination.targetGrade}`}</TableCell>
-                  <TableCell>{vaccination.notes}</TableCell>
-                  <TableCell>{vaccination.description}</TableCell>
+                  <TableCell>{Array.isArray(vaccination.targetGrade) ? (vaccination.targetGrade.length === 0 ? 'Toàn trường' : vaccination.targetGrade.join(', ')) : (vaccination.targetGrade === 0 ? 'Toàn trường' : vaccination.targetGrade)}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                       vaccination.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                      vaccination.status === 'DONE' ? 'bg-gray-400 text-white' :
+                      vaccination.status === 'DONE' ? 'bg-orange-500 text-white' :
+                      vaccination.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                       'bg-red-100 text-red-800'
                     }`}>
                       {vaccination.status === 'PENDING' ? 'Chờ diễn ra' :
                         vaccination.status === 'ACTIVE' ? 'Đang diễn ra' :
                         vaccination.status === 'DONE' ? 'Đã xong' :
+                        vaccination.status === 'REJECTED' ? 'Đã xóa' :
                         vaccination.status}
                     </span>
                   </TableCell>
+                  <TableCell>{vaccination.createdAt}</TableCell>
                   <TableCell>
-                    {vaccination.status === 'PENDING' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(vaccination)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    )}
                     <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteVaccination(vaccination.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                      {vaccination.status === 'PENDING' && (
+                        <Button size="icon" variant="outline" onClick={() => openEditModal(vaccination)}>
+                          <Edit className="w-4 h-4 text-blue-500" />
+                        </Button>
+                      )}
+                      <Button size="icon" variant="outline" onClick={() => handleDeleteVaccination(vaccination.id)}>
+                        <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
                       {vaccination.status === 'PENDING' && (
                         <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartVaccination(vaccination.id)} disabled={loading}>
@@ -401,7 +414,9 @@ const validate = () => {
             onSubmit={handleEditVaccination}
             isEdit={true}
             loading={loading}
+            errors={errors}
           />
+         
           {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
           {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
           {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
@@ -413,13 +428,13 @@ const validate = () => {
       </Dialog>
 
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Chi tiết chiến dịch tiêm chủng</DialogTitle>
+            <DialogTitle>Chi tiết lịch tiêm chủng</DialogTitle>
           </DialogHeader>
           {selectedDetail && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 py-2">
-              <div className="flex items-center gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 py-4">
+              <div className="flex items-center gap-1">
                 <Info className="w-4 h-4 text-blue-500" />
                 <span className="font-semibold text-gray-700">Tên chiến dịch:</span>
               </div>
@@ -447,7 +462,7 @@ const validate = () => {
                 <Layers className="w-4 h-4 text-blue-500" />
                 <span className="font-semibold text-gray-700">Khối lớp:</span>
               </div>
-              <div>{selectedDetail.targetGrade === 0 ? 'Toàn trường' : `Khối ${selectedDetail.targetGrade}`}</div>
+              <div>{Array.isArray(selectedDetail.targetGrade) ? (selectedDetail.targetGrade.length === 0 ? 'Toàn trường' : selectedDetail.targetGrade.join(', ')) : (selectedDetail.targetGrade === 0 ? 'Toàn trường' : selectedDetail.targetGrade)}</div>
 
               <div className="flex items-center gap-2">
                 <ClipboardList className="w-4 h-4 text-blue-500" />
@@ -468,16 +483,23 @@ const validate = () => {
               <div>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                   selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                  selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                  selectedDetail.status === 'DONE' ? 'bg-gray-400 text-white' :
-                  'bg-red-100 text-gray-800'
+                  selectedDetail.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                  selectedDetail.status === 'DONE' ? 'bg-orange-500 text-white' :
+                  selectedDetail.status === 'REJECTED' ? 'bg-gray-400 text-white' :
+                  'bg-gray-100 text-gray-800'
                 }`}>
                   {selectedDetail.status === 'PENDING' ? 'Chờ diễn ra' :
-                    selectedDetail.status === 'APPROVED' ? 'Đang diễn ra' :
+                    selectedDetail.status === 'ACTIVE' ? 'Đang diễn ra' :
                     selectedDetail.status === 'DONE' ? 'Đã xong' :
+                    selectedDetail.status === 'REJECTED' ? 'Đã xóa' :
                     selectedDetail.status}
                 </span>
               </div>
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-blue-500" />
+                <span className="font-semibold text-gray-700">Ngày tạo:</span>
+              </div>
+              <div>{selectedDetail.createdAt}</div>
             </div>
           )}
           <div className="flex justify-end mt-4">

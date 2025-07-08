@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
-const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = false, loading = false }) => (
+const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = false, loading = false, errors = {} }) => (
   <div className="space-y-4">
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -13,6 +13,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           placeholder="Nhập tên chiến dịch tiêm"
         />
+        {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="vaccineType">Loại vắc xin</Label>
@@ -22,6 +23,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
           onChange={(e) => setFormData({ ...formData, vaccineType: e.target.value })}
           placeholder="Nhập loại vắc xin"
         />
+        {errors.vaccineType && <div className="text-red-500 text-sm">{errors.vaccineType}</div>}
       </div>
     </div>
     <div className="grid grid-cols-2 gap-4">
@@ -33,6 +35,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
           value={formData.startDate}
           onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
         />
+        {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="endDate">Ngày kết thúc</Label>
@@ -42,6 +45,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
           value={formData.endDate}
           onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
         />
+        {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
       </div>
     </div>
     <div className="grid grid-cols-2 gap-4">
@@ -49,12 +53,16 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
         <Label htmlFor="targetGrade">Khối lớp</Label>
         <Input
           id="targetGrade"
-          type="number"
-          min={0}
+          type="text"
           value={formData.targetGrade}
-          onChange={(e) => setFormData({ ...formData, targetGrade: e.target.value })}
-          placeholder="0 = toàn trường, 10, 11, ..."
+          onChange={e => {
+            // Chỉ cho phép số, dấu phẩy, dấu cách
+            const value = e.target.value.replace(/[^0-9, ]/g, '');
+            setFormData({ ...formData, targetGrade: value });
+          }}
+          placeholder="6,7,8"
         />
+        {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="notes">Ghi chú</Label>
@@ -64,6 +72,19 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="Nhập ghi chú (tùy chọn)"
         />
+        {errors.notes && <div className="text-red-500 text-sm">{errors.notes}</div>}
+      </div>
+    </div>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="location">Tên quốc gia</Label>
+        <Input
+          id="location"
+          value={formData.location}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+          placeholder="Nhập tên quốc gia"
+        />
+        {errors.location && <div className="text-red-500 text-sm">{errors.location}</div>}
       </div>
     </div>
     <div className="space-y-2">
@@ -75,6 +96,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
         placeholder="Nhập mô tả chiến dịch tiêm"
         className="w-full p-2 border border-gray-300 rounded-md resize-none h-20"
       />
+      {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
     </div>
     <div className="flex justify-end space-x-2 pt-4">
       <Button

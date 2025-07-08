@@ -10,16 +10,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
 import UserService from '../../api/services/user.service';
-import UserForm from './UserForm';
+import StudentForm from './StudentForm';
 import AuthService from '../../api/services/auth.service';
 
-const UserManagement = () => {
+const StudentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,29 +43,33 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [sort, setSort] = useState('userId.asc');
+  const [isCreateClassModalOpen, setIsCreateClassModalOpen] = useState(false);
+  const [sort, setSort] = useState('studentId.asc');
 
   useEffect(() => {
     fetchUsers(currentPage);
+    console.log("Users",users);
   }, [currentPage, searchTerm, sort]);
 
   const fetchUsers = async (page = 0) => {
     try {
       setLoading(true);
-      const response = await UserService.getAllUsers({ page, sort, search: searchTerm });
-      setUsers(response.data.users || []);
+      const response = await UserService.getAllStudentStudent({ page, sort, search: searchTerm });
+      setUsers(response.data.students || []);
       setTotalPages(response.data.totalPages || 0);
       setTotalElements(response.data.totalElements || 0);
       setCurrentPage(response.data.currentPage || 0);
       setError(null);
-      console.log("users", response);
+      console.log("healthCheckConsents",response);
     } catch (err) {
-      setError('Failed to fetch users. Please try again later.');
-      console.error('Error fetching users:', err);
+      setError('Failed to fetch health check consents. Please try again later.');
+      console.error('Error fetching health check consents:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  const students = users;
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">
@@ -162,13 +166,13 @@ const UserManagement = () => {
 
   const handleEditUser = async () => {
     try {
-      const response = await UserService.updateUser(selectedUser.id, formData);
+      const response = await UserService.updateUser(selectedStudent.id, formData);
       if (response.data.success) {
         setUsers(users.map(user =>
-          user.id === selectedUser.id ? response.data.data.user : user
+          user.id === selectedStudent.id ? response.data.data.user : user
         ));
         setIsEditModalOpen(false);
-        setSelectedUser(null);
+        setSelectedStudent(null);
         setFormData({ fullName: '', email: '', phoneNumber: '', dob: '', gender: '', roleName: '', address: '', username: '', password: '', confirmPassword: '' });
         toast({
           title: "Thành công!",
@@ -205,19 +209,19 @@ const UserManagement = () => {
     }
   };
 
-  const openEditModal = (user) => {
-    setSelectedUser(user);
+  const openEditModal = (student) => {
+    setSelectedStudent(student);
     setFormData({
-      fullName: user.fullName,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      dob: user.dob,
-      gender: user.gender,
-      roleName: user.roleName,
-      address: user.address,
-      username: user.email,
-      password: '',
-      confirmPassword: ''
+      fullName: student.fullName,
+      email: student.email,
+      phoneNumber: student.phoneNumber,
+      dob: student.dob,
+      gender: student.gender,
+      roleName: student.roleName,
+      address: student.address,
+      username: student.userName,
+      password: student.password,
+      confirmPassword: student.password
     });
     setIsEditModalOpen(true);
   };
@@ -237,40 +241,58 @@ const UserManagement = () => {
     >
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
-          <p className="text-gray-600 mt-2">Quản lý tất cả người dùng trong hệ thống</p>
+          <h1 className="text-3xl font-bold text-gray-900">Quản lý học sinh</h1>
         </div>
-        <Dialog open={isCreateModalOpen} onOpenChange={(open) => setIsCreateModalOpen(open)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Tạo người dùng mới</DialogTitle>
-              <DialogDescription>
-                Điền thông tin chi tiết để tạo người dùng mới trong hệ thống.
-              </DialogDescription>
-            </DialogHeader>
-            <UserForm
-              formData={formData}
-              handleInputChange={handleInputChange}
-              onCancel={() => setIsCreateModalOpen(false)}
-              onSubmit={handleCreateUser}
-            />
-          </DialogContent>
-        </Dialog>
-        <Button className="btn-primary" onClick={() => setIsCreateModalOpen(true)} disabled={loadingCreate}>
-          <Plus className="w-4 h-4 mr-2" />
-          Thêm người dùng
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={isCreateClassModalOpen} onOpenChange={setIsCreateClassModalOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Tạo lớp mới</DialogTitle>
+                <DialogDescription>
+                  (Chức năng tạo lớp - bạn có thể bổ sung form chi tiết sau)
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end mt-4">
+                <Button variant="outline" onClick={() => setIsCreateClassModalOpen(false)}>Đóng</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          {/* <Button className="btn-secondary" onClick={() => setIsCreateClassModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Tạo lớp
+          </Button> */}
+          <Dialog open={isCreateModalOpen} onOpenChange={(open) => setIsCreateModalOpen(open)}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Tạo người dùng mới</DialogTitle>
+                <DialogDescription>
+                  Điền thông tin chi tiết để tạo người dùng mới trong hệ thống.
+                </DialogDescription>
+              </DialogHeader>
+              <StudentForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+                onCancel={() => setIsCreateModalOpen(false)}
+                onSubmit={handleCreateUser}
+              />
+            </DialogContent>
+          </Dialog>
+          <Button className="btn-primary" onClick={() => setIsCreateModalOpen(true)} disabled={loadingCreate}>
+            <Plus className="w-4 h-4 mr-2" />
+            Thêm Học Sinh
+          </Button>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Danh sách người dùng ({totalElements} người dùng)</CardTitle>
+            <CardTitle>Danh sách học sinh ({totalElements} học sinh)</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-80">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+                  placeholder="Tìm kiếm theo tên học sinh..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -288,13 +310,13 @@ const UserManagement = () => {
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="userId.asc">Mặc định (ID người dùng)</SelectItem>
-                  <SelectItem value="fullname.asc">Tên người dùng (A-Z)</SelectItem>
-                  <SelectItem value="fullname.desc">Tên người dùng (Z-A)</SelectItem>
-                  <SelectItem value="email.asc">Email (A-Z)</SelectItem>
-                  <SelectItem value="email.desc">Email (Z-A)</SelectItem>
-                  <SelectItem value="roleName.asc">Vai trò (A-Z)</SelectItem>
-                  <SelectItem value="roleName.desc">Vai trò (Z-A)</SelectItem>
+                  <SelectItem value="studentId.asc">Mặc định (ID học sinh)</SelectItem>
+                  <SelectItem value="fullName.asc">Tên học sinh (A-Z)</SelectItem>
+                  <SelectItem value="fullName.desc">Tên học sinh (Z-A)</SelectItem>
+                  <SelectItem value="className.asc">Lớp (A-Z)</SelectItem>
+                  <SelectItem value="className.desc">Lớp (Z-A)</SelectItem>
+                  <SelectItem value="studentCode.asc">Mã học sinh (A-Z)</SelectItem>
+                  <SelectItem value="studentCode.desc">Mã học sinh (Z-A)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -304,71 +326,38 @@ const UserManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
+                <TableHead>Mã học sinh</TableHead>
                 <TableHead>Họ và tên</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>Lớp</TableHead>
                 <TableHead>Ngày sinh</TableHead>
                 <TableHead>Giới tính</TableHead>
-                <TableHead>Vai trò</TableHead>
                 <TableHead>Số điện thoại</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Thao tác</TableHead>
+                <TableHead>Nhóm máu</TableHead>
+                <TableHead>Chiều cao (cm)</TableHead>
+                <TableHead>Cân nặng (kg)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.length === 0 ? (
+              {students.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan="9" className="text-center py-8 text-gray-500">
                     {searchTerm
-                      ? 'Không tìm thấy người dùng nào phù hợp với từ khóa tìm kiếm'
-                      : 'Không có người dùng nào'
-                    }
+                      ? 'Không tìm thấy học sinh nào phù hợp với từ khóa tìm kiếm'
+                      : 'Không có học sinh nào'}
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
-                  <TableRow key={user.userId} className="cursor-pointer" onClick={() => { setSelectedDetail(user); setIsDetailModalOpen(true); }}>
-                    <TableCell className="font-medium">{user.userId || 'N/A'}</TableCell>
-                    <TableCell>{user.fullName || 'N/A'}</TableCell>
-                    <TableCell>{user.email || 'N/A'}</TableCell>
-                    <TableCell>{user.dob ? new Date(user.dob).toLocaleDateString('vi-VN') : 'N/A'}</TableCell>
-                    <TableCell>{user.gender || 'N/A'}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.roleName === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                        user.roleName === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
-                          user.roleName === 'SCHOOL_NURSE' ? 'bg-green-100 text-green-800' :
-                            user.roleName === 'STUDENT' ? 'bg-blue-100 text-blue-800' :
-                              'bg-orange-100 text-orange-800'
-                        }`}>
-                        {user.roleName}
-                      </span>
-                    </TableCell>
-                    <TableCell>{user.phoneNumber || 'N/A'}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                        {userStatus[user.status] || user.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2" onClick={e => e.stopPropagation()}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditModal(user)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.userId)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                students.map((student) => (
+                  <TableRow key={student.userId} className="cursor-pointer" onClick={() => { setSelectedDetail(student); setIsDetailModalOpen(true); }}>
+                    <TableCell className="font-medium">{student.studentCode || 'N/A'}</TableCell>
+                    <TableCell>{student.fullName || 'N/A'}</TableCell>
+                    <TableCell>{student.className || 'N/A'}</TableCell>
+                    <TableCell>{student.dob ? new Date(student.dob).toLocaleDateString('vi-VN') : 'N/A'}</TableCell>
+                    <TableCell>{student.gender || 'N/A'}</TableCell>
+                    <TableCell>{student.phoneNumber || 'N/A'}</TableCell>
+                    <TableCell>{student.bloodType || 'N/A'}</TableCell>
+                    <TableCell>{student.height || 'N/A'}</TableCell>
+                    <TableCell>{student.weight || 'N/A'}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -405,7 +394,7 @@ const UserManagement = () => {
               Cập nhật thông tin người dùng trong hệ thống.
             </DialogDescription>
           </DialogHeader>
-          <UserForm
+          <StudentForm
             isEdit={true}
             formData={formData}
             handleInputChange={handleInputChange}
@@ -418,14 +407,14 @@ const UserManagement = () => {
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Chi tiết người dùng</DialogTitle>
+            <DialogTitle>Chi tiết học sinh</DialogTitle>
           </DialogHeader>
           {selectedDetail && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 py-2">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">ID:</span>
+                <span className="font-semibold text-gray-700">Mã học sinh:</span>
               </div>
-              <div>{selectedDetail.userId || 'N/A'}</div>
+              <div>{selectedDetail.studentCode || 'N/A'}</div>
 
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-gray-700">Họ và tên:</span>
@@ -433,9 +422,9 @@ const UserManagement = () => {
               <div>{selectedDetail.fullName || 'N/A'}</div>
 
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Email:</span>
+                <span className="font-semibold text-gray-700">Lớp:</span>
               </div>
-              <div>{selectedDetail.email || 'N/A'}</div>
+              <div>{selectedDetail.className || 'N/A'}</div>
 
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-gray-700">Ngày sinh:</span>
@@ -448,11 +437,6 @@ const UserManagement = () => {
               <div>{selectedDetail.gender || 'N/A'}</div>
 
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Vai trò:</span>
-              </div>
-              <div>{selectedDetail.roleName || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
                 <span className="font-semibold text-gray-700">Số điện thoại:</span>
               </div>
               <div>{selectedDetail.phoneNumber || 'N/A'}</div>
@@ -463,14 +447,34 @@ const UserManagement = () => {
               <div>{selectedDetail.address || 'N/A'}</div>
 
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Trạng thái:</span>
+                <span className="font-semibold text-gray-700">Nhóm máu:</span>
               </div>
-              <div>{userStatus[selectedDetail.status] || selectedDetail.status}</div>
+              <div>{selectedDetail.bloodType || 'N/A'}</div>
 
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Avatar:</span>
+                <span className="font-semibold text-gray-700">Chiều cao:</span>
               </div>
-              <div>{selectedDetail.avatarUrl ? 'Có' : 'Không có'}</div>
+              <div>{selectedDetail.height ? `${selectedDetail.height} cm` : 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Cân nặng:</span>
+              </div>
+              <div>{selectedDetail.weight ? `${selectedDetail.weight} kg` : 'N/A'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Bệnh di truyền:</span>
+              </div>
+              <div>{selectedDetail.geneticDiseases || 'Không có'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Bệnh mãn tính:</span>
+              </div>
+              <div>{selectedDetail.chronicDiseases || 'Không có'}</div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-700">Dị ứng:</span>
+              </div>
+              <div>{selectedDetail.allergies || 'Không có'}</div>
             </div>
           )}
           <div className="flex justify-end mt-4">
@@ -482,4 +486,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default StudentManagement;

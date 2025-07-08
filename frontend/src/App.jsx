@@ -12,6 +12,7 @@ import Header from '@/components/layout/Header';
 // import PublicHeader from '@/components/layout/PublicHeader';
 import Dashboard from '@/components/dashboard/Dashboard';
 import UserManagement from '@/components/admin/UserManagement';
+import StudentManagement from './components/admin/StudentManagement';
 import VaccinationManagement from '@/components/admin/VaccinationManagement';
 import MedicineManagement from '@/components/nurse/MedicineManagement';
 import { toast } from '@/components/ui/use-toast';
@@ -32,6 +33,9 @@ import Event from './components/nurse/Event';
 import PlaceholderPage from './components/nurse/PlaceholderPage';
 import CampaignsNurse from './components/nurse/CampaignsNurse';
 import HomePage from './components/auth/HomePage';
+import ShowListCampaign from './components/admin/ShowLIstCampaign';
+import StaticCampaign from './components/admin/StaticCampaign';
+
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -204,6 +208,10 @@ function App() {
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
               <Route path="users" element={<UserManagement />} />
+              <Route path="students" element={<StudentManagement />} />
+
+              <Route path="show-campaigns" element={<ShowListCampaign />} />
+              <Route path="static-campaigns" element={<StaticCampaign />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>

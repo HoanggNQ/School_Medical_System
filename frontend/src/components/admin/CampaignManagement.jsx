@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,8 +24,7 @@ const CampaignManagement = () => {
         startDate: '',
         endDate: '',
         targetGrade: 0,
-        location: '',
-        requiredEquipment: ''
+        location: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -71,53 +70,63 @@ const CampaignManagement = () => {
 
     const handleCreateCampaign = async () => {
         setLoading(true);
+        const targetGrades = String(formData.targetGrade || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      
         const newCampaign = {
-            ...formData,
-            targetGrade: Number(formData.targetGrade),
+          ...formData,
+          targetGrade: targetGrades, 
         };
-        try {
-            if (!validate()) return;
-            const response = await campaignService.createCampaign(newCampaign);
-            console.log(response);
-            fetchCampaigns();
-            setIsCreateModalOpen(false);
-            setFormData({
-                name: '',
-                description: '',
-                startDate: '',
-                endDate: '',
-                targetGrade: 0,
-                location: '',
-                requiredEquipment: ''
-            });
-            toast({
-                title: 'Thành công!',
-                description: 'Chiến dịch mới đã được tạo.',
-            });
-        } catch (error) {
-            console.error(error);
-            let errorMsg = 'Đã xảy ra lỗi.';
-            if (error.response && error.response.data && error.response.data.message) {
-                errorMsg = error.response.data.message;
-            } else if (error.message) {
-                errorMsg = error.message;
-            } else {
-                errorMsg = error.toString();
-            }
-            toast({
-                title: 'Tạo chiến dịch thất bại',
-                description: errorMsg,
-            });
-        } finally {
-            setLoading(false);
-        }
+      
+          try {
+              if (!validate()) return;
+              const response = await campaignService.createCampaign(newCampaign);
+              console.log(response);
+              fetchCampaigns();
+              setIsCreateModalOpen(false);
+              setFormData({
+                  name: '',
+                  description: '',
+                  startDate: '',
+                  endDate: '',
+                  targetGrade: 0,
+                  location: ''
+              });
+              toast({
+                  title: 'Thành công!',
+                  description: 'Chiến dịch mới đã được tạo.',
+              });
+          } catch (error) {
+              console.error(error);
+              let errorMsg = 'Đã xảy ra lỗi.';
+              if (error.response && error.response.data && error.response.data.message) {
+                  errorMsg = error.response.data.message;
+              } else if (error.message) {
+                  errorMsg = error.message;
+              } else {
+                  errorMsg = error.toString();
+              }
+              toast({
+                  title: 'Tạo chiến dịch thất bại',
+                  description: errorMsg,
+              });
+          } finally {
+              setLoading(false);
+          }
     };
 
     const handleEditCampaign = async () => {
         setLoading(true);
+        
         const updatedCampaign = {
             ...formData,
-            targetGrade: Number(formData.targetGrade),
+            targetGrade: String(formData.targetGrade || '')
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
+             
         };
         try {
             if (!validate()) return;
@@ -132,8 +141,7 @@ const CampaignManagement = () => {
                 startDate: '',
                 endDate: '',
                 targetGrade: 0,
-                location: '',
-                requiredEquipment: ''
+                location: ''
             });
             toast({
                 title: 'Thành công!',
@@ -165,7 +173,7 @@ const CampaignManagement = () => {
             await fetchCampaigns();
             toast({
                 title: 'Thành công!',
-                description: 'Chiến dịch đã được xóa    .',
+                description: 'Chiến dịch đã được xóa.',
             });
         } catch (error) {
             console.error(error);
@@ -188,22 +196,77 @@ const CampaignManagement = () => {
 
     const handleStartCampaign = async (campaignId) => {
         setLoading(true);
-        const campaign = campaigns.find(c => c.id === campaignId);
-        if (!campaign) return;
-        await campaignService.startCampaign(campaignId);
-        fetchCampaigns();
-        toast({ title: 'Chiến dịch đã bắt đầu!' });
-        setLoading(false);
+        try {
+            await campaignService.startCampaign(campaignId);
+            fetchCampaigns();
+            toast({ title: 'Chiến dịch đã bắt đầu!' });
+        } catch (error) {
+            console.error(error);
+            let errorMsg = 'Đã xảy ra lỗi.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            } else {
+                errorMsg = error.toString();
+            }
+            toast({
+                title: 'Bắt đầu chiến dịch thất bại',
+                description: errorMsg,
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleEndCampaign = async (campaignId) => {
         setLoading(true);
-        const campaign = campaigns.find(c => c.id === campaignId);
-        if (!campaign) return;
-        await campaignService.endCampaign(campaignId);
-        fetchCampaigns();
-        toast({ title: 'Chiến dịch đã kết thúc!' });
-        setLoading(false);
+        try {
+            await campaignService.endCampaign(campaignId);
+            fetchCampaigns();
+            toast({ title: 'Chiến dịch đã kết thúc!' });
+        } catch (error) {
+            console.error(error);
+            let errorMsg = 'Đã xảy ra lỗi.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            } else {
+                errorMsg = error.toString();
+            }
+            toast({
+                title: 'Kết thúc chiến dịch thất bại',
+                description: errorMsg,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemindCampaign = async (campaignId) => {
+        setLoading(true);
+        try {
+            await campaignService.remindCampaign(campaignId);
+            fetchCampaigns();
+            toast({ title: 'Đã gửi nhắc nhở chiến dịch!' });
+        } catch (error) {
+            console.error(error);
+            let errorMsg = 'Đã xảy ra lỗi.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (error.message) {
+                errorMsg = error.message;
+            } else {
+                errorMsg = error.toString();
+            }
+            toast({
+                title: 'Gửi nhắc nhở thất bại',
+                description: errorMsg,
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const openEditModal = (campaign) => {
@@ -213,9 +276,8 @@ const CampaignManagement = () => {
             description: campaign.description,
             startDate: campaign.startDate,
             endDate: campaign.endDate,
-            targetGrade: campaign.targetGrade,
-            location: campaign.location,
-            requiredEquipment: campaign.requiredEquipment
+            targetGrade: Array.isArray(campaign.targetGrade) ? campaign.targetGrade.join(', ') : campaign.targetGrade,
+            location: campaign.location
         });
         setIsEditModalOpen(true);
     };
@@ -229,7 +291,6 @@ const CampaignManagement = () => {
         const startDate = new Date(formData.startDate);
         const endDate = new Date(formData.endDate);
 
-        // Định dạng ngày dd/mm/yyyy
         const formatVNDate = (date) => {
             const d = new Date(date);
             const day = d.getDate().toString().padStart(2, '0');
@@ -238,20 +299,33 @@ const CampaignManagement = () => {
             return `${day}/${month}/${year}`;
         };
 
+        // Validate khối lớp chỉ cho phép 1-12, không rỗng, không NaN
+        let gradeStr = typeof formData.targetGrade === 'string' ? formData.targetGrade : '';
+        gradeStr = gradeStr.replace(/\s+/g, ''); // loại bỏ khoảng trắng
+        const gradeArr = gradeStr.split(',').filter(Boolean);
+        if (gradeArr.length === 0) {
+            newErrors.targetGrade = "Vui lòng nhập khối lớp.";
+        } else {
+            const invalid = gradeArr.some(s => {
+                const n = Number(s);
+                return isNaN(n) || n < 1 || n > 12;
+            });
+            if (invalid) {
+                newErrors.targetGrade = "Chỉ được nhập các số từ 1 đến 12, phân tách bằng dấu phẩy.";
+            }
+        }
+
         if (!formData.name || formData.name.trim() === "") {
             newErrors.name = "Vui lòng nhập tên chiến dịch.";
         }
         if (!formData.description || formData.description.trim() === "") {
             newErrors.description = "Vui lòng nhập mô tả.";
         }
-        if (!formData.targetGrade && formData.targetGrade !== 0) {
-            newErrors.targetGrade = "Vui lòng nhập khối lớp.";
-        }
+        // if (!formData.targetGrade && formData.targetGrade !== 0) {
+        //     newErrors.targetGrade = "Vui lòng nhập khối lớp.";
+        // }
         if (!formData.location || formData.location.trim() === "") {
             newErrors.location = "Vui lòng nhập địa điểm tổ chức.";
-        }
-        if (!formData.requiredEquipment || formData.requiredEquipment.trim() === "") {
-            newErrors.requiredEquipment = "Vui lòng nhập thiết bị y tế, vật tư.";
         }
 
         if (!formData.startDate) {
@@ -288,23 +362,17 @@ const CampaignManagement = () => {
                             <DialogTitle>Tạo chiến dịch mới</DialogTitle>
                         </DialogHeader>
                        
-                        <CampaignForm formData={formData} setFormData={setFormData} loading={loading}/>
-                        {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
-                        {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
-                        {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
-                        {errors.location && <div className="text-red-500 text-sm">{errors.location}</div>}
-                        {errors.requiredEquipment && <div className="text-red-500 text-sm">{errors.requiredEquipment}</div>}
-                        {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
-                        {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
-                        <div className="flex justify-end gap-2 mt-4">
-                            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                                Hủy
-                            </Button>
-                            <Button className="btn-primary" onClick={handleCreateCampaign} disabled={loading}>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Tạo mới
-                            </Button>
-                        </div>
+                        <CampaignForm 
+                              formData={formData}
+                              setFormData={setFormData}
+                              onCancel={() => setIsCreateModalOpen(false)}
+                              onSubmit={handleCreateCampaign}
+                              isEdit={false}
+                              loading={loading}
+                              errors={errors}
+                        />
+                      
+                  
                     </DialogContent>
                 </Dialog>
                 <Button className="btn-primary" onClick={() => setIsCreateModalOpen(true)}>
@@ -355,7 +423,7 @@ const CampaignManagement = () => {
                                     <TableCell>{campaign.endDate}</TableCell>
                                     <TableCell>{campaign.location}</TableCell>
                                     {/* <TableCell>{campaign.requiredEquipment}</TableCell> */}
-                                    <TableCell>{campaign.targetGrade === 0 ? 'Toàn trường' : ` ${campaign.targetGrade}`}</TableCell>
+                                    <TableCell>{Array.isArray(campaign.targetGrade) ? (campaign.targetGrade.length === 0 ? 'Toàn trường' : campaign.targetGrade.join(', ')) : (campaign.targetGrade === 0 ? 'Toàn trường' : campaign.targetGrade)}</TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                                 campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
@@ -373,9 +441,15 @@ const CampaignManagement = () => {
                                     <TableCell>{campaign.createdAt}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                            
+                                            {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
+                                                <Button size="icon" variant="outline" onClick={() => handleRemindCampaign(campaign.id)} disabled={loading}>
+                                                    <Bell className="w-4 h-4 text-blue-500" />
+                                                </Button>
+                                            )}
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
                                                 <Button size="icon" variant="outline" onClick={() => openEditModal(campaign)}>
-                                                    <Edit className="w-4 h-4" />
+                                                    <Edit className="w-4 h-4 text-blue-500" />
                                                 </Button>
                                             )}
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
@@ -401,28 +475,25 @@ const CampaignManagement = () => {
                     </Table>
                 </CardContent>
             </Card>
+         
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
+                
                         <DialogTitle>Chỉnh sửa chiến dịch</DialogTitle>
                     </DialogHeader>
-                    <CampaignForm formData={formData} setFormData={setFormData} />
-                    {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
-                    {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
-                    {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
-                    {errors.location && <div className="text-red-500 text-sm">{errors.location}</div>}
-                    {errors.requiredEquipment && <div className="text-red-500 text-sm">{errors.requiredEquipment}</div>}
-                    {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
-                    {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                            Hủy
-                        </Button>
-                        <Button className="btn-primary" onClick={handleEditCampaign}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Lưu thay đổi
-                        </Button>
-                    </div>
+                   
+                    <CampaignForm 
+                          formData={formData}
+                          setFormData={setFormData}
+                          onCancel={() => setIsEditModalOpen(false)}
+                          onSubmit={handleEditCampaign}
+                          isEdit={true}
+                          loading={loading}
+                          errors={errors}
+                    />
+                  
+              
                 </DialogContent>
             </Dialog>
             <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
@@ -463,16 +534,10 @@ const CampaignManagement = () => {
                             <div className="truncate">{selectedDetail.location}</div>
 
                             <div className="flex items-center gap-2">
-                                <Package className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Thiết bị yêu cầu:</span>
-                            </div>
-                            <div className="break-words whitespace-pre-line">{selectedDetail.requiredEquipment}</div>
-
-                            <div className="flex items-center gap-2">
                                 <Layers className="w-4 h-4 text-blue-500" />
                                 <span className="font-semibold text-gray-700">Khối lớp:</span>
                             </div>
-                            <div>{selectedDetail.targetGrade === 0 ? 'Toàn trường' : `Khối ${selectedDetail.targetGrade}`}</div>
+                            <div>{Array.isArray(selectedDetail.targetGrade) ? (selectedDetail.targetGrade.length === 0 ? 'Toàn trường' : selectedDetail.targetGrade.join(', ')) : (selectedDetail.targetGrade === 0 ? 'Toàn trường' : selectedDetail.targetGrade)}</div>
 
                             <div className="flex items-center gap-2">
                                 <BadgeCheck className="w-4 h-4 text-blue-500" />
