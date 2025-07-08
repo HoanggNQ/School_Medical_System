@@ -36,7 +36,8 @@ public class UserMapper {
                 .phoneNumber(request.getPhoneNumber())
                 .dob(request.getDob())
                 .gender(request.getGender())
-                .password(request.getPassword()) // You should hash this elsewhere!
+                .password(request.getPassword())
+                .isFirstLogin(true)
                 .roleName(request.getRoleName())
                 .build();
     }
