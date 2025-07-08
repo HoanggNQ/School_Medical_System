@@ -270,7 +270,6 @@ public class UserServiceImpl implements UserService {
         String password = passwordEncoder.encode(userRegisterDTO.getPassword());
         UserEntity userCreate = UserMapper.fromRegisterDTO(userRegisterDTO);
         userCreate.setStatus(StatusEnum.ACTIVE);
-        userCreate.setRoleName(RoleEnum.SCHOOL_NURSE);
         userCreate.setPassword(password);
         userRepository.save(userCreate);
 
