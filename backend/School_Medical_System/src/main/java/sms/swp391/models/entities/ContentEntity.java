@@ -24,7 +24,8 @@ public class ContentEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "body_content", nullable = false)
+    @Lob
+    @Column(name = "body_content", nullable = false, columnDefinition = "text")
     private String bodyContent;
 
     @ManyToOne(fetch = FetchType.LAZY)
