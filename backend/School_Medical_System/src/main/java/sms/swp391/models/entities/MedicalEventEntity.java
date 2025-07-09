@@ -50,10 +50,6 @@ public class MedicalEventEntity {
     @JoinColumn(name = "student_id")
     private StudentEntity student;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = Integer.MAX_VALUE)
-    private MedicalStatus status;
 
     @Column(name = "follow_up_notes", length = Integer.MAX_VALUE)
     private String followUpNotes;

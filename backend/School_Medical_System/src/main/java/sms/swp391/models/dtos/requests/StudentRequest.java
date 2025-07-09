@@ -14,13 +14,8 @@ import java.util.Map;
 public class StudentRequest {
     private Long classId;
     private Long parentId;
-    private String bloodType;
     private UserRegisterDTO userRegister;
     private String emergencyContactName;
     private String emergencyContactPhone;
-    private String chronicDiseases;
-    private String geneticDiseases;
-    private String allergies;
-    private BigDecimal height;
-    private BigDecimal weight;
+
 }
