@@ -13,6 +13,7 @@ public class JwtResponse {
     private String tokenType = "Bearer";
     private long expiresIn;
     private UserInfo user;
+    private boolean isFirstLogin = false;
 
     @Data
     public static class UserInfo {
@@ -32,10 +33,11 @@ public class JwtResponse {
         }
     }
 
-    public JwtResponse(String accessToken, String refreshToken, long expiresIn, UserInfo userInfo) {
+    public JwtResponse(String accessToken, String refreshToken, long expiresIn, UserInfo userInfo, boolean isFirstLogin) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresIn = expiresIn;
         this.user = userInfo;
+        this.isFirstLogin = isFirstLogin;
     }
 }
