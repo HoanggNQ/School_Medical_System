@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.requests.StudentUpdateRequest;
 import sms.swp391.models.dtos.responses.*;
+import sms.swp391.services.HealthCheckCampaignService;
 import sms.swp391.services.StudentService;
 import org.springframework.data.domain.Sort;
 import sms.swp391.utils.PageUtils;
@@ -28,6 +29,23 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final HealthCheckCampaignService healthCheckCampaignService;
+
+    @Operation(summary = "Lấy các sự kiện học sinh đã được phụ huynh đồng ý tham gia")
+    @GetMapping("/student/{studentId}/approved-events")
+    public ResponseEntity<ResponseObject> getApprovedEventsByStudent(@PathVariable Long studentId) {
+        List<ApprovedEventResponse> events = healthCheckCampaignService.getApprovedEventsByStudentId(studentId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_APPROVED_EVENTS_SUCCESS")
+                        .message("Lấy danh sách sự kiện thành công")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(events)
+                        .build()
+        );
+    }
 
     @Operation(summary = "Tạo một học sinh", description = "Khởi tạo một học sinh mới đồng thời tạo người dùng mới")
     @PostMapping

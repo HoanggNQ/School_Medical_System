@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import sms.swp391.models.entities.StudentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import sms.swp391.models.entities.UserEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,4 +48,5 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
             """)
     List<StudentEntity> findByGradesWithUserAndParent(@Param("grades") List<String> grades);
 
+    List<StudentEntity> findAllByParent(UserEntity parent);
 }

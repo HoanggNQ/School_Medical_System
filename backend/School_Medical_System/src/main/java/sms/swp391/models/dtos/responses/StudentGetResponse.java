@@ -9,19 +9,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class StudentGetResponse {
-    private Long userId;
+    private Long studentId;
     private String fullName;
+    private String parentID;
+    private String parentName;
     private String dob;
     private String gender;
     private String className;
     private String phoneNumber;
     private String address;
     private String studentCode;
-    private String bloodType;
-    private BigDecimal height;
-    private BigDecimal weight;
-    private String geneticDiseases;
-    private String chronicDiseases;
-    private String allergies;
-
+    private String avatarUrl;
 }

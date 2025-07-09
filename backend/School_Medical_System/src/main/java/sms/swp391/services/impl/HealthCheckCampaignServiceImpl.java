@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
-import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
+import sms.swp391.models.dtos.responses.ApprovedEventResponse;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.AuthFailedException;
@@ -36,6 +36,47 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     private final HealthCheckConsentRepository healthCheckConsentRepository;
     private final SendMailService sendMailService;
     private final HealthConsultationScheduleRepository healthConsultationScheduleRepository;
+    private final VaccinationConsentRepository vaccinationConsentRepository;
+
+    @Override
+    public List<ApprovedEventResponse> getApprovedEventsByStudentId(Long studentId) {
+        List<ApprovedEventResponse> events = new ArrayList<>();
+
+        List<HealthCheckConsentEntity> healthCheckConsents =
+                healthCheckConsentRepository.findByStudentIdAndConsentStatus(studentId, MedicalStatus.APPROVED);
+
+        for (HealthCheckConsentEntity consent : healthCheckConsents) {
+            HealthCheckCampaignEntity campaign = consent.getHealthCheckCampaign();
+            events.add(ApprovedEventResponse.builder()
+                    .eventType("HEALTH_CHECK")
+                    .campaignId(campaign.getId())
+                    .campaignName(campaign.getName())
+                    .description(campaign.getDescription())
+                    .startDate(campaign.getStartDate())
+                    .endDate(campaign.getEndDate())
+                    .academicYear(consent.getAcademicYear())
+                    .build());
+        }
+
+        List<VaccinationConsentEntity> vaccinationConsents =
+                vaccinationConsentRepository.findByStudentIdAndConsentStatus(studentId, MedicalStatus.APPROVED);
+
+        for (VaccinationConsentEntity consent : vaccinationConsents) {
+            VaccinationCampaignEntity campaign = consent.getVaccinationCampaign();
+            events.add(ApprovedEventResponse.builder()
+                    .eventType("VACCINATION")
+                    .campaignId(campaign.getId())
+                    .campaignName(campaign.getName())
+                    .description(campaign.getDescription())
+                    .startDate(campaign.getStartDate())
+                    .endDate(campaign.getEndDate())
+                    .academicYear(consent.getAcademicYear())
+                    .build());
+        }
+
+        return events;
+    }
+
 
     private Long getCurrentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

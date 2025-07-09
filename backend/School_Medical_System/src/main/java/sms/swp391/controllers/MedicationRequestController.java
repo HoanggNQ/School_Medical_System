@@ -33,7 +33,7 @@ public class MedicationRequestController {
     @PostMapping
     public ResponseEntity<ResponseObject> createRequest(@RequestBody @Valid MedicationRequestCreateDTO dto,
                                                         @AuthenticationPrincipal UserEntity currentUser) {
-        if (currentUser == null || currentUser.getRoleName() == null || !RoleEnum.PARENT.name().equals(currentUser.getRoleName())) {
+        if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseObject.builder()
                             .code("UNAUTHORIZED")
