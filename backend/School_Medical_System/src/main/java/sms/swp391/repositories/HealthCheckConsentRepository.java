@@ -67,4 +67,6 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
                                                     Pageable pageable);
 
     List<HealthCheckConsentEntity> findAllByHealthCheckCampaignId(Long healthCheckCampaignId);
+
+    List<HealthCheckConsentEntity> findByStudentIdAndConsentStatus(Long studentId, MedicalStatus consentStatus);
 }

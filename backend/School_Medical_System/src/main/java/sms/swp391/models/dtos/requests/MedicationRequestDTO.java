@@ -38,8 +38,6 @@ public class MedicationRequestDTO {
 
     private String medicationInformation;
 
-    @Size(max = 255, message = "Active ingredient must not exceed 255 characters")
-    private String activeIngredient;
 
     @Size(max = 255, message = "Manufacturer must not exceed 255 characters")
     private String manufacturer;

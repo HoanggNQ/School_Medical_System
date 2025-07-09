@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
 import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
+import sms.swp391.models.dtos.responses.PagedResponse;
 import sms.swp391.models.entities.MedicalEventEntity;
 import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;
@@ -21,6 +21,7 @@ import sms.swp391.repositories.UserRepository;
 import sms.swp391.services.MedicalEventService;
 import sms.swp391.utils.MedicalEventMapper;
 import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
+import sms.swp391.utils.PageUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,7 +48,6 @@ public class MedicalEventServiceImpl implements MedicalEventService {
                     .orElseThrow(() -> new NotFoundException("User not found: " + reportedById));
         }
         MedicalEventEntity entity = MedicalEventMapper.toEntity(request, student, reporter);
-        entity.setStatus(MedicalStatus.PENDING);
         return MedicalEventMapper.toDTO(medicalEventRepository.save(entity));
     }
 
@@ -57,7 +57,6 @@ public class MedicalEventServiceImpl implements MedicalEventService {
                 .orElseThrow(() -> new NotFoundException("Medical event not found"));
 
         if (request.getStatus() != null) {
-            entity.setStatus(request.getStatus());
         }
         entity.setFollowUpNotes(request.getFollowUpNotes());
 
@@ -74,7 +73,7 @@ public class MedicalEventServiceImpl implements MedicalEventService {
     public void delete(Long id) {
         MedicalEventEntity entity = medicalEventRepository.findById(id)
                 .orElseThrow(()-> new NotFoundException("Medical event not found"));
-        entity.setStatus(MedicalStatus.REJECTED);
+        medicalEventRepository.delete(entity);
         medicalEventRepository.save(entity);
     }
 
@@ -129,4 +128,33 @@ public class MedicalEventServiceImpl implements MedicalEventService {
                 .currentPage(medicalEventPage.getNumber())
                 .build();
     }
+    @Override
+    public PagedResponse<MedicalEventResponse> getAllByStudentId(Long studentId, Pageable pageable) {
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
+
+        Pageable validatedPageable = validateSort(pageable, List.of(
+                "eventDate", "id", "eventType", "description", "location", "status",
+                "followUpNotes", "reportedBy.userId", "student.id"
+        ));
+
+        Page<MedicalEventEntity> medicalEventPage = medicalEventRepository.findAllByStudent(student, validatedPageable);
+
+        Page<MedicalEventResponse> responsePage = medicalEventPage.map(MedicalEventMapper::toDTO);
+
+        return PageUtils.toPagedResponse(responsePage);
+    }
+    private Pageable validateSort(Pageable pageable, List<String> allowedProperties) {
+        Sort validatedSort = pageable.getSort().stream()
+                .filter(order -> allowedProperties.contains(order.getProperty()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
+
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                validatedSort
+        );
+    }
+
+
 }

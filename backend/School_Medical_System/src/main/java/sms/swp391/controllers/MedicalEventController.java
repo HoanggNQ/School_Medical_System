@@ -3,6 +3,7 @@ package sms.swp391.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -14,10 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
 import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
+import sms.swp391.models.dtos.responses.PagedResponse;
 import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
 import sms.swp391.services.MedicalEventService;
+
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/medical-event")
@@ -136,5 +140,16 @@ public class MedicalEventController {
                         .data(medicalEventResponse)
                         .build()
         );
+    }
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<PagedResponse<MedicalEventResponse>> getByStudentId(
+            @PathVariable Long studentId,
+            @ParameterObject
+            @PageableDefault(page = 0, size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "eventDate", direction = Sort.Direction.DESC)
+            }) Pageable pageable) {
+
+        return ResponseEntity.ok(medicalEventService.getAllByStudentId(studentId, pageable));
     }
 }

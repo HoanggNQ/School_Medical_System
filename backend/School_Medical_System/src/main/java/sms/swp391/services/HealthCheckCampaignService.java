@@ -1,6 +1,7 @@
 package sms.swp391.services;
 
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
+import sms.swp391.models.dtos.responses.ApprovedEventResponse;
 import sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO;
 import sms.swp391.models.dtos.responses.HealthCheckCampaignResponse;
 
@@ -13,6 +14,8 @@ public interface HealthCheckCampaignService {
     HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request);
 
     void startCampaign(Long campaignId);
+
+    List<ApprovedEventResponse> getApprovedEventsByStudentId(Long studentId);
 
     void endCampaign(Long campaignId);
 
