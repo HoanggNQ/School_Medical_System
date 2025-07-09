@@ -93,7 +93,7 @@ const UserService = {
     // Get user by ID
     getUserById: async (userId) => {
         try {
-            const response = await axiosInstance.get(`${API_ENDPOINTS.USER.GET_BY_ID}/${userId}`);
+            const response = await axiosInstance.get(API_ENDPOINTS.USER.GET_BY_ID(userId));
             return response;
         } catch (error) {
             throw handleApiError(error);
@@ -103,7 +103,7 @@ const UserService = {
     // Update user
     updateUser: async (userId, userData) => {
         try {
-            const response = await axiosInstance.put(`${API_ENDPOINTS.USER.UPDATE}/${userId}`, userData);
+            const response = await axiosInstance.put(API_ENDPOINTS.USER.UPDATE(userId), userData);
             return response;
         } catch (error) {
             throw handleApiError(error);
@@ -148,7 +148,8 @@ const UserService = {
                 gender: nurseData.gender,
                 avatarUrl: nurseData.avatarUrl || '',
                 phoneNumber: nurseData.phoneNumber,
-                fullname: nurseData.fullname || nurseData.fullName,
+                fullName: nurseData.fullName,
+                roleName: nurseData.roleName,
                 dob: nurseData.dob
             };
             const response = await axiosInstance.post('api/v1/user/createNurse', payload);

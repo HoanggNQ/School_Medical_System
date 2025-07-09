@@ -132,7 +132,7 @@ const CampaignsNurse = () => {
                                 <TableRow
                                     key={campaign.id}
                                     className="cursor-pointer"
-                                    onClick={() => navigate('/health-check', { state: { campaignId: campaign.id } })}
+                                    onClick={() => navigate(`/health-check/${campaign.id}`)}
                                 >
                                     <TableCell className="font-medium">{campaign.id}</TableCell>
                                     <TableCell className="font-medium">{campaign.name}</TableCell>

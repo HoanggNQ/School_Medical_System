@@ -110,7 +110,7 @@ const UserManagement = () => {
     try {
       // Create registration data without confirmPassword
       const registrationData = {
-        fullname: formData.fullName,
+        fullName: formData.fullName,
         username: formData.username,
         email: formData.email,
         password: formData.password,
@@ -126,8 +126,11 @@ const UserManagement = () => {
         registrationData.dob = new Date(registrationData.dob).toISOString().split('T')[0];
       }
 
-      const response = await AuthService.register(registrationData);
+      const response = await UserService.createNurse(registrationData);
+      
       console.log(response);
+      console.log("registrationData",registrationData);
+
 
       toast({
         title: "Đăng ký thành công!",
@@ -352,13 +355,13 @@ const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2" onClick={e => e.stopPropagation()}>
-                        <Button
+                        {/* <Button
                           variant="outline"
                           size="sm"
                           onClick={() => openEditModal(user)}
                         >
                           <Edit className="w-4 h-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="outline"
                           size="sm"
@@ -470,7 +473,17 @@ const UserManagement = () => {
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-gray-700">Avatar:</span>
               </div>
-              <div>{selectedDetail.avatarUrl ? 'Có' : 'Không có'}</div>
+              <div>
+                {selectedDetail.avatarUrl ? (
+                  <img
+                    src={selectedDetail.avatarUrl}
+                    alt="Avatar"
+                    className="w-16 h-16 rounded-full object-cover border"
+                  />
+                ) : (
+                  'Không có'
+                )}
+              </div>
             </div>
           )}
           <div className="flex justify-end mt-4">

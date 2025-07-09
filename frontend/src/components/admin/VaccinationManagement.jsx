@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, Info, Calendar as CalendarIcon, Layers, ClipboardList, BadgeCheck } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, Info, Calendar as CalendarIcon, Layers, ClipboardList, BadgeCheck, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -262,6 +262,29 @@ const validate = () => {
     setLoading(false);
   };
 
+  const handleRemindVaccination = async (vaccinationId) => {
+    setLoading(true);
+    try {
+      await vaccinationService.remindVaccination(vaccinationId);
+      toast({ title: 'Đã gửi nhắc nhở lịch tiêm chủng!' });
+    } catch (error) {
+      let errorMsg = 'Đã xảy ra lỗi.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = error.toString();
+      }
+      toast({
+        title: 'Gửi nhắc nhở thất bại',
+        description: errorMsg,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openEditModal = (vaccination) => {
     setSelectedVaccination(vaccination);
     setFormData({
@@ -375,6 +398,11 @@ const validate = () => {
                   <TableCell>{vaccination.createdAt}</TableCell>
                   <TableCell>
                     <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                    {(vaccination.status === 'PENDING' || vaccination.status === 'SCHEDULED') && (
+                        <Button size="icon" variant="outline" onClick={() => handleRemindVaccination(vaccination.id)} disabled={loading}>
+                          <Bell className="w-4 h-4 text-blue-500" />
+                        </Button>
+                      )}
                       {vaccination.status === 'PENDING' && (
                         <Button size="icon" variant="outline" onClick={() => openEditModal(vaccination)}>
                           <Edit className="w-4 h-4 text-blue-500" />
@@ -393,6 +421,7 @@ const validate = () => {
                           Kết thúc 
                         </Button>
                       )}
+                     
                     </div>
                   </TableCell>
                 </TableRow>

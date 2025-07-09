@@ -11,6 +11,10 @@ const AuthService = {
                 if (response.data.data.user) {
                     localStorage.setItem('user', JSON.stringify(response.data.data.user));
                 }
+                // Lưu trữ thông tin isFirstLogin nếu có
+                if (response.data.data.isFirstLogin !== undefined) {
+                    localStorage.setItem('isFirstLogin', JSON.stringify(response.data.data.isFirstLogin));
+                }
             }
             return response;
         } catch (error) {
@@ -27,6 +31,17 @@ const AuthService = {
         } catch (error) {
             console.error('Error parsing user data:', error);
             return null;
+        }
+    },
+
+    getIsFirstLogin: () => {
+        const isFirstLoginStr = localStorage.getItem('isFirstLogin');
+        if (!isFirstLoginStr) return false;
+        try {
+            return JSON.parse(isFirstLoginStr);
+        } catch (error) {
+            console.error('Error parsing isFirstLogin data:', error);
+            return false;
         }
     },
 
@@ -84,6 +99,7 @@ const AuthService = {
             await axiosInstance.post(API_ENDPOINTS.AUTH.LOGOUT);
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+            localStorage.removeItem('isFirstLogin');
         } catch (error) {
             throw error;
         }

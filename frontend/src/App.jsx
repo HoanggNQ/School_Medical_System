@@ -34,7 +34,11 @@ import PlaceholderPage from './components/nurse/PlaceholderPage';
 import CampaignsNurse from './components/nurse/CampaignsNurse';
 import HomePage from './components/auth/HomePage';
 import ShowListCampaign from './components/admin/ShowLIstCampaign';
+import ShowListVaccination from './components/admin/ShowListVaccination';
 import StaticCampaign from './components/admin/StaticCampaign';
+import StaticVaccination from './components/admin/StacticVaccination';
+import BlogManagement from './components/admin/BlogManagement';
+import BlogListPage from './components/admin/BlogListPage';
 
 
 const AuthPage = () => {
@@ -199,6 +203,7 @@ function App() {
         <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+        <Route path="/blog" element={<BlogListPage />} />
 
         <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE', 'STUDENT', 'PARENT']} />}>
           <Route path="/" element={<AppLayout />}>
@@ -209,9 +214,15 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
               <Route path="users" element={<UserManagement />} />
               <Route path="students" element={<StudentManagement />} />
+              <Route path="blogs" element={<BlogManagement />} />
 
               <Route path="show-campaigns" element={<ShowListCampaign />} />
-              <Route path="static-campaigns" element={<StaticCampaign />} />
+              <Route path="static-campaigns/:campaignId" element={<StaticCampaign />} />
+              <Route path="show-vaccination" element={<ShowListVaccination />} />
+              
+              <Route path="static-vaccination/:vaccinationId" element={<StaticVaccination />} />
+
+
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
@@ -222,7 +233,7 @@ function App() {
               <Route path="medicines" element={<MedicineManagement />} />
               <Route path="health-records" element={<PlaceholderPage />} />
               <Route path="management-vaccine" element={<ManagementVaccine />} />
-              <Route path="health-check" element={<HealthCheck />} />
+              <Route path="health-check/:campaignId" element={<HealthCheck />} />
               <Route path="event" element={<Event />} />
             </Route>
 

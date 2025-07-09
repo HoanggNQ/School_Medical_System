@@ -54,7 +54,24 @@ export const vaccinationService = {
         } catch (error) {
             throw handleApiError(error);
         }
+    },
+    remindVaccination: async (vaccinationId) => {
+        try {
+            const response = await axiosInstance.post(API_ENDPOINTS.VACCINATION_ENDPOINTS.REMIND(vaccinationId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+      getVaccinationStatistics: async (vaccinationId) => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.VACCINATION_ENDPOINTS.STATISTICS(vaccinationId));
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
     }
+  },
 };
+
 
 export default vaccinationService;

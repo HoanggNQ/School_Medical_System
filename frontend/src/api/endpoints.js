@@ -78,6 +78,19 @@ const API_ENDPOINTS = {
     GET_BY_ID: (id) => `api/vaccination-campaign/campaigns/${id}`,
     START: (id) => `api/vaccination-campaign/campaigns/${id}/start`,
     END: (id) => `api/vaccination-campaign/campaigns/${id}/end`,
+    REMIND: (id)=> `api/vaccination-campaign/campaigns/${id}/remind`,
+    STATISTICS: (id) => `api/v1/dashboard/vaccination/${id}/statistics`,
+
+
+  },
+  BLOG: {
+    GET_ALL: 'api/contents/getAll',
+    CREATE: 'api/contents/create',
+    GET_BY_ID: (id) => `api/contents/getById/${id}`,
+    UPDATE: (id) => `api/contents/update/${id}`,
+    DELETE: (id) => `api/contents/delete/${id}`,
+    GET_ALL_CATEGORIES: 'api/v1/content-category',
+    GET_BY_CATEGORY: (categoryId) => `api/contents/findContentByCategory/${categoryId}`,
   },
   DASHBOARD: {
     OVERVIEW: 'api/v1/dashboard/overview',

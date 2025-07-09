@@ -88,6 +88,7 @@ const UserForm = ({ isEdit = false, formData, handleInputChange, onCancel, onSub
             <SelectContent>
               
               <SelectItem value="SCHOOL_NURSE">Y tá trường</SelectItem>
+              <SelectItem value="PARENT">Phụ Huynh </SelectItem>
              
             </SelectContent>
           </Select>
