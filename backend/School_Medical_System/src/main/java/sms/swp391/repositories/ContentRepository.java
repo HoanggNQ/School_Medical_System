@@ -14,5 +14,5 @@ public interface ContentRepository extends JpaRepository<ContentEntity, Long> {
     List<ContentEntity> findByContentCategoryEntity_Id(Long contentCategoryId);
 
     @Query("SELECT c FROM ContentEntity c WHERE LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<ContentEntity> searchContents(@Param("keywork")String keyword, Pageable pageable);
+    Page<ContentEntity> searchContents(@Param("keyword") String keyword, Pageable pageable);
 }
