@@ -22,8 +22,9 @@ import StudentHealthProfile from './components/student/StudentHealthProfile';
 import StudentVaccinationHistory from './components/student/StudentVaccinationHistory';
 import StudentAppointments from './components/student/StudentAppointments';
 import ParentChildrenHealth from './components/parent/ParentChildrenHealth';
-import ParentVaccinationSchedule from './components/parent/ParentVaccinationSchedule';
+import Schedule from './components/parent/Schedule';
 import ParentNotifications from './components/parent/ParentNotifications';
+import ParentProfile from './components/parent/ParentProfile';
 import CampaignManagement from '@/components/admin/CampaignManagement';
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 import ProfileForm from '@/components/auth/ProfileForm';
@@ -257,9 +258,12 @@ function App() {
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['PARENT']} />}>
+
               <Route path="children-health" element={<ParentChildrenHealth />} />
-              <Route path="vaccination-schedule" element={<ParentVaccinationSchedule />} />
+              <Route path="schedule" element={<Schedule />} />
               <Route path="notifications" element={<ParentNotifications />} />
+              <Route path="profile" element={<ParentProfile />} />
+
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>

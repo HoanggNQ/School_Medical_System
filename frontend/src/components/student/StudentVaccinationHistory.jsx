@@ -1,102 +1,129 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Shield, CalendarCheck, Download, Filter, CheckCircle, Clock, AlertCircle, PlusCircle } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import { Badge } from '@/components/ui/badge';
+"use client"
+
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-const mockVaccinationHistory = [
-  {
-    id: 'vh1',
-    vaccineName: 'Sởi - Quai bị - Rubella (MMR) - Mũi 1',
-    dateAdministered: '2010-07-20',
-    administeredBy: 'Trung tâm Y tế Dự phòng Quận 1',
-    lotNumber: 'MMR123X',
-    status: 'Đã hoàn thành',
-    nextDueDate: '2025-07-15 (Mũi 2)',
-  },
-  {
-    id: 'vh2',
-    vaccineName: 'Viêm gan B - Mũi 3',
-    dateAdministered: '2009-01-10',
-    administeredBy: 'Bệnh viện Nhi Đồng 2',
-    lotNumber: 'VGB567Y',
-    status: 'Đã hoàn thành',
-    nextDueDate: null,
-  },
-  {
-    id: 'vh3',
-    vaccineName: 'Uốn ván - Bạch hầu - Ho gà (Tdap)',
-    dateAdministered: '2024-12-10',
-    administeredBy: 'Phòng Y tế Trường THPT ABC',
-    lotNumber: 'TDAP007Z',
-    status: 'Đã hoàn thành',
-    nextDueDate: 'Khoảng 10 năm sau',
-  },
-  {
-    id: 'vh4',
-    vaccineName: 'Cúm mùa (hàng năm)',
-    dateAdministered: null,
-    administeredBy: null,
-    lotNumber: null,
-    status: 'Sắp đến hạn',
-    nextDueDate: '2025-10-01',
-  },
-   {
-    id: 'vh5',
-    vaccineName: 'Thủy đậu - Mũi 1',
-    dateAdministered: '2012-05-15',
-    administeredBy: 'Trung tâm Y tế Dự phòng Quận 1',
-    lotNumber: 'TD001A',
-    status: 'Đã hoàn thành',
-    nextDueDate: '2024-11-05 (Mũi 2 - Đã hoàn thành)',
-  },
-];
-
-const StatusBadge = ({ status }) => {
-  let icon;
-  let colorClasses;
-
-  if (status.includes('Đã hoàn thành')) {
-    icon = <CheckCircle className="w-3.5 h-3.5 mr-1.5" />;
-    colorClasses = 'bg-green-100 text-green-700';
-  } else if (status.includes('Sắp đến hạn')) {
-    icon = <Clock className="w-3.5 h-3.5 mr-1.5" />;
-    colorClasses = 'bg-yellow-100 text-yellow-700';
-  } else if (status.includes('Quá hạn')) {
-    icon = <AlertCircle className="w-3.5 h-3.5 mr-1.5" />;
-    colorClasses = 'bg-red-100 text-red-700';
-  } else {
-    icon = <Clock className="w-3.5 h-3.5 mr-1.5" />;
-    colorClasses = 'bg-gray-100 text-gray-700';
-  }
-  return <Badge variant="outline" className={`flex items-center text-xs ${colorClasses}`}>{icon}{status}</Badge>;
-};
-
+  Syringe,
+  Calendar,
+  User,
+  MapPin,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Stethoscope,
+  Shield,
+} from "lucide-react"
+import studentService from "../../api/services/student.service"
 
 const StudentVaccinationHistory = () => {
-  const [vaccinations, setVaccinations] = useState(mockVaccinationHistory);
-  const [filterType, setFilterType] = useState('all'); // 'all', 'completed', 'upcoming'
+  const [vaccinationRecords, setVaccinationRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [currentUser, setCurrentUser] = useState(null)
 
-  const filteredVaccinations = vaccinations.filter(v => {
-    if (filterType === 'all') return true;
-    if (filterType === 'completed') return v.status.includes('Đã hoàn thành');
-    if (filterType === 'upcoming') return v.status.includes('Sắp đến hạn') || v.status.includes('Quá hạn');
-    return true;
-  }).sort((a,b) => {
-    const dateA = a.dateAdministered ? new Date(a.dateAdministered) : new Date(a.nextDueDate || 0);
-    const dateB = b.dateAdministered ? new Date(b.dateAdministered) : new Date(b.nextDueDate || 0);
-    return dateB - dateA;
-  });
+  useEffect(() => {
+    const fetchStudentVaccinationRecord = async () => {
+      try {
+        setLoading(true)
+        const user = JSON.parse(localStorage.getItem("currentUser"))
+        setCurrentUser(user)
+
+        const response = await studentService.getStudentVaccinationRecord(user.id)
+        console.log("Student Vaccination Records:", response)
+
+        if (response && response.data) {
+          setVaccinationRecords(response.data)
+        } else {
+          setVaccinationRecords([])
+        }
+      } catch (error) {
+        console.error("Error fetching vaccination records:", error)
+        setError("Không thể tải lịch sử tiêm chủng")
+        setVaccinationRecords([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStudentVaccinationRecord()
+  }, [])
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A"
+    try {
+      return new Date(dateString).toLocaleDateString("vi-VN", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A"
+    }
+    return String(value)
+  }
+
+  const getVaccineIcon = (vaccineName) => {
+    if (vaccineName?.toLowerCase().includes("covid")) {
+      return <Shield className="w-6 h-6 text-blue-600" />
+    } else if (vaccineName?.toLowerCase().includes("cúm")) {
+      return <Stethoscope className="w-6 h-6 text-green-600" />
+    }
+    return <Syringe className="w-6 h-6 text-purple-600" />
+  }
+
+  const getVaccineColor = (vaccineName) => {
+    if (vaccineName?.toLowerCase().includes("covid")) {
+      return "bg-blue-50 border-blue-200 hover:bg-blue-100"
+    } else if (vaccineName?.toLowerCase().includes("cúm")) {
+      return "bg-green-50 border-green-200 hover:bg-green-100"
+    }
+    return "bg-purple-50 border-purple-200 hover:bg-purple-100"
+  }
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+            <span className="ml-2 text-gray-600">Đang tải lịch sử tiêm chủng...</span>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="text-center py-12">
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Có lỗi xảy ra</h3>
+            <p className="text-gray-500">{error}</p>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -105,90 +132,237 @@ const StudentVaccinationHistory = () => {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Lịch sử tiêm chủng</h1>
-          <p className="text-gray-600 mt-2">Tổng quan về các mũi vắc-xin đã tiêm và lịch trình.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-           <Button variant="outline" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>
-            <Filter className="w-4 h-4 mr-2" />
-            Lọc ({filterType})
-          </Button>
-          <Button className="btn-primary" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>
-            <Download className="w-4 h-4 mr-2" />
-            Tải xuống PDF
-          </Button>
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <Syringe className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">Lịch sử tiêm chủng</h2>
+              <p className="text-purple-100">Theo dõi các mũi tiêm vaccine của {formatValue(currentUser?.fullName)}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold">{vaccinationRecords.length}</div>
+            <div className="text-sm text-purple-100">Tổng số mũi tiêm</div>
+          </div>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
+      {/* Student Info Card */}
+      {currentUser && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+              <User className="w-8 h-8 text-purple-600" />
+            </div>
             <div>
-              <CardTitle className="flex items-center">
-                <CalendarCheck className="w-5 h-5 mr-2 text-blue-600" />
-                Danh sách mũi tiêm
-              </CardTitle>
-              <CardDescription>
-                Hiển thị thông tin chi tiết về các lần tiêm chủng của bạn.
-              </CardDescription>
+              <h3 className="text-lg font-semibold text-gray-900">{currentUser.fullName}</h3>
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span>ID: {currentUser.id}</span>
+                {currentUser.email && (
+                  <>
+                    <span>•</span>
+                    <span>{currentUser.email}</span>
+                  </>
+                )}
+              </div>
             </div>
-             <Button variant="outline" size="sm" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Chức năng thêm mũi tiêm mới sẽ sớm được cập nhật! 🚀" })}>
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Thêm mũi tiêm
-            </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          {filteredVaccinations.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tên vắc-xin</TableHead>
-                  <TableHead>Ngày tiêm</TableHead>
-                  <TableHead className="hidden lg:table-cell">Nơi tiêm</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="hidden md:table-cell">Lịch nhắc lại</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredVaccinations.map((vaccine) => (
-                  <TableRow key={vaccine.id}>
-                    <TableCell className="font-medium">{vaccine.vaccineName}</TableCell>
-                    <TableCell>{vaccine.dateAdministered || 'Chưa tiêm'}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{vaccine.administeredBy || 'N/A'}</TableCell>
-                    <TableCell><StatusBadge status={vaccine.status} /></TableCell>
-                    <TableCell className="hidden md:table-cell">{vaccine.nextDueDate || 'Không có'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-12">
-              <Shield className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700">Không có dữ liệu tiêm chủng</h3>
-              <p className="text-gray-500 mt-2">Lịch sử tiêm chủng của bạn hiện đang trống hoặc không khớp với bộ lọc.</p>
-               <Button className="mt-6 btn-primary" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>
-                Cập nhật lịch sử tiêm
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-       <Card className="bg-teal-50 border-teal-200">
-        <CardHeader>
-          <CardTitle className="text-teal-700 flex items-center text-lg">
-            <Shield className="w-5 h-5 mr-2" />
-            Vì sao tiêm chủng quan trọng?
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-teal-600 text-sm">
-          <p>Tiêm chủng là một trong những biện pháp phòng bệnh hiệu quả nhất, giúp cơ thể tạo ra kháng thể chống lại các bệnh truyền nhiễm nguy hiểm. Việc tiêm chủng đầy đủ và đúng lịch không chỉ bảo vệ sức khỏe cá nhân mà còn góp phần bảo vệ cộng đồng.</p>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+        </div>
+      )}
 
-export default StudentVaccinationHistory;
+      {/* Vaccination Records */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center">
+            <Syringe className="w-6 h-6 mr-2 text-purple-500" />
+            Hồ sơ tiêm chủng
+          </h3>
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <CheckCircle className="w-4 h-4" />
+            <span>{vaccinationRecords.length} bản ghi</span>
+          </div>
+        </div>
+
+        {vaccinationRecords.length === 0 ? (
+          <div className="text-center py-12">
+            <Syringe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">Chưa có lịch sử tiêm chủng</h4>
+            <p className="text-gray-500">Thông tin tiêm chủng sẽ được cập nhật khi có vaccine mới</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {vaccinationRecords.map((record, index) => (
+              <motion.div
+                key={record.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 * index }}
+                className={`border-2 rounded-lg p-6 hover:shadow-md transition-all duration-200 ${getVaccineColor(record.vaccineName)}`}
+              >
+                {/* Record Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                      {getVaccineIcon(record.vaccineName)}
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{formatValue(record.vaccineName)}</h4>
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <span>Mũi tiêm #{record.id}</span>
+                        <span>•</span>
+                        <span>Chiến dịch #{record.campaignId}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-500">Năm học</div>
+                    <div className="font-medium text-gray-900">{formatValue(record.academicYear)}</div>
+                  </div>
+                </div>
+
+                {/* Record Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày tiêm</p>
+                      <p className="font-medium text-gray-900">{formatDate(record.administrationDate)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Người thực hiện</p>
+                      <p className="font-medium text-gray-900">{formatValue(record.administrationByName)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Vị trí tiêm</p>
+                      <p className="font-medium text-gray-900">{formatValue(record.injectionSite)}</p>
+                    </div>
+                  </div>
+
+                  {record.nextDoseDate && (
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Mũi tiếp theo</p>
+                        <p className="font-medium text-gray-900">{formatDate(record.nextDoseDate)}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-3 md:col-span-2">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Học sinh</p>
+                      <p className="font-medium text-gray-900">{formatValue(record.studentName)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Follow-up Notes */}
+                {record.followUpNotes && (
+                  <div className="bg-white bg-opacity-60 p-4 rounded-lg mb-4">
+                    <h6 className="font-medium text-gray-800 mb-2 flex items-center">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Ghi chú theo dõi:
+                    </h6>
+                    <p className="text-sm text-gray-700 leading-relaxed">{record.followUpNotes}</p>
+                  </div>
+                )}
+
+                {/* Reaction Notes */}
+                {record.reactionNotes && (
+                  <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                    <h6 className="font-medium text-yellow-800 mb-2 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Phản ứng sau tiêm:
+                    </h6>
+                    <p className="text-sm text-yellow-700 leading-relaxed">{record.reactionNotes}</p>
+                  </div>
+                )}
+
+                {/* No reaction note */}
+                {!record.reactionNotes && (
+                  <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      <span className="text-sm text-green-700 font-medium">Không có phản ứng bất thường</span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Summary Statistics */}
+      {vaccinationRecords.length > 0 && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Thống kê tiêm chủng</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-blue-600">Tổng số mũi tiêm</p>
+                  <p className="text-2xl font-bold text-blue-800">{vaccinationRecords.length}</p>
+                </div>
+                <Syringe className="w-8 h-8 text-blue-600" />
+              </div>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600">Loại vaccine</p>
+                  <p className="text-2xl font-bold text-green-800">
+                    {new Set(vaccinationRecords.map((r) => r.vaccineName)).size}
+                  </p>
+                </div>
+                <Shield className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-purple-600">Năm học gần nhất</p>
+                  <p className="text-lg font-bold text-purple-800">
+                    {vaccinationRecords.length > 0
+                      ? vaccinationRecords.sort(
+                          (a, b) => new Date(b.administrationDate) - new Date(a.administrationDate),
+                        )[0]?.academicYear || "N/A"
+                      : "N/A"}
+                  </p>
+                </div>
+                <Calendar className="w-8 h-8 text-purple-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+export default StudentVaccinationHistory
