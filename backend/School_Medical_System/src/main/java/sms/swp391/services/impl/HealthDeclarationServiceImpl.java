@@ -94,9 +94,7 @@ public class HealthDeclarationServiceImpl implements HealthDeclarationService {
         UserEntity declaredBy = userRepository.findById(dto.getDeclaredById())
                 .orElseThrow(() -> new NotFoundException("User not found: " + dto.getDeclaredById()));
 
-        boolean exists = healthDeclarationRepository.existsByStudentIdAndAcademicYear(dto.getStudentId(), dto.getAcademicYear());
-        if (exists)
-            throw new IllegalArgumentException("Declaration already exists for academic year: " + dto.getAcademicYear());
+        
 
         HealthDeclarationEntity entity = HealthDeclarationMapper.fromCreateDTO(dto, student, declaredBy);
         entity.setDeclarationDate(LocalDate.now());
