@@ -1,6 +1,5 @@
 package sms.swp391.utils;
 
-import sms.swp391.models.dtos.requests.StudentRequest;
 import sms.swp391.models.dtos.responses.StudentGetResponse;
 import sms.swp391.models.dtos.responses.StudentResponse;
 import sms.swp391.models.entities.*;
@@ -10,7 +9,6 @@ public class StudentMapper {
     public static StudentResponse toDTO(StudentEntity entity) {
         if (entity == null) return null;
 
-        StudentHealthProfileEntity profile = entity.getHealthProfile();
 
         return StudentResponse.builder()
                 .id(entity.getId())
@@ -20,38 +18,28 @@ public class StudentMapper {
                 .parentId(entity.getParent() != null ? entity.getParent().getUserId() : null)
                 .parentName(entity.getParent() != null ? entity.getParent().getFullname() : null)
                 .studentCode(entity.getStudentCode())
-                .bloodType(profile != null ? profile.getBloodType() : null)
-                .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
-                .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
-                .allergies(profile != null ? profile.getAllergies() : null)
-                .height(profile != null ? profile.getHeight() : null)
-                .weight(profile != null ? profile.getWeight() : null)
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
+                .avatarUrl(entity.getUser() != null ? entity.getUser().getAvatarurl() : null)
                 .build();
     }
 
-
-
     public static StudentGetResponse toStudentGetResponse(StudentEntity student) {
+        if (student == null || student.getUser() == null) return null;
+
         UserEntity user = student.getUser();
-        StudentHealthProfileEntity profile = student.getHealthProfile();
+        UserEntity parent = student.getParent();
 
         return StudentGetResponse.builder()
-                .userId(user.getUserId())
+                .studentId(student.getId())
                 .fullName(user.getFullname())
+                .parentID(parent != null ? String.valueOf(parent.getUserId()) : null)
+                .parentName(parent != null ? parent.getFullname() : null)
                 .dob(user.getDob() != null ? user.getDob().toString() : null)
                 .gender(user.getGender())
                 .className(student.getClassEntity() != null ? student.getClassEntity().getClassName() : null)
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
                 .studentCode(student.getStudentCode())
-                .bloodType(profile != null ? profile.getBloodType() : null)
-                .geneticDiseases(profile != null ? profile.getGeneticDiseases() : null)
-                .chronicDiseases(profile != null ? profile.getChronicDiseases() : null)
-                .allergies(profile != null ? profile.getAllergies() : null)
-                .height(profile != null ? profile.getHeight() : null)
-                .weight(profile != null ? profile.getWeight() : null)
+                .avatarUrl(user.getAvatarurl())
                 .build();
     }
 }

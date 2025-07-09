@@ -87,17 +87,8 @@ public class StudentServiceImpl implements StudentService {
                 .studentCode(generateStudentCode())
                 .build();
 
-        StudentHealthProfileEntity profile = StudentHealthProfileEntity.builder()
-                .student(student)
-                .bloodType(request.getBloodType())
-                .chronicDiseases(request.getChronicDiseases())
-                .geneticDiseases(request.getGeneticDiseases())
-                .allergies(request.getAllergies())
-                .height(request.getHeight())
-                .weight(request.getWeight())
-                .build();
 
-        student.setHealthProfile(profile);
+
         studentRepository.saveAndFlush(student);
         recalculateTotalStudent(classEntity);
         if (classEntity != null) {
@@ -349,13 +340,8 @@ public class StudentServiceImpl implements StudentService {
                 .userRegister(user)
                 .classId(dto.getClassId())
                 .parentId(dto.getParentId())
-                .bloodType(dto.getBloodType())
-                .chronicDiseases(dto.getChronicDiseases())
-                .allergies(dto.getAllergies())
                 .emergencyContactName(dto.getEmergencyContactName())
                 .emergencyContactPhone(dto.getEmergencyContactPhone())
-                .height(dto.getHeight())
-                .weight(dto.getWeight())
                 .build();
     }
 

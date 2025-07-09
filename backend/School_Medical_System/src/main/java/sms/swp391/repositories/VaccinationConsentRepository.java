@@ -60,4 +60,6 @@ public interface VaccinationConsentRepository extends JpaRepository<VaccinationC
     List<VaccinationConsentEntity> findByVaccinationCampaign_IdAndConsentStatus(Long campaignId,MedicalStatus consentStatus);
 
     List<VaccinationConsentEntity> findAllByVaccinationCampaignId(Long vaccinationCampaignId);
+
+    List<VaccinationConsentEntity> findByStudentIdAndConsentStatus(Long studentId, MedicalStatus consentStatus);
 }
