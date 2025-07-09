@@ -24,7 +24,6 @@ public class ContentEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Lob
     @Column(name = "body_content", nullable = false, columnDefinition = "text")
     private String bodyContent;
 
