@@ -110,12 +110,17 @@ public class AuthServiceImpl implements AuthService {
                     userEntity.getRoleName().toString(),
                     userEntity.getAvatarurl()
             );
-
+            boolean isFirstLogin = userEntity.isFirstLogin();
+            if (isFirstLogin) {
+                userEntity.setFirstLogin(false);
+                userRepository.save(userEntity);
+            }
             return new JwtResponse(
                     token,
                     refreshToken,
                     86400000 / 1000,
-                    userInfo
+                    userInfo,
+                    isFirstLogin
             );
         } catch (BadCredentialsException e) {
             throw new AuthFailedException("Invalid email or password");
