@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuthService from '@/api/services/auth.service';
 import UserService from '@/api/services/user.service';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,8 +11,10 @@ import { Label } from '@/components/ui/label';
 
 const ChangePasswordForm = () => {
   const { toast } = useToast();
+  const { user, updateFirstLoginStatus } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: AuthService.getCurrentUser()?.email || '',
+    email: user?.email || '',
     oldPassword: '',
     newPassword: '',
     newPasswordConfirm: '',
@@ -38,6 +42,10 @@ const ChangePasswordForm = () => {
         title: 'Thành công',
         description: 'Đổi mật khẩu thành công.',
       });
+      
+      // Cập nhật trạng thái isFirstLogin thành false
+      updateFirstLoginStatus(false);
+      
       // Reset form
       setFormData({
         ...formData,
@@ -45,6 +53,9 @@ const ChangePasswordForm = () => {
         newPassword: '',
         newPasswordConfirm: '',
       });
+      
+      // Chuyển hướng đến dashboard sau khi đổi mật khẩu thành công
+      navigate('/dashboard');
     } catch (error) {
       toast({
         title: 'Lỗi',

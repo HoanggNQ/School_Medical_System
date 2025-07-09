@@ -98,7 +98,7 @@ const ShowListCampaign = () => {
                     <Button onClick={() => navigate('/show-campaigns')} className="btn-primary">
                         Chiến dịch
                     </Button>
-                    <Button onClick={() => navigate('/vaccinations')} className="btn-secondary">
+                    <Button onClick={() => navigate('/show-vaccination')} className="btn-secondary">
                         Vaccine
                     </Button>
                 </div>
@@ -106,7 +106,7 @@ const ShowListCampaign = () => {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                        <CardTitle>Danh sách chiến dịch</CardTitle>
+                        <CardTitle>Danh sách chiến dịch khám sức khỏe </CardTitle>
                         <div className="relative w-full sm:w-80">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
@@ -130,7 +130,7 @@ const ShowListCampaign = () => {
                                 <TableHead>Khối lớp</TableHead>
                                 <TableHead>Trạng thái</TableHead>
                                 <TableHead>Ngày tạo</TableHead>
-                                <TableHead>Thao tác</TableHead>
+                                {/* <TableHead>Thao tác</TableHead> */}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -138,7 +138,7 @@ const ShowListCampaign = () => {
                                 <TableRow
                                     key={campaign.id}
                                     className="cursor-pointer"
-                                    onClick={() => navigate('/static-campaigns', { state: { campaignId: campaign.id } })}
+                                    onClick={() => navigate(`/static-campaigns/${campaign.id}`)}
                                 >
                                     <TableCell className="font-medium">{campaign.id}</TableCell>
                                     <TableCell className="font-medium">{campaign.name}</TableCell>

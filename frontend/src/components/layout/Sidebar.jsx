@@ -12,7 +12,8 @@ import {
   UserCheck,
   Activity,
   FlameKindling,
-  User
+  User,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -34,6 +35,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           ...baseItems,
           { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
           { id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
+          { id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
 
           { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
           { id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
@@ -44,6 +46,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         return [
           ...baseItems,
           { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
+          { id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
           { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
           { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' }
         ];

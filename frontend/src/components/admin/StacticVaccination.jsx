@@ -1,44 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { toast } from '@/components/ui/use-toast';
-import campaignService from '../../api/services/campain.service';
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import medicalService from '../../api/services/medical.service';
+import vaccinationService from '../../api/services/vaccination.service';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 
-const StaticCampaign = () => {
-    const [campaigns, setCampaigns] = useState([]);
+const StaticVaccination = () => {
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const { campaignId } = useParams();
-    const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+    const { vaccinationId } = useParams();
     const [statistics, setStatistics] = useState(null);
 
-    const statusOrder = {
-        'APPROVED': 0, // Đang diễn ra
-        'PENDING': 1,  // Chờ duyệt
-        'DONE': 2      // Đã xong
-    };
-
     useEffect(() => {
-        if (!campaignId) {
+        if (!vaccinationId) {
             setStatistics(null);
-            setError('Không tìm thấy ID chiến dịch. Vui lòng chọn chiến dịch từ danh sách.');
+            setError('Không tìm thấy ID lịch tiêm chủng. Vui lòng chọn từ danh sách.');
             return;
         }
         const fetchStatistics = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const stats = await medicalService.getHealthCheckStatistics(campaignId);
+                const stats = await vaccinationService.getVaccinationStatistics(vaccinationId);
                 setStatistics(stats);
             } catch (err) {
                 setError('Không thể tải thống kê consent.');
@@ -47,7 +32,7 @@ const StaticCampaign = () => {
             }
         };
         fetchStatistics();
-    }, [campaignId]);
+    }, [vaccinationId]);
 
     const rawData = statistics ? [
         { name: 'Đã đồng ý', count: statistics.totalAgreed },
@@ -62,26 +47,7 @@ const StaticCampaign = () => {
         raw: item.count
     }));
 
-    const pieData = statistics ? [
-        { name: 'Đã mời', value: statistics.totalInvited },
-        { name: 'Đã đồng ý', value: statistics.totalAgreed },
-        { name: 'Đã từ chối', value: statistics.totalRejected },
-        { name: 'Chờ phản hồi', value: statistics.totalPending },
-        { name: 'Đã hoàn thành', value: statistics.totalDone },
-    ] : [];
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-    const LABELS = ['Đã đồng ý', 'Đã từ chối', 'Chờ phản hồi', 'Đã hoàn thành'];
-
-    const filteredCampaigns = campaigns
-        .filter(campaign =>
-            campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (campaign.targetGrade + '').includes(searchTerm)
-        )
-        .sort((a, b) => {
-            const orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 99;
-            const orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 99;
-            return orderA - orderB;
-        });
 
     return (
         <motion.div
@@ -92,7 +58,7 @@ const StaticCampaign = () => {
         >
             <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Thống kê  chiến dịch</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Thống kê lịch tiêm chủng</h1>
                 </div>
                 <div className="flex gap-2">
                     <Button onClick={() => navigate(-1)} className="btn-primary">
@@ -118,7 +84,6 @@ const StaticCampaign = () => {
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={150}
-                                    // label={({ name, value }) => `${name}: ${value}%`}
                                 >
                                     {convertedData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -145,4 +110,4 @@ const StaticCampaign = () => {
     );
 };
 
-export default StaticCampaign; 
+export default StaticVaccination; 

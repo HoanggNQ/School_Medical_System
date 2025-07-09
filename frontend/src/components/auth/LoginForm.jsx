@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import AuthService from '../../api/services/auth.service';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,12 +24,31 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
     try {
       const response = await AuthService.login({ email, password });
       console.log(response.data);
-      login(response.data.data.user, response.data.data.accessToken);
+      
+      const userData = response.data.data.user;
+      const token = response.data.data.accessToken;
+      const isFirstLogin = response.data.data.firstLogin || false;
+      
+      login(userData, token, isFirstLogin);
+      
       toast({
         title: "Đăng nhập thành công!",
         description: `Chào mừng quay trở lại.`,
       });
+      
       setLoading(false);
+      
+      
+      if (isFirstLogin) {
+        toast({
+          title: "Đổi mật khẩu",
+          description: "Vui lòng đổi mật khẩu của bạn lần đầu tiên.",
+        });
+        navigate('/change-password');
+      } else {
+     
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error(error);
       let errorMsg = 'Đã xảy ra lỗi.';

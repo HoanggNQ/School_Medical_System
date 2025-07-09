@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import {  useLocation } from "react-router-dom"
+import {  useParams } from "react-router-dom"
 
 const HealthCheck = () => {
   const { toast } = useToast()
@@ -36,8 +36,7 @@ const HealthCheck = () => {
     scheduleTime: '',
   })
 
-  const location = useLocation()
-  const campaignId = location.state?.campaignId
+  const { campaignId } = useParams();
 
   console.log("campaignId",campaignId);
   console.log("location.state",location.state);
