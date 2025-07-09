@@ -1,165 +1,280 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Users, Activity, BarChart2, MessageSquare, ChevronDown, ChevronUp, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+"use client"
 
-const mockChildrenData = [
-  {
-    id: 'child1',
-    name: 'Nguyễn Văn An',
-    age: 8,
-    class: '3A',
-    lastCheckup: '2025-05-15',
-    overallStatus: 'Tốt',
-    recentActivity: 'Khám sức khỏe định kỳ',
-    allergies: ['Phấn hoa'],
-    medications: [],
-    height: '125 cm',
-    weight: '25 kg',
-    bmi: 16,
-    bloodPressure: '90/60 mmHg',
-    heartRate: '85 bpm',
-  },
-  {
-    id: 'child2',
-    name: 'Trần Thị Bình',
-    age: 10,
-    class: '5B',
-    lastCheckup: '2025-04-20',
-    overallStatus: 'Cần theo dõi',
-    recentActivity: 'Sốt nhẹ, nghỉ học 1 ngày',
-    allergies: ['Hải sản'],
-    medications: ['Thuốc hạ sốt (khi cần)'],
-    height: '135 cm',
-    weight: '30 kg',
-    bmi: 16.5,
-    bloodPressure: '95/65 mmHg',
-    heartRate: '90 bpm',
-  },
-];
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { Heart, Syringe, Stethoscope, Pill, FileText } from "lucide-react"
+import ParentService from "../../api/services/parent.service"
+import HealthRecords from "./health-records"
+import VaccinationHistory from "./vaccination-history"
+import SendMedicine from "./send-medicine"
+import HealthDeclaration from "./health-declaration"
+import HealthDeclarationHistory from "./health-declaration-history"
 
-const ChildDetails = ({ child }) => {
-  return (
-    <div className="space-y-4 p-4 bg-gray-50 rounded-md mt-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div><span className="font-semibold">Tuổi:</span> {child.age}</div>
-        <div><span className="font-semibold">Lớp:</span> {child.class}</div>
-        <div><span className="font-semibold">Lần khám gần nhất:</span> {child.lastCheckup}</div>
-        <div>
-          <span className="font-semibold">Tình trạng chung:</span>
-          <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${child.overallStatus === 'Tốt' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-            {child.overallStatus}
-          </span>
-        </div>
+const StudentHealth = () => {
+  const [students, setStudents] = useState([])
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [activeTab, setActiveTab] = useState("health-records")
+  const [loading, setLoading] = useState(true)
+  const [showDeclarationForm, setShowDeclarationForm] = useState(false)
+  const [editingDeclaration, setEditingDeclaration] = useState(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try { 
+        setLoading(true)
+        const parentRes = await ParentService.getParentProfile()
+        console.log("Fetched parent profile:", parentRes.data)
+        localStorage.setItem("parentProfile", JSON.stringify(parentRes.data))
+        const studentRes = await ParentService.getStudent()
+        setStudents(studentRes.data)
+        console.log("Fetched students:", studentRes.data)
+
+        if (studentRes.data.length > 0) {
+          setSelectedStudent(studentRes.data[0])
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Helper functions for parent component only
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A"
+    }
+    return String(value)
+  }
+
+  const getInitials = (name) => {
+    if (!name) return "N/A"
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
-      <div><span className="font-semibold">Hoạt động gần đây:</span> {child.recentActivity}</div>
-      <div><span className="font-semibold">Dị ứng:</span> {child.allergies.join(', ') || 'Không có'}</div>
-      <div><span className="font-semibold">Thuốc đang dùng:</span> {child.medications.join(', ') || 'Không có'}</div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-md flex items-center"><BarChart2 className="w-4 h-4 mr-2 text-green-600" />Chỉ số sức khỏe</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-            <div><span className="font-semibold">Chiều cao:</span> {child.height}</div>
-            <div><span className="font-semibold">Cân nặng:</span> {child.weight}</div>
-            <div><span className="font-semibold">BMI:</span> {child.bmi}</div>
-            <div><span className="font-semibold">Huyết áp:</span> {child.bloodPressure}</div>
-            <div><span className="font-semibold">Nhịp tim:</span> {child.heartRate}</div>
-          </div>
-        </CardContent>
-      </Card>
-      <Button size="sm" variant="outline" className="w-full" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>
-        <FileText className="w-4 h-4 mr-2" /> Xem báo cáo chi tiết
-      </Button>
-    </div>
-  );
-};
-
-
-const ParentChildrenHealth = () => {
-  const [expandedChild, setExpandedChild] = useState(null);
-
-  const toggleChildDetails = (childId) => {
-    setExpandedChild(expandedChild === childId ? null : childId);
-  };
+    )
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6"
+      className="min-h-screen bg-gray-50 py-8"
     >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sức khỏe con em</h1>
-          <p className="text-gray-600 mt-2">Tổng quan về tình hình sức khỏe của các con.</p>
-        </div>
-         <Button variant="outline" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>
-          <MessageSquare className="w-4 h-4 mr-2" />
-          Liên hệ y tá
-        </Button>
-      </div>
-
-      {mockChildrenData.map((child) => (
-        <Card key={child.id} className="card-hover overflow-hidden">
-          <CardHeader className="cursor-pointer" onClick={() => toggleChildDetails(child.id)}>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <Users className="w-6 h-6 mr-3 text-blue-600" />
-                <div>
-                  <CardTitle>{child.name}</CardTitle>
-                  <CardDescription>Lớp {child.class} - {child.age} tuổi</CardDescription>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm">
-                {expandedChild === child.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </Button>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Card */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl shadow-lg p-6 mb-8"
+        >
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <Heart className="w-8 h-8 text-white" />
             </div>
-          </CardHeader>
-          {expandedChild === child.id && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <CardContent>
-                <ChildDetails child={child} />
-              </CardContent>
-            </motion.div>
-          )}
-          <CardFooter className="bg-gray-50 p-3 text-xs text-gray-600">
-            {child.overallStatus === 'Tốt' ? <CheckCircle className="w-4 h-4 mr-2 text-green-500" /> : <AlertTriangle className="w-4 h-4 mr-2 text-yellow-500" />}
-            Cập nhật lần cuối: {new Date().toLocaleDateString('vi-VN')}
-          </CardFooter>
-        </Card>
-      ))}
-      
-      {mockChildrenData.length === 0 && (
-         <Card>
-          <CardContent className="text-center py-12">
-            <Users className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700">Chưa có thông tin con em</h3>
-            <p className="text-gray-500 mt-2">Vui lòng liên hệ nhà trường để cập nhật thông tin.</p>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <h1 className="text-2xl font-bold text-white">Sức khỏe con em</h1>
+              <p className="text-green-100">Theo dõi sức khỏe và lịch tiêm chủng</p>
+            </div>
+          </div>
+        </motion.div>
 
+        {/* Student Selection */}
+        {students.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-white rounded-xl shadow-lg p-6 mb-8"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Chọn học sinh</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {students.map((student) => (
+                <button
+                  key={student.id}
+                  onClick={() => setSelectedStudent(student)}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    selectedStudent?.id === student.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {getInitials(student.user?.fullName)}
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-gray-900">{formatValue(student.user?.fullName)}</p>
+                      <p className="text-sm text-gray-600">{formatValue(student.studentCode)}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Navigation Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="bg-white rounded-xl shadow-lg mb-8"
+        >
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab("health-records")}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "health-records"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Stethoscope className="w-5 h-5" />
+                  <span>Giấy khám sức khỏe</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("vaccination")}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "vaccination"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Syringe className="w-5 h-5" />
+                  <span>Lịch sử tiêm vắc-xin</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("send-medicine")}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "send-medicine"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Pill className="w-5 h-5" />
+                  <span>Gửi thuốc</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("health-declaration")}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "health-declaration"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-5 h-5" />
+                  <span>Khai báo sức khỏe</span>
+                </div>
+              </button>
+            </nav>
+          </div>
+        </motion.div>
+
+        {/* Content Area */}
+        {selectedStudent && (
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {activeTab === "health-records" && <HealthRecords selectedStudent={selectedStudent} />}
+
+            {activeTab === "vaccination" && <VaccinationHistory selectedStudent={selectedStudent} />}
+
+            {activeTab === "send-medicine" && <SendMedicine selectedStudent={selectedStudent} />}
+
+            {activeTab === "health-declaration" && (
+              <div className="space-y-6">
+                {/* Toggle between form and history */}
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Khai báo sức khỏe</h3>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setShowDeclarationForm(false)
+                          setEditingDeclaration(null)
+                        }}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          !showDeclarationForm
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Lịch sử khai báo
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDeclarationForm(true)
+                          setEditingDeclaration(null)
+                        }}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          showDeclarationForm && !editingDeclaration
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Tạo khai báo mới
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {showDeclarationForm || editingDeclaration ? (
+                  <HealthDeclaration
+                    selectedStudent={selectedStudent}
+                    editingDeclaration={editingDeclaration}
+                    onSave={() => {
+                      setShowDeclarationForm(false)
+                      setEditingDeclaration(null)
+                    }}
+                    onCancel={() => {
+                      setShowDeclarationForm(false)
+                      setEditingDeclaration(null)
+                    }}
+                  />
+                ) : (
+                  <HealthDeclarationHistory
+                    selectedStudent={selectedStudent}
+                    onEdit={(declaration) => {
+                      setEditingDeclaration(declaration)
+                      setShowDeclarationForm(true)
+                    }}
+                  />
+                )}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
     </motion.div>
-  );
-};
+  )
+}
 
-export default ParentChildrenHealth;
+export default StudentHealth

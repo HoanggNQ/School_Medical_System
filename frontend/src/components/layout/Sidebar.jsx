@@ -72,8 +72,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       case 'PARENT':
         return [
           ...baseItems,
-          { id: 'children-health', label: 'Sức khỏe con', icon: Heart, path: '/children-health' },
-          { id: 'vaccination-schedule', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccination-schedule' },
+          { id: 'children-health', label: 'Sức khỏe con em', icon: Heart, path: '/children-health' },
+          { id: 'schedule', label: 'Sự kiện', icon: Calendar, path: '/schedule' },
           { id: 'notifications', label: 'Thông báo', icon: UserCheck, path: '/notifications' }
         ];
       default:

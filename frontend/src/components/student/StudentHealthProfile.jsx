@@ -1,65 +1,166 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { User, Heart, Edit, ShieldCheck, AlertCircle, FileText, Briefcase as BriefcaseMedical, Droplets, Activity } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import { Badge } from '@/components/ui/badge';
+"use client"
 
-const mockStudentProfile = {
-  id: 'student001',
-  name: 'Nguyễn Văn Nam',
-  dob: '2008-07-15',
-  gender: 'Nam',
-  class: '10A1',
-  studentId: 'HS00123',
-  address: '123 Đường ABC, Phường XYZ, Quận 1, TP. HCM',
-  phone: '090xxxxxxx',
-  email: 'nam.nguyen@example.com',
-  fatherName: 'Nguyễn Văn Ba',
-  fatherPhone: '091xxxxxxx',
-  motherName: 'Trần Thị Tư',
-  motherPhone: '098xxxxxxx',
-  bloodGroup: 'O+',
-  allergies: ['Hải sản', 'Bụi mịn'],
-  chronicDiseases: ['Hen suyễn (nhẹ)'],
-  emergencyContact: {
-    name: 'Nguyễn Văn Ba (Bố)',
-    phone: '091xxxxxxx',
-    relationship: 'Bố',
-  },
-  insurance: {
-    provider: 'Bảo Việt',
-    policyNumber: 'BVHS123456789',
-    expiryDate: '2025-12-31',
-  },
-  lastHealthCheck: '2025-03-10',
-  notes: 'Cần mang theo ống hít Ventolin khi vận động mạnh.'
-};
-
-const InfoItem = ({ label, value, icon }) => (
-  <div className="flex items-start py-2 border-b border-gray-100 last:border-b-0">
-    {icon && <div className="w-6 h-6 mr-3 text-gray-500 flex-shrink-0">{icon}</div>}
-    <div className="flex-1">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-medium text-gray-800">{value || 'Chưa cập nhật'}</p>
-    </div>
-  </div>
-);
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
+import { toast } from "@/components/ui/use-toast"
+import {
+  Heart,
+  Activity,
+  Eye,
+  Ear,
+  Thermometer,
+  Weight,
+  Ruler,
+  Droplets,
+  User,
+  Calendar,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Stethoscope,
+  TrendingUp,
+  Shield,
+} from "lucide-react"
+import studentService from "../../api/services/student.service"
 
 const StudentHealthProfile = () => {
-  const [profile, setProfile] = useState(mockStudentProfile);
+  const [healthRecords, setHealthRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [currentUser, setCurrentUser] = useState(null)
 
-  const calculateAge = (dob) => {
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+  useEffect(() => {
+    const fetchStudentHealthCheckRecord = async () => {
+      try {
+        setLoading(true)
+        const user = JSON.parse(localStorage.getItem("currentUser"))
+        setCurrentUser(user)
+
+        const response = await studentService.getStudentHealthCheckRecord(user.id)
+        console.log("Student Health Check Records:", response)
+
+        if (response && response.data) {
+          setHealthRecords(response.data)
+        } else {
+          setHealthRecords([])
+        }
+      } catch (error) {
+        console.error("Error fetching health check records:", error)
+        setError("Không thể tải hồ sơ sức khỏe")
+        toast({
+          title: "Lỗi tải dữ liệu",
+          description: error.message,
+          variant: "destructive",
+        })
+        setHealthRecords([])
+      } finally {
+        setLoading(false)
+      }
     }
-    return age;
-  };
+
+    fetchStudentHealthCheckRecord()
+  }, [])
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A"
+    try {
+      return new Date(dateString).toLocaleDateString("vi-VN", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A"
+    }
+    return String(value)
+  }
+
+  const getBMIStatus = (bmi) => {
+    if (!bmi || bmi === "N/A") return { status: "Chưa xác định", color: "text-gray-500" }
+    const bmiValue = Number.parseFloat(bmi)
+    if (bmiValue < 18.5) return { status: "Thiếu cân", color: "text-blue-600" }
+    if (bmiValue < 25) return { status: "Bình thường", color: "text-green-600" }
+    if (bmiValue < 30) return { status: "Thừa cân", color: "text-yellow-600" }
+    return { status: "Béo phì", color: "text-red-600" }
+  }
+
+  const getHealthRatingColor = (rating) => {
+    if (!rating) return "bg-gray-100 text-gray-800"
+    const ratingLower = rating.toLowerCase()
+    if (ratingLower.includes("tốt") || ratingLower.includes("khỏe")) {
+      return "bg-green-100 text-green-800"
+    } else if (ratingLower.includes("trung bình")) {
+      return "bg-yellow-100 text-yellow-800"
+    } else if (ratingLower.includes("yếu") || ratingLower.includes("kém")) {
+      return "bg-red-100 text-red-800"
+    }
+    return "bg-blue-100 text-blue-800"
+  }
+
+  const getVitalSignStatus = (type, value) => {
+    if (!value || value === "N/A") return { status: "normal", color: "text-gray-500" }
+
+    const numValue = Number.parseFloat(value)
+
+    switch (type) {
+      case "temperature":
+        if (numValue < 36.1) return { status: "low", color: "text-blue-600" }
+        if (numValue > 37.2) return { status: "high", color: "text-red-600" }
+        return { status: "normal", color: "text-green-600" }
+
+      case "pulse":
+        if (numValue < 60) return { status: "low", color: "text-blue-600" }
+        if (numValue > 100) return { status: "high", color: "text-red-600" }
+        return { status: "normal", color: "text-green-600" }
+
+      default:
+        return { status: "normal", color: "text-gray-500" }
+    }
+  }
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-600">Đang tải hồ sơ sức khỏe...</span>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="text-center py-12">
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Có lỗi xảy ra</h3>
+            <p className="text-gray-500">{error}</p>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -68,100 +169,354 @@ const StudentHealthProfile = () => {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hồ sơ sức khỏe của tôi</h1>
-          <p className="text-gray-600 mt-2">Thông tin chi tiết về sức khỏe và tiền sử bệnh.</p>
-        </div>
-        <Button variant="outline" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Chức năng chỉnh sửa thông tin sẽ sớm được cập nhật! 🚀" })}>
-          <Edit className="w-4 h-4 mr-2" />
-          Chỉnh sửa thông tin
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 card-hover">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <User className="w-5 h-5 mr-2 text-blue-600" />
-              Thông tin cá nhân
-            </CardTitle>
-            <CardDescription>Mã học sinh: {profile.studentId}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-            <InfoItem label="Họ và tên" value={profile.name} />
-            <InfoItem label="Ngày sinh" value={`${profile.dob} (${calculateAge(profile.dob)} tuổi)`} />
-            <InfoItem label="Giới tính" value={profile.gender} />
-            <InfoItem label="Lớp" value={profile.class} />
-            <InfoItem label="Địa chỉ" value={profile.address} />
-            <InfoItem label="Số điện thoại" value={profile.phone} />
-            <InfoItem label="Email" value={profile.email} />
-            <InfoItem label="Họ tên cha" value={profile.fatherName} />
-            <InfoItem label="SĐT cha" value={profile.fatherPhone} />
-            <InfoItem label="Họ tên mẹ" value={profile.motherName} />
-            <InfoItem label="SĐT mẹ" value={profile.motherPhone} />
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card className="card-hover">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Heart className="w-5 h-5 mr-2 text-red-600" />
-                Thông tin y tế
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InfoItem label="Nhóm máu" value={profile.bloodGroup} icon={<Droplets size={18}/>} />
-              <InfoItem label="Dị ứng" value={profile.allergies.join(', ') || 'Không có'} icon={<AlertCircle size={18}/>} />
-              <InfoItem label="Bệnh mãn tính" value={profile.chronicDiseases.join(', ') || 'Không có'} icon={<BriefcaseMedical size={18}/>} />
-              <InfoItem label="Lần khám gần nhất" value={profile.lastHealthCheck} icon={<Activity size={18}/>} />
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ShieldCheck className="w-5 h-5 mr-2 text-green-600" />
-                Bảo hiểm y tế
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InfoItem label="Nhà cung cấp" value={profile.insurance.provider} />
-              <InfoItem label="Số hợp đồng" value={profile.insurance.policyNumber} />
-              <InfoItem label="Ngày hết hạn" value={profile.insurance.expiryDate} />
-              <Button size="sm" className="mt-3 w-full" variant="outline" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>Xem chi tiết BHYT</Button>
-            </CardContent>
-          </Card>
-          
-          <Card className="card-hover bg-yellow-50 border-yellow-200">
-            <CardHeader>
-              <CardTitle className="flex items-center text-yellow-700">
-                <AlertCircle className="w-5 h-5 mr-2" />
-                Liên hệ khẩn cấp
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InfoItem label="Người liên hệ" value={`${profile.emergencyContact.name} (${profile.emergencyContact.relationship})`} />
-              <InfoItem label="Số điện thoại" value={profile.emergencyContact.phone} />
-            </CardContent>
-          </Card>
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <Heart className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">Hồ sơ sức khỏe</h2>
+              <p className="text-blue-100">Theo dõi kết quả khám sức khỏe của {formatValue(currentUser?.fullName)}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold">{healthRecords.length}</div>
+            <div className="text-sm text-blue-100">Lần khám</div>
+          </div>
         </div>
       </div>
-      
-      <Card className="card-hover">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="w-5 h-5 mr-2 text-indigo-600" />
-            Ghi chú quan trọng
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-700">{profile.notes || 'Không có ghi chú nào.'}</p>
-        </CardContent>
-      </Card>
+
+      {/* Student Info Card */}
+      {currentUser && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+              <User className="w-8 h-8 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{currentUser.fullName}</h3>
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span>ID: {currentUser.id}</span>
+                {currentUser.email && (
+                  <>
+                    <span>•</span>
+                    <span>{currentUser.email}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Health Records */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center">
+            <Stethoscope className="w-6 h-6 mr-2 text-blue-500" />
+            Kết quả khám sức khỏe
+          </h3>
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <CheckCircle className="w-4 h-4" />
+            <span>{healthRecords.length} bản ghi</span>
+          </div>
+        </div>
+
+        {healthRecords.length === 0 ? (
+          <div className="text-center py-12">
+            <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">Chưa có kết quả khám sức khỏe</h4>
+            <p className="text-gray-500">Kết quả khám sức khỏe sẽ được cập nhật sau khi khám</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {healthRecords.map((record, index) => {
+              const bmiStatus = getBMIStatus(record.bmi)
+              const tempStatus = getVitalSignStatus("temperature", record.temperature)
+              const pulseStatus = getVitalSignStatus("pulse", record.pulse)
+
+              return (
+                <motion.div
+                  key={record.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 * index }}
+                  className="border-2 rounded-lg p-6 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 hover:from-blue-100 hover:to-green-100"
+                >
+                  {/* Record Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                        <Heart className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900">{formatValue(record.campaignName)}</h4>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <span>Khám lần #{record.id}</span>
+                          <span>•</span>
+                          <span>Chiến dịch #{record.campaignId}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500">Năm học</div>
+                      <div className="font-medium text-gray-900">{formatValue(record.academicYear)}</div>
+                    </div>
+                  </div>
+
+                  {/* Overall Health Rating */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Đánh giá tổng thể:</span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getHealthRatingColor(record.overallHealthRating)}`}
+                      >
+                        {formatValue(record.overallHealthRating)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Basic Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày khám</p>
+                        <p className="font-medium text-gray-900">{formatDate(record.checkDate)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <User className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Bác sĩ khám</p>
+                        <p className="font-medium text-gray-900">{formatValue(record.checkedByName)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <User className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Học sinh</p>
+                        <p className="font-medium text-gray-900">{formatValue(record.studentName)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Physical Measurements */}
+                  <div className="bg-white bg-opacity-60 p-4 rounded-lg mb-4">
+                    <h5 className="font-medium text-gray-800 mb-3 flex items-center">
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      Chỉ số cơ thể
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <Ruler className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <p className="text-xs text-gray-500">Chiều cao</p>
+                        <p className="font-semibold text-gray-900">{formatValue(record.heightCm)} cm</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <Weight className="w-5 h-5 text-green-600" />
+                        </div>
+                        <p className="text-xs text-gray-500">Cân nặng</p>
+                        <p className="font-semibold text-gray-900">{formatValue(record.weightKg)} kg</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <Activity className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <p className="text-xs text-gray-500">BMI</p>
+                        <p className={`font-semibold ${bmiStatus.color}`}>{formatValue(record.bmi)}</p>
+                        <p className={`text-xs ${bmiStatus.color}`}>{bmiStatus.status}</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <Droplets className="w-5 h-5 text-red-600" />
+                        </div>
+                        <p className="text-xs text-gray-500">Huyết áp</p>
+                        <p className="font-semibold text-gray-900">{formatValue(record.bloodPressure)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vital Signs */}
+                  <div className="bg-white bg-opacity-60 p-4 rounded-lg mb-4">
+                    <h5 className="font-medium text-gray-800 mb-3 flex items-center">
+                      <Activity className="w-4 h-4 mr-2" />
+                      Dấu hiệu sinh tồn
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <Thermometer className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Nhiệt độ</p>
+                          <p className={`font-medium ${tempStatus.color}`}>{formatValue(record.temperature)}°C</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <Heart className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Mạch</p>
+                          <p className={`font-medium ${pulseStatus.color}`}>{formatValue(record.pulse)} bpm</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sensory Functions */}
+                  <div className="bg-white bg-opacity-60 p-4 rounded-lg mb-4">
+                    <h5 className="font-medium text-gray-800 mb-3 flex items-center">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Chức năng cảm giác
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <Eye className="w-4 h-4 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Thị lực</p>
+                          <p className="font-medium text-gray-900">
+                            T: {formatValue(record.visionLeft)} | P: {formatValue(record.visionRight)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <Ear className="w-4 h-4 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Thính lực</p>
+                          <p className="font-medium text-gray-900">{formatValue(record.hearing)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <Stethoscope className="w-4 h-4 text-purple-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Răng miệng</p>
+                          <p className="font-medium text-gray-900">{formatValue(record.dentalHealth)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  {record.recommendation && (
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-4">
+                      <h6 className="font-medium text-blue-800 mb-2 flex items-center">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Khuyến nghị:
+                      </h6>
+                      <p className="text-sm text-blue-700 leading-relaxed">{record.recommendation}</p>
+                    </div>
+                  )}
+
+                  {/* Follow-up Notes */}
+                  {record.followUpNotes && (
+                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
+                      <h6 className="font-medium text-yellow-800 mb-2 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Ghi chú theo dõi:
+                      </h6>
+                      <p className="text-sm text-yellow-700 leading-relaxed">{record.followUpNotes}</p>
+                      {record.followUpRequired && (
+                        <div className="mt-2 flex items-center">
+                          <CheckCircle className="w-4 h-4 text-yellow-600 mr-2" />
+                          <span className="text-sm text-yellow-700 font-medium">Cần theo dõi thêm</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Other Notes */}
+                  {record.otherNotes && (
+                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+                      <h6 className="font-medium text-gray-800 mb-2 flex items-center">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Ghi chú khác:
+                      </h6>
+                      <p className="text-sm text-gray-700 leading-relaxed">{record.otherNotes}</p>
+                    </div>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Health Summary Statistics */}
+      {healthRecords.length > 0 && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Thống kê sức khỏe</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-blue-600">Tổng lần khám</p>
+                  <p className="text-2xl font-bold text-blue-800">{healthRecords.length}</p>
+                </div>
+                <Heart className="w-8 h-8 text-blue-600" />
+              </div>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600">BMI gần nhất</p>
+                  <p className="text-2xl font-bold text-green-800">
+                    {healthRecords.length > 0 ? formatValue(healthRecords[0]?.bmi) : "N/A"}
+                  </p>
+                </div>
+                <Activity className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-purple-600">Chiều cao gần nhất</p>
+                  <p className="text-lg font-bold text-purple-800">
+                    {healthRecords.length > 0 ? `${formatValue(healthRecords[0]?.heightCm)} cm` : "N/A"}
+                  </p>
+                </div>
+                <Ruler className="w-8 h-8 text-purple-600" />
+              </div>
+            </div>
+
+            <div className="bg-orange-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-orange-600">Cân nặng gần nhất</p>
+                  <p className="text-lg font-bold text-orange-800">
+                    {healthRecords.length > 0 ? `${formatValue(healthRecords[0]?.weightKg)} kg` : "N/A"}
+                  </p>
+                </div>
+                <Weight className="w-8 h-8 text-orange-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
-  );
-};
+  )
+}
 
-export default StudentHealthProfile;
+export default StudentHealthProfile

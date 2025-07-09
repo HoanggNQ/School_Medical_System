@@ -1,189 +1,470 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BellRing, MailCheck, Archive, Settings2, CalendarClock, AlertTriangle, Info, ChevronDown, ChevronUp } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import { Badge } from '@/components/ui/badge';
+"use client"
 
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import {
+  Bell,
+  BellRing,
+  Check,
+  Clock,
+  AlertCircle,
+  Info,
+  CheckCircle,
+  XCircle,
+  Search,
+  Trash2,
+  Eye,
+  EyeOff,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import ParentService from "../../api/services/parent.service"
 
-const mockNotifications = [
-  {
-    id: 1,
-    title: "Nhắc lịch tiêm chủng cho bé Nguyễn Văn An",
-    description: "Bé An có lịch tiêm nhắc lại Vắc-xin Sởi - Quai bị - Rubella vào ngày 20/06/2025.",
-    date: "2025-06-12",
-    type: "vaccine",
-    read: false,
-    childName: "Nguyễn Văn An",
-  },
-  {
-    id: 2,
-    title: "Kết quả khám sức khỏe định kỳ của bé Trần Thị Bình",
-    description: "Bé Bình đã hoàn thành khám sức khỏe. Kết quả tổng quan tốt, cần bổ sung vitamin D.",
-    date: "2025-06-10",
-    type: "health_check",
-    read: true,
-    childName: "Trần Thị Bình",
-  },
-  {
-    id: 3,
-    title: "Thông báo nghỉ học đột xuất",
-    description: "Do sự cố mất điện, toàn trường sẽ nghỉ học ngày 15/06/2025. Phụ huynh vui lòng theo dõi thông báo tiếp theo.",
-    date: "2025-06-14",
-    type: "school_notice",
-    read: false,
-  },
-  {
-    id: 4,
-    title: "Cảnh báo dịch cúm mùa",
-    description: "Hiện đang có dấu hiệu gia tăng các ca cúm mùa trong trường. Phụ huynh lưu ý các biện pháp phòng ngừa cho con em.",
-    date: "2025-06-05",
-    type: "alert",
-    read: true,
-  },
-];
+const NotificationsPage = () => {
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState("all")
+  const [selectedNotifications, setSelectedNotifications] = useState([])
+  const [showRead, setShowRead] = useState(true)
+  const [markingAsRead, setMarkingAsRead] = useState(new Set())
+  const [deleting, setDeleting] = useState(new Set())
 
-const NotificationItem = ({ notification, onToggleRead, onArchive }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Helper functions
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A"
+    try {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diffInHours = Math.floor((now - date) / (1000 * 60 * 60))
+      const diffInDays = Math.floor(diffInHours / 24)
 
-  const getIcon = () => {
-    switch (notification.type) {
-      case 'vaccine': return <CalendarClock className="w-5 h-5 text-blue-500" />;
-      case 'health_check': return <Info className="w-5 h-5 text-green-500" />;
-      case 'school_notice': return <BellRing className="w-5 h-5 text-gray-500" />;
-      case 'alert': return <AlertTriangle className="w-5 h-5 text-red-500" />;
-      default: return <BellRing className="w-5 h-5 text-gray-500" />;
+      if (diffInHours < 1) {
+        return "Vừa xong"
+      } else if (diffInHours < 24) {
+        return `${diffInHours} giờ trước`
+      } else if (diffInDays < 7) {
+        return `${diffInDays} ngày trước`
+      } else {
+        return date.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      }
+    } catch {
+      return "N/A"
     }
-  };
+  }
 
-  return (
-    <Card className={`transition-all duration-300 ${notification.read ? 'bg-gray-50 opacity-75' : 'bg-white hover:shadow-md'}`}>
-      <CardHeader className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-3">
-            <div className="mt-1">{getIcon()}</div>
-            <div>
-              <CardTitle className="text-md">{notification.title}</CardTitle>
-              <CardDescription className="text-xs text-gray-500">
-                {new Date(notification.date).toLocaleDateString('vi-VN')}
-                {notification.childName && ` - Cho bé: ${notification.childName}`}
-              </CardDescription>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1">
-            {!notification.read && <Badge variant="destructive" className="text-xs">Mới</Badge>}
-            <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)}>
-              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      {isExpanded && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <CardContent className="p-4 pt-0">
-            <p className="text-sm text-gray-700 mb-3">{notification.description}</p>
-            <div className="flex gap-2">
-              <Button size="sm" variant={notification.read ? "outline" : "default"} onClick={() => onToggleRead(notification.id)}>
-                {notification.read ? 'Đánh dấu chưa đọc' : 'Đánh dấu đã đọc'}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => onArchive(notification.id)}>
-                <Archive className="w-3 h-3 mr-1.5" /> Lưu trữ
-              </Button>
-            </div>
-          </CardContent>
-        </motion.div>
-      )}
-    </Card>
-  );
-};
+  const getNotificationIcon = (title, content) => {
+    const text = (title + " " + content).toLowerCase()
 
-const ParentNotifications = () => {
-  const [notifications, setNotifications] = useState(mockNotifications);
+    if (text.includes("từ chối") || text.includes("hủy")) {
+      return <XCircle className="w-5 h-5 text-red-500" />
+    } else if (text.includes("chấp nhận") || text.includes("thành công")) {
+      return <CheckCircle className="w-5 h-5 text-green-500" />
+    } else if (text.includes("thuốc") || text.includes("y tế")) {
+      return <AlertCircle className="w-5 h-5 text-blue-500" />
+    } else if (text.includes("thông báo") || text.includes("nhắc nhở")) {
+      return <Info className="w-5 h-5 text-purple-500" />
+    } else {
+      return <Bell className="w-5 h-5 text-gray-500" />
+    }
+  }
 
-  const toggleReadStatus = (id) => {
-    setNotifications(
-      notifications.map((n) =>
-        n.id === id ? { ...n, read: !n.read } : n
+  const getNotificationColor = (title, content) => {
+    const text = (title + " " + content).toLowerCase()
+
+    if (text.includes("từ chối") || text.includes("hủy")) {
+      return "bg-red-50 border-red-200 hover:bg-red-100"
+    } else if (text.includes("chấp nhận") || text.includes("thành công")) {
+      return "bg-green-50 border-green-200 hover:bg-green-100"
+    } else if (text.includes("thuốc") || text.includes("y tế")) {
+      return "bg-blue-50 border-blue-200 hover:bg-blue-100"
+    } else if (text.includes("thông báo") || text.includes("nhắc nhở")) {
+      return "bg-purple-50 border-purple-200 hover:bg-purple-100"
+    } else {
+      return "bg-gray-50 border-gray-200 hover:bg-gray-100"
+    }
+  }
+
+  const getNotificationType = (title, content) => {
+    const text = (title + " " + content).toLowerCase()
+
+    if (text.includes("từ chối") || text.includes("hủy")) {
+      return "rejected"
+    } else if (text.includes("chấp nhận") || text.includes("thành công")) {
+      return "approved"
+    } else if (text.includes("thuốc") || text.includes("y tế")) {
+      return "medical"
+    } else if (text.includes("thông báo") || text.includes("nhắc nhở")) {
+      return "info"
+    } else {
+      return "general"
+    }
+  }
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case "rejected":
+        return "Từ chối"
+      case "approved":
+        return "Chấp nhận"
+      case "medical":
+        return "Y tế"
+      case "info":
+        return "Thông báo"
+      default:
+        return "Chung"
+    }
+  }
+
+  // Filter notifications
+  const filteredNotifications = notifications.filter((notification) => {
+    const matchesSearch =
+      notification.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.content?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const notificationType = getNotificationType(notification.title, notification.content)
+    const matchesType = filterType === "all" || notificationType === filterType
+
+    return matchesSearch && matchesType
+  })
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        setLoading(true)
+        const response = await ParentService.getNotifications()
+        console.log("Fetched notifications:", response)
+
+        if (response.isSuccess && response.data) {
+          // Add read status to notifications (mock data)
+          const notificationsWithReadStatus = response.data.map((notification, index) => ({
+            ...notification,
+            isRead: index % 3 === 0, // Mock some as read
+          }))
+          setNotifications(notificationsWithReadStatus)
+        } else {
+          setNotifications([])
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error)
+        setNotifications([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchNotifications()
+  }, [])
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      setMarkingAsRead((prev) => new Set([...prev, notificationId]))
+      await ParentService.markNotificationAsRead(notificationId)
+
+      setNotifications(
+        notifications.map((notification) =>
+          notification.notificationId === notificationId ? { ...notification, isRead: true } : notification,
+        ),
       )
-    );
-    toast({ title: "Cập nhật trạng thái thông báo thành công!" });
-  };
+    } catch (error) {
+      console.error("Error marking notification as read:", error)
+      alert("Có lỗi xảy ra khi đánh dấu đã đọc")
+    } finally {
+      setMarkingAsRead((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(notificationId)
+        return newSet
+      })
+    }
+  }
 
-  const archiveNotification = (id) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
-    toast({ title: "Thông báo đã được lưu trữ." });
-  };
-  
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-    toast({ title: "Tất cả thông báo đã được đánh dấu là đã đọc." });
-  };
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter((n) => !n.isRead)
 
-  const archiveAll = () => {
-    setNotifications([]);
-    toast({ title: "Tất cả thông báo đã được lưu trữ." });
-  };
+      // Call API for each unread notification
+      await Promise.all(
+        unreadNotifications.map((notification) => ParentService.markNotificationAsRead(notification.notificationId)),
+      )
 
+      // Update local state after successful API calls
+      setNotifications(notifications.map((notification) => ({ ...notification, isRead: true })))
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error)
+      alert("Có lỗi xảy ra khi đánh dấu tất cả đã đọc")
+    }
+  }
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const handleDeleteNotification = async (notificationId) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa thông báo này?")) {
+      return
+    }
+
+    try {
+      setDeleting((prev) => new Set([...prev, notificationId]))
+      await ParentService.deleteNotification(notificationId)
+
+      setNotifications(notifications.filter((notification) => notification.notificationId !== notificationId))
+    } catch (error) {
+      console.error("Error deleting notification:", error)
+      alert("Có lỗi xảy ra khi xóa thông báo")
+    } finally {
+      setDeleting((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(notificationId)
+        return newSet
+      })
+    }
+  }
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length
+
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+            <span className="text-gray-600">Đang tải thông báo...</span>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Trung tâm thông báo</h1>
-          <p className="text-gray-600 mt-2">
-            {unreadCount > 0 ? `Bạn có ${unreadCount} thông báo mới.` : 'Không có thông báo mới.'}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={markAllAsRead} disabled={unreadCount === 0}>
-            <MailCheck className="w-4 h-4 mr-2" />
-            Đánh dấu đã đọc ({unreadCount})
-          </Button>
-           <Button variant="outline" onClick={archiveAll} disabled={notifications.length === 0}>
-            <Archive className="w-4 h-4 mr-2" />
-            Lưu trữ tất cả
-          </Button>
-           <Button variant="ghost" size="icon" onClick={() => toast({ title: "🚧 Tính năng chưa được triển khai", description: "Bạn có thể yêu cầu tính năng này ở lần nhắc tiếp theo! 🚀" })}>
-            <Settings2 className="w-5 h-5" />
-          </Button>
-        </div>
+    <div className="space-y-6">
+      {/* Header Section */}
+      <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <Bell className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Thông báo</h2>
+                <p className="text-purple-100">Theo dõi các thông báo và cập nhật từ nhà trường</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold">{notifications.length}</div>
+              <div className="text-sm text-purple-100">Tổng thông báo</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Controls Section */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Tìm kiếm thông báo..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="all">Tất cả loại</option>
+                <option value="medical">Y tế</option>
+                <option value="approved">Chấp nhận</option>
+                <option value="rejected">Từ chối</option>
+                <option value="info">Thông báo</option>
+              </select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowRead(!showRead)}
+                className="flex items-center space-x-2"
+              >
+                {showRead ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                <span>{showRead ? "Ẩn đã đọc" : "Hiện đã đọc"}</span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Bell className="w-4 h-4" />
+                <span>Tìm thấy {filteredNotifications.length} thông báo</span>
+              </div>
+
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="bg-red-500">
+                  <BellRing className="w-3 h-3 mr-1" />
+                  {unreadCount} chưa đọc
+                </Badge>
+              )}
+            </div>
+
+            {unreadCount > 0 && (
+              <Button
+                onClick={handleMarkAllAsRead}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2 bg-transparent"
+              >
+                <Check className="w-4 h-4" />
+                <span>Đánh dấu tất cả đã đọc</span>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications List */}
+      <div className="space-y-3">
+        {filteredNotifications.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm || filterType !== "all" ? "Không tìm thấy thông báo nào" : "Chưa có thông báo nào"}
+              </h3>
+              <p className="text-gray-500">
+                {searchTerm || filterType !== "all"
+                  ? "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+                  : "Thông báo sẽ xuất hiện ở đây khi có cập nhật từ nhà trường"}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredNotifications
+            .filter((notification) => showRead || !notification.isRead)
+            .map((notification, index) => (
+              <motion.div
+                key={notification.notificationId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.05 * index }}
+              >
+                <Card
+                  className={`transition-all duration-200 ${getNotificationColor(notification.title, notification.content)} ${
+                    !notification.isRead ? "ring-2 ring-blue-200" : ""
+                  } hover:shadow-md`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-4">
+                      {/* Icon */}
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          {getNotificationIcon(notification.title, notification.content)}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h4
+                              className={`text-base font-semibold ${!notification.isRead ? "text-gray-900" : "text-gray-700"}`}
+                            >
+                              {notification.title}
+                            </h4>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Badge variant="secondary" className="text-xs">
+                                {getTypeLabel(getNotificationType(notification.title, notification.content))}
+                              </Badge>
+                              <span className="text-xs text-gray-500">ID: {notification.notificationId}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2 ml-4">
+                            {!notification.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
+                            <div className="text-right">
+                              <div className="text-xs text-gray-500">{formatDate(notification.dateCreate)}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p
+                          className={`text-sm leading-relaxed ${!notification.isRead ? "text-gray-800" : "text-gray-600"}`}
+                        >
+                          {notification.content}
+                        </p>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white border-opacity-50">
+                          <div className="flex items-center space-x-2 text-xs text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span>User ID: {notification.userId}</span>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            {!notification.isRead && (
+                              <Button
+                                onClick={() => handleMarkAsRead(notification.notificationId)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7 px-2"
+                                disabled={markingAsRead.has(notification.notificationId)}
+                              >
+                                {markingAsRead.has(notification.notificationId) ? (
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>
+                                ) : (
+                                  <Check className="w-3 h-3 mr-1" />
+                                )}
+                                Đánh dấu đã đọc
+                              </Button>
+                            )}
+
+                            <Button
+                              onClick={() => handleDeleteNotification(notification.notificationId)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              disabled={deleting.has(notification.notificationId)}
+                            >
+                              {deleting.has(notification.notificationId) ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>
+                              ) : (
+                                <Trash2 className="w-3 h-3 mr-1" />
+                              )}
+                              Xóa
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+        )}
       </div>
 
-      {notifications.length > 0 ? (
-        <div className="space-y-4">
-          {notifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onToggleRead={toggleReadStatus}
-              onArchive={archiveNotification}
-            />
-          ))}
-        </div>
-      ) : (
+      {/* Load More Button */}
+      {filteredNotifications.length > 0 && (
         <Card>
-          <CardContent className="text-center py-16">
-            <BellRing className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700">Không có thông báo nào</h3>
-            <p className="text-gray-500 mt-2">Tất cả các thông báo sẽ được hiển thị ở đây.</p>
+          <CardContent className="text-center py-6">
+            <Button variant="outline" className="w-full md:w-auto bg-transparent">
+              Tải thêm thông báo
+            </Button>
           </CardContent>
         </Card>
       )}
-    </motion.div>
-  );
-};
+    </div>
+  )
+}
 
-export default ParentNotifications;
+export default NotificationsPage
