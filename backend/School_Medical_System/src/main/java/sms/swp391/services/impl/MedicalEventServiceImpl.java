@@ -74,7 +74,6 @@ public class MedicalEventServiceImpl implements MedicalEventService {
         MedicalEventEntity entity = medicalEventRepository.findById(id)
                 .orElseThrow(()-> new NotFoundException("Medical event not found"));
         medicalEventRepository.delete(entity);
-        medicalEventRepository.save(entity);
     }
 
     @Override
