@@ -29,10 +29,10 @@ public class FileCloud {
 
     @Column(name = "is_removed", nullable = false)
     private boolean isRemoved;
-
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private FileCloudStatus status;
+    private FileCloudStatus status = FileCloudStatus.UPLOADED;
 
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;

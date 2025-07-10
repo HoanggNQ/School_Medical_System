@@ -43,11 +43,11 @@ public class MedicationRequestEntity {
 
     @Column(name = "review_date")
     private LocalDate reviewDate;
-
+    @Builder.Default
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private MedicalStatus status;
+    private MedicalStatus status= MedicalStatus.PENDING;
 
     @Column(name = "notes", length = Integer.MAX_VALUE)
     private String notes;
@@ -56,7 +56,7 @@ public class MedicationRequestEntity {
     @NotNull
     @Column(name = "academic_year", nullable = false, length = 9)
     private String academicYear;
-
+    @Builder.Default
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MedicationRequestDetailEntity> medicationRequestDetails = new HashSet<>();
 
