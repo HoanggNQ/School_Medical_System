@@ -39,11 +39,11 @@ public class HealthCheckCampaignEntity {
     @NotNull
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
-
+    @Builder.Default
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private MedicalStatus status;
+    private MedicalStatus status = MedicalStatus.PENDING;
 
     @Column(name = "target_grade")
     private String targetGrade;
@@ -59,10 +59,10 @@ public class HealthCheckCampaignEntity {
     @ColumnDefault("now()")
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    @Builder.Default
     @OneToMany(mappedBy = "healthCheckCampaign")
     private Set<HealthCheckConsentEntity> healthCheckConsents = new LinkedHashSet<>();
-
+    @Builder.Default
     @OneToMany(mappedBy = "healthCheckCampaign")
     private Set<HealthCheckResultEntity> healthCheckResults = new LinkedHashSet<>();
 
