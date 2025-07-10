@@ -29,7 +29,7 @@ public class NotificationEntity {
 
     @Column(name = "title", nullable = false)
     private String title;
-
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private NotificationStatus status = NotificationStatus.UNREAD;
