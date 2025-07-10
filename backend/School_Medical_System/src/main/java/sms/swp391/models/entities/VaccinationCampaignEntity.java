@@ -48,11 +48,11 @@ public class VaccinationCampaignEntity {
     @Size(max = 100)
     @Column(name = "manufacturer", length = 100)
     private String manufacturer;
-
+    @Builder.Default
     @NotNull
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private MedicalStatus status;
+    private MedicalStatus status= MedicalStatus.PENDING;
 
     @Column(name = "target_grade")
     private String targetGrade;
@@ -72,10 +72,10 @@ public class VaccinationCampaignEntity {
     @ColumnDefault("now()")
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    @Builder.Default
     @OneToMany(mappedBy = "vaccinationCampaign")
     private Set<VaccinationConsentEntity> vaccinationConsents = new LinkedHashSet<>();
-
+    @Builder.Default
     @OneToMany(mappedBy = "vaccinationCampaign")
     private Set<VaccinationRecordEntity> vaccinationRecords = new LinkedHashSet<>();
 

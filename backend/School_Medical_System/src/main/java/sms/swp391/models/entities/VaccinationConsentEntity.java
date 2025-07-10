@@ -38,11 +38,11 @@ public class VaccinationConsentEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "parent_id", nullable = false)
     private UserEntity parent;
-
+    @Builder.Default
     @NotNull
     @Column(name = "consent_status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private MedicalStatus consentStatus;
+    private MedicalStatus consentStatus= MedicalStatus.PENDING;
 
     @Column(name = "response_date")
     private LocalDate responseDate;
