@@ -116,10 +116,7 @@ const CampaignsNurse = () => {
                             <TableRow>
                                 <TableHead>ID</TableHead>
                                 <TableHead>Tên chiến dịch</TableHead>
-                                <TableHead>Mô tả</TableHead>
-                                <TableHead>Ngày kiểm tra</TableHead>
                                 <TableHead>Địa điểm</TableHead>
-                                <TableHead>Thiết bị yêu cầu</TableHead>
                                 <TableHead>Khối lớp</TableHead>
                                 <TableHead>Trạng thái</TableHead>
                                 <TableHead>Ngày tạo</TableHead>
@@ -132,25 +129,24 @@ const CampaignsNurse = () => {
                                 <TableRow
                                     key={campaign.id}
                                     className="cursor-pointer"
-                                    onClick={() => navigate(`/health-check/${campaign.id}`)}
+                                    onClick={() => navigate(`/health-check/${campaign.id}`, { state: { campaignStatus: campaign.status } })}
                                 >
                                     <TableCell className="font-medium">{campaign.id}</TableCell>
                                     <TableCell className="font-medium">{campaign.name}</TableCell>
-                                    <TableCell>{campaign.description}</TableCell>
-                                    <TableCell>{campaign.checkDate}</TableCell>
                                     <TableCell>{campaign.location}</TableCell>
-                                    <TableCell>{campaign.requiredEquipment}</TableCell>
                                     <TableCell>{campaign.targetGrade === 0 ? 'Toàn trường' : `Khối ${campaign.targetGrade}`}</TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                                 campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                                    campaign.status === 'DONE' ? 'bg-orange-500 text-white' :
-                                                        'bg-gray-100 text-gray-800'
+                                                campaign.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                                campaign.status === 'DONE' ? 'bg-orange-500 text-white' :
+                                                'bg-gray-100 text-gray-800'
                                             }`}>
                                             {campaign.status === 'PENDING' ? 'Chờ duyệt' :
                                                 campaign.status === 'APPROVED' ? 'Đang diễn ra' :
-                                                    campaign.status === 'DONE' ? 'Đã xong' :
-                                                        campaign.status}
+                                                campaign.status === 'REJECTED' ? 'Từ chối' :
+                                                campaign.status === 'DONE' ? 'Đã xong' :
+                                                campaign.status}
                                     </span>
                                     </TableCell>
                                     <TableCell>{campaign.createdAt}</TableCell>

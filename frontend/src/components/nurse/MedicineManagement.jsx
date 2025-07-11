@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Package, AlertTriangle, Calendar, ListChecks } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package, AlertTriangle, Calendar, ListChecks, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,7 @@ const MedicineManagement = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [approvedRequests, setApprovedRequests] = useState([]);
   const [showApprovedDialog, setShowApprovedDialog] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   const initialFormData = {
     medicationName: '',
@@ -47,7 +48,7 @@ const MedicineManagement = () => {
 
   useEffect(() => {
     fetchMedicines();
-  }, []);
+  }, [page, size]);
 
   const fetchMedicines = async () => {
     try {
@@ -176,6 +177,11 @@ const MedicineManagement = () => {
     }
   };
 
+  const openDetailModal = (medicine) => {
+    setSelectedMedicine(medicine);
+    setIsDetailModalOpen(true);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -189,14 +195,6 @@ const MedicineManagement = () => {
           <p className="text-gray-600 mt-2">Quản lý kho thuốc và vật tư y tế</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 border-green-600 text-green-700 hover:bg-green-50"
-            onClick={fetchApprovedRequests}
-          >
-            <ListChecks className="w-4 h-4 mr-1" />
-            Danh sách chấp nhận
-          </Button>
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
               <Button className="btn-primary" onClick={() => setFormData(initialFormData)}>
@@ -219,7 +217,7 @@ const MedicineManagement = () => {
         </div>
       </div>
 
-      <MedicineStats medicines={medicines} />
+      <MedicineStats medicines={medicines} totalElements={totalElements} />
 
       <Card>
         <CardHeader>
@@ -281,12 +279,12 @@ const MedicineManagement = () => {
                       <TableHead>Dạng bào chế</TableHead>
                       <TableHead>Yêu cầu đơn</TableHead>
                       <TableHead>Nước sản xuất</TableHead>
-                      <TableHead>Ghi chú</TableHead>
-                      <TableHead>Thông tin</TableHead>
+                      {/* <TableHead>Ghi chú</TableHead> */}
+                      {/* <TableHead>Thông tin</TableHead> */}
                       {/* <TableHead>Hoạt chất</TableHead> */}
-                      <TableHead>Nhà sản xuất</TableHead> 
+                      <TableHead>Nhà sản xuất</TableHead>
                       <TableHead>Số lượng</TableHead> {/* Thêm cột số lượng */}
-                      <TableHead>Ngày tạo</TableHead>
+                      <TableHead>Ngày hết hạn</TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -305,14 +303,11 @@ const MedicineManagement = () => {
                           </span>
                         </TableCell>
                         <TableCell>{medicine.countryOfOrigin || 'N/A'}</TableCell>
-                        <TableCell>{medicine.description || 'N/A'}</TableCell>
-                        <TableCell>{medicine.medicationInformation || 'N/A'}</TableCell>
-                        {/* <TableCell>{medicine.activeIngredient || 'N/A'}</TableCell> */}
                         <TableCell>{medicine.manufacturer || 'N/A'}</TableCell>
-                         <TableCell>{medicine.quantity ?? 0}</TableCell> {/* Hiển thị số lượng */}
+                        <TableCell>{medicine.quantity ?? 0}</TableCell>
                         <TableCell>
-                          {medicine.createdAt
-                            ? new Date(medicine.createdAt).toLocaleDateString('vi-VN', {
+                          {medicine.exp
+                            ? new Date(medicine.exp).toLocaleDateString('vi-VN', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit'
@@ -327,6 +322,11 @@ const MedicineManagement = () => {
                             Xóa
                           </Button>
                         </TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="ghost" onClick={() => openDetailModal(medicine)} title="Xem chi tiết">
+                            <Eye className="w-5 h-5" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -334,7 +334,7 @@ const MedicineManagement = () => {
               </div>
               {/* Pagination */}
               <div className="flex justify-center items-center mt-8 gap-2">
-                {/* <Button
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
@@ -352,7 +352,7 @@ const MedicineManagement = () => {
                   disabled={page >= totalPages - 1}
                 >
                   Trang sau
-                </Button> */}
+                </Button>
                 <span className="ml-4 text-sm text-gray-500">Tổng: {totalElements} thuốc</span>
               </div>
             </>
@@ -383,7 +383,20 @@ const MedicineManagement = () => {
           </DialogHeader>
           <div className="max-h-96 overflow-y-auto">
             {approvedRequests.length === 0 ? (
-              <div className="text-gray-500">Không có yêu cầu nào được chấp nhận.</div>
+              <div className="flex flex-col items-center justify-center h-[60vh]">
+                <div className="flex gap-4 mb-8">
+                  <Button className="rounded-full px-6 py-2 font-semibold shadow" variant="outline">Danh sách chấp nhận</Button>
+                  <Button className="rounded-full px-6 py-2 font-semibold shadow" variant="outline">Danh sách từ chối</Button>
+                  <Button className="rounded-full px-6 py-2 font-semibold shadow" variant="outline">Danh sách chờ duyệt</Button>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-6xl text-gray-300 mb-4">
+                    <svg width="64" height="64" fill="none" stroke="currentColor" strokeWidth="2"><path d="M32 12v40M12 32h40" /></svg>
+                  </span>
+                  <h2 className="text-xl font-bold text-gray-700 mb-2">Không có yêu cầu đã chấp nhận nào</h2>
+                  <p className="text-gray-500">Chưa có yêu cầu thuốc nào được duyệt.</p>
+                </div>
+              </div>
             ) : (
               <table className="min-w-full text-sm border">
                 <thead>
@@ -417,6 +430,60 @@ const MedicineManagement = () => {
               </table>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedMedicine && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl">Chi tiết thuốc</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="flex items-start gap-6">
+                  <img
+                    src={selectedMedicine.medicationImg || '/placeholder.svg'}
+                    alt={selectedMedicine.medicationName}
+                    className="w-32 h-32 object-cover rounded-lg border"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{selectedMedicine.medicationName}</h3>
+                    <div className="space-y-2">
+                      <span className="block text-gray-700">Phân loại: <b>{selectedMedicine.category}</b></span>
+                      <span className="block text-gray-700">Dạng bào chế: <b>{selectedMedicine.dosageForm}</b></span>
+                      <span className="block text-gray-700">Nhà sản xuất: <b>{selectedMedicine.manufacturer}</b></span>
+                      <span className="block text-gray-700">Nước sản xuất: <b>{selectedMedicine.countryOfOrigin}</b></span>
+                      <span className="block text-gray-700">Số lượng: <b>{selectedMedicine.quantity}</b></span>
+                      <span className="block text-gray-700">Yêu cầu đơn: <b>{selectedMedicine.prescriptionRequired ? 'Có' : 'Không'}</b></span>
+                      <span className="block text-gray-700">Ngày hết hạn: <b>{selectedMedicine.exp ? new Date(selectedMedicine.exp).toLocaleDateString('vi-VN') : 'N/A'}</b></span>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <span className="font-semibold text-gray-900">Mô tả:</span>
+                    <p className="text-gray-700 mt-1">{selectedMedicine.description || 'Không có mô tả.'}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-900">Thông tin sử dụng:</span>
+                    <p className="text-gray-700 mt-1">{selectedMedicine.medicationInformation || 'Không có thông tin.'}</p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>
+                    Đóng
+                  </Button>
+                  <Button variant="outline" onClick={() => { setIsDetailModalOpen(false); openEditModal(selectedMedicine); }}>
+                    Sửa
+                  </Button>
+                  <Button variant="destructive" onClick={async () => { await handleDeleteMedicine(selectedMedicine.id); setIsDetailModalOpen(false); }}>
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </motion.div>

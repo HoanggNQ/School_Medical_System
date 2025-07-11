@@ -9,27 +9,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import medicalService from "@/api/services/medical.service";
 
 const MedicineForm = ({ initialData, onSubmit, onCancel, isEdit }) => {
   const [formData, setFormData] = useState({
     medicationName: "",
     category: "",
     dosageForm: "",
-    prescriptionRequired: false,
     countryOfOrigin: "",
     description: "",
     medicationInformation: "",
-    medicationImg: "",
+    // activeIngredient: "",
     manufacturer: "",
-    image: null,
     quantity: 0,
-    activeIngredient: "",
+    exp: "",
+    image: null,
     ...initialData,
   });
 
   const [imagePreview, setImagePreview] = useState(
     initialData.medicationImg || ""
   );
+
+  const { toast } = useToast();
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, ...initialData }));
@@ -59,12 +62,29 @@ const MedicineForm = ({ initialData, onSubmit, onCancel, isEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    const medication = {
+      medicationName: formData.medicationName,
+      category: formData.category,
+      dosageForm: formData.dosageForm,
+      countryOfOrigin: formData.countryOfOrigin,
+      description: formData.description,
+      medicationInformation: formData.medicationInformation,
+      manufacturer: formData.manufacturer,
+      quantity: formData.quantity,
+      exp: formData.exp
+    };
+    const data = new FormData();
+    data.append('medication', JSON.stringify(medication));
+    if (formData.image instanceof File) {
+      data.append('image', formData.image);
+    }
+    // Truyền FormData ra ngoài, component cha sẽ tự quyết định gọi API tạo mới hay cập nhật
+    if (onSubmit) onSubmit(data);
   };
   
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-2">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="medicationName">Tên thuốc *</Label>
@@ -128,51 +148,49 @@ const MedicineForm = ({ initialData, onSubmit, onCancel, isEdit }) => {
             required
           />
         </div>
-        {/* <div className="space-y-2">
-          <Label htmlFor="activeIngredient">Hoạt chất *</Label>
+        <div className="space-y-2">
+          <Label htmlFor="exp">Ngày hết hạn *</Label>
           <Input
-            id="activeIngredient"
-            value={formData.activeIngredient}
-            onChange={(e) => handleChange("activeIngredient", e.target.value)}
-            placeholder="Nhập hoạt chất"
+            id="exp"
+            type="date"
+            value={formData.exp || ''}
+            onChange={(e) => handleChange("exp", e.target.value)}
             required
           />
-        </div> */}
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="medicationInformation">Thông tin thuốc *</Label>
+        <Label htmlFor="medicationInformation">Thông tin sử dụng *</Label>
         <textarea
           id="medicationInformation"
           value={formData.medicationInformation}
           onChange={(e) => handleChange("medicationInformation", e.target.value)}
-          placeholder="Nhập thông tin chi tiết về thuốc"
+          placeholder="Nhập thông tin sử dụng"
           className="w-full p-2 border border-input rounded-md resize-none h-20 bg-background text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="prescriptionRequired">Yêu cầu đơn thuốc *</Label>
-        <select
-          id="prescriptionRequired"
-          value={formData.prescriptionRequired ? "true" : "false"}
-          onChange={(e) => handleChange("prescriptionRequired", e.target.value === "true")}
-          required
-          className="w-full border border-input rounded-md p-2"
-        >
-          <option value="true">Có</option>
-          <option value="false">Không</option>
-        </select>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="description">Ghi chú</Label>
+        <Label htmlFor="description">Mô tả *</Label>
         <textarea
           id="description"
           value={formData.description}
           onChange={(e) => handleChange("description", e.target.value)}
-          placeholder="Nhập ghi chú (tùy chọn)"
+          placeholder="Nhập mô tả"
           className="w-full p-2 border border-input rounded-md resize-none h-20 bg-background text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          required
         />
       </div>
+      {/* <div className="space-y-2">
+        <Label htmlFor="activeIngredient">Hoạt chất *</Label>
+        <Input
+          id="activeIngredient"
+          value={formData.activeIngredient}
+          onChange={(e) => handleChange("activeIngredient", e.target.value)}
+          placeholder="Nhập hoạt chất"
+          required
+        />
+      </div> */}
       <div className="space-y-2">
         <Label htmlFor="imageFile">Chọn ảnh từ máy tính</Label>
         <Input
