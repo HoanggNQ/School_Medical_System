@@ -84,7 +84,7 @@ const API_ENDPOINTS = {
     GET_STUDENT_PROFILE: `/api/v1/user/profile`,
     GET_STUDENT_VACCINATION_RECORD: (studentId) => `/api/vaccination-record/students/${studentId}/records`,
     GET_STUDENT_HEALTH_CHECK_RECORD: (studentId) => `/api/v1/health-check-result/students/${studentId}/results`,
-    GET_STUDENT_SCHEDULE: (studentId) => `/api/v1/student/students/${studentId}/events`,
+    GET_STUDENT_SCHEDULE: (studentId) => `/api/v1/student/student/${studentId}/approved-events`,
   },
   CAMPAIGN_ENDPOINTS: {
     CREATE: 'api/v1/health-check-campaign/campaigns',
