@@ -27,14 +27,9 @@ const studentService = {
             throw handleApiError(error);
         }
     },
-    getStudentSchedule: async (studentId, page, size) => {
+    getStudentSchedule: async (studentId) => {
         try {
-            const response = await axiosInstance.get(API_ENDPOINTS.STUDENT.GET_STUDENT_SCHEDULE(studentId),{
-            params: {
-                page,
-                size
-            }
-        });
+            const response = await axiosInstance.get(API_ENDPOINTS.STUDENT.GET_STUDENT_SCHEDULE(studentId));
             return response.data;
         } catch (error) {
             throw handleApiError(error);

@@ -27,7 +27,7 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
-  const [selectedNotifications, setSelectedNotifications] = useState([])
+  const [selectedNotifications, setSelectedNotifications] = useState([]) // This state is not used, can be removed if not needed
   const [showRead, setShowRead] = useState(true)
   const [markingAsRead, setMarkingAsRead] = useState(new Set())
   const [deleting, setDeleting] = useState(new Set())
@@ -64,9 +64,9 @@ const NotificationsPage = () => {
 
     if (text.includes("từ chối") || text.includes("hủy")) {
       return <XCircle className="w-5 h-5 text-red-500" />
-    } else if (text.includes("chấp nhận") || text.includes("thành công")) {
+    } else if (text.includes("chấp nhận") || text.includes("thành công") || text.includes("kết quả tiêm chủng")) {
       return <CheckCircle className="w-5 h-5 text-green-500" />
-    } else if (text.includes("thuốc") || text.includes("y tế")) {
+    } else if (text.includes("thuốc") || text.includes("y tế") || text.includes("sức khỏe")) {
       return <AlertCircle className="w-5 h-5 text-blue-500" />
     } else if (text.includes("thông báo") || text.includes("nhắc nhở")) {
       return <Info className="w-5 h-5 text-purple-500" />
@@ -80,9 +80,9 @@ const NotificationsPage = () => {
 
     if (text.includes("từ chối") || text.includes("hủy")) {
       return "bg-red-50 border-red-200 hover:bg-red-100"
-    } else if (text.includes("chấp nhận") || text.includes("thành công")) {
+    } else if (text.includes("chấp nhận") || text.includes("thành công") || text.includes("kết quả tiêm chủng")) {
       return "bg-green-50 border-green-200 hover:bg-green-100"
-    } else if (text.includes("thuốc") || text.includes("y tế")) {
+    } else if (text.includes("thuốc") || text.includes("y tế") || text.includes("sức khỏe")) {
       return "bg-blue-50 border-blue-200 hover:bg-blue-100"
     } else if (text.includes("thông báo") || text.includes("nhắc nhở")) {
       return "bg-purple-50 border-purple-200 hover:bg-purple-100"
@@ -96,9 +96,9 @@ const NotificationsPage = () => {
 
     if (text.includes("từ chối") || text.includes("hủy")) {
       return "rejected"
-    } else if (text.includes("chấp nhận") || text.includes("thành công")) {
+    } else if (text.includes("chấp nhận") || text.includes("thành công") || text.includes("kết quả tiêm chủng")) {
       return "approved"
-    } else if (text.includes("thuốc") || text.includes("y tế")) {
+    } else if (text.includes("thuốc") || text.includes("y tế") || text.includes("sức khỏe")) {
       return "medical"
     } else if (text.includes("thông báo") || text.includes("nhắc nhở")) {
       return "info"
@@ -141,11 +141,12 @@ const NotificationsPage = () => {
         const response = await ParentService.getNotifications()
         console.log("Fetched notifications:", response)
 
-        if (response.isSuccess && response.data) {
-          // Add read status to notifications (mock data)
-          const notificationsWithReadStatus = response.data.map((notification, index) => ({
+        // Assuming response.data is the array of notifications
+        if (response && Array.isArray(response.data)) {
+          // Map 'status' from API to 'isRead' for local state
+          const notificationsWithReadStatus = response.data.map((notification) => ({
             ...notification,
-            isRead: index % 3 === 0, // Mock some as read
+            isRead: notification.status === "SEEN", // Use actual status from API
           }))
           setNotifications(notificationsWithReadStatus)
         } else {
@@ -165,11 +166,14 @@ const NotificationsPage = () => {
   const handleMarkAsRead = async (notificationId) => {
     try {
       setMarkingAsRead((prev) => new Set([...prev, notificationId]))
+      // Assuming markNotificationAsRead API updates the status to "SEEN" on backend
       await ParentService.markNotificationAsRead(notificationId)
 
       setNotifications(
         notifications.map((notification) =>
-          notification.notificationId === notificationId ? { ...notification, isRead: true } : notification,
+          notification.notificationId === notificationId
+            ? { ...notification, isRead: true, status: "SEEN" }
+            : notification,
         ),
       )
     } catch (error) {
@@ -194,7 +198,7 @@ const NotificationsPage = () => {
       )
 
       // Update local state after successful API calls
-      setNotifications(notifications.map((notification) => ({ ...notification, isRead: true })))
+      setNotifications(notifications.map((notification) => ({ ...notification, isRead: true, status: "SEEN" })))
     } catch (error) {
       console.error("Error marking all notifications as read:", error)
       alert("Có lỗi xảy ra khi đánh dấu tất cả đã đọc")
@@ -231,7 +235,7 @@ const NotificationsPage = () => {
         <CardContent className="flex items-center justify-center py-12">
           <div className="flex items-center space-x-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-            <span className="text-gray-600">Đang tải thông báo...</span>
+            <span className="ml-2 text-gray-600">Đang tải thông báo...</span>
           </div>
         </CardContent>
       </Card>
@@ -390,7 +394,8 @@ const NotificationsPage = () => {
                           </div>
 
                           <div className="flex items-center space-x-2 ml-4">
-                            {!notification.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
+                            {/* Show blue dot only if status is NOT "SEEN" */}
+                            {notification.status !== "SEEN" && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
                             <div className="text-right">
                               <div className="text-xs text-gray-500">{formatDate(notification.dateCreate)}</div>
                             </div>
@@ -411,7 +416,8 @@ const NotificationsPage = () => {
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {!notification.isRead && (
+                            {/* Only show Mark as Read button if status is NOT "SEEN" */}
+                            {notification.status !== "SEEN" && (
                               <Button
                                 onClick={() => handleMarkAsRead(notification.notificationId)}
                                 variant="ghost"

@@ -21,7 +21,7 @@ public class VaccinationConsentMapper {
                 .studentId(entity.getStudent().getId())
                 .studentName(Optional.ofNullable(entity.getStudent()).map(StudentEntity::getUser).map(UserEntity::getFullname).orElse(null))
                 .parentId(entity.getParent().getUserId())
-                .parentName(entity.getParent().getUsername())
+                .parentEmail(entity.getParent().getUsername())
                 .notes(entity.getNotes())
                 .responseDate(entity.getResponseDate())
                 .academicYear(entity.getAcademicYear())
