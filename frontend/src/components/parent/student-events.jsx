@@ -23,6 +23,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ParentService from "../../api/services/parent.service"
+import { Toaster} from "@/components/ui/toaster" // Changed import from { toast } to { Toast }
 
 const StudentEvents = ({ selectedStudent }) => {
   const [events, setEvents] = useState([])
@@ -30,7 +31,7 @@ const StudentEvents = ({ selectedStudent }) => {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [filterStatus, setFilterStatus] = useState("all") // Filter by resultStatus
   const [filterType, setFilterType] = useState("all")
   const [updatingResponse, setUpdatingResponse] = useState(new Set())
 
@@ -94,6 +95,7 @@ const StudentEvents = ({ selectedStudent }) => {
     }
   }
 
+  // Updated consent status handling
   const getConsentStatusColor = (consentStatus) => {
     if (!consentStatus) return "bg-gray-100 text-gray-800 border-gray-200"
 
@@ -104,6 +106,8 @@ const StudentEvents = ({ selectedStudent }) => {
         return "bg-red-100 text-red-800 border-red-200"
       case "PENDING":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "DONE": // New status
+        return "bg-blue-100 text-blue-800 border-blue-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
@@ -119,6 +123,8 @@ const StudentEvents = ({ selectedStudent }) => {
         return <XCircle className="w-4 h-4" />
       case "PENDING":
         return <AlertCircle className="w-4 h-4" />
+      case "DONE": // New status
+        return <CheckCircle className="w-4 h-4" />
       default:
         return <AlertCircle className="w-4 h-4" />
     }
@@ -129,11 +135,13 @@ const StudentEvents = ({ selectedStudent }) => {
 
     switch (consentStatus.toUpperCase()) {
       case "APPROVED":
-        return "Đã chấp nhận"
+        return "Đã đồng ý"
       case "REJECTED":
         return "Đã từ chối"
       case "PENDING":
-        return "Chờ phản hồi"
+        return "Đang chờ phản hồi"
+      case "DONE": // New status
+        return "Đã hoàn thành consent"
       default:
         return "Chưa phản hồi"
     }
@@ -142,45 +150,33 @@ const StudentEvents = ({ selectedStudent }) => {
   // Updated result status handling based on new API structure
   const getResultStatusInfo = (resultStatus) => {
     switch (resultStatus?.toUpperCase()) {
-      case "PENDING":
+      case "PENDING": // chưa ghi nhận kết quả
         return {
-          label: "Chờ đăng ký",
+          label: "Chưa ghi nhận kết quả",
           color: "bg-yellow-100 text-yellow-800",
           icon: <Clock className="w-4 h-4" />,
-          canRegister: true,
-          description: "Có thể đăng ký tham gia",
+          description: "Kết quả sự kiện chưa được ghi nhận.",
         }
-      case "APPROVED":
+      case "COMPLETED": // đã ghi nhận kết quả
         return {
-          label: "Đã đăng ký",
+          label: "Đã ghi nhận kết quả",
           color: "bg-green-100 text-green-800",
           icon: <CheckCircle className="w-4 h-4" />,
-          canRegister: false,
-          description: "Đã đăng ký tham gia sự kiện",
+          description: "Kết quả sự kiện đã được ghi nhận.",
         }
-      case "REJECTED":
+      case "NO_CONSENT": // chưa có consent
         return {
-          label: "Đã từ chối",
+          label: "Chưa có consent",
           color: "bg-red-100 text-red-800",
           icon: <XCircle className="w-4 h-4" />,
-          canRegister: false,
-          description: "Đã từ chối tham gia sự kiện",
-        }
-      case "DONE":
-        return {
-          label: "Đã hoàn thành",
-          color: "bg-blue-100 text-blue-800",
-          icon: <CheckCircle className="w-4 h-4" />,
-          canRegister: false,
-          description: "Sự kiện đã hoàn thành",
+          description: "Học sinh chưa có sự đồng ý tham gia.",
         }
       default:
         return {
           label: "Chưa xác định",
           color: "bg-gray-100 text-gray-800",
           icon: <AlertCircle className="w-4 h-4" />,
-          canRegister: false,
-          description: "Trạng thái không xác định",
+          description: "Trạng thái kết quả không xác định.",
         }
     }
   }
@@ -206,7 +202,7 @@ const StudentEvents = ({ selectedStudent }) => {
 
     try {
       setLoading(true)
-      const response = await ParentService.getStudentEvent(selectedStudent.id,page,10)
+      const response = await ParentService.getStudentEvent(selectedStudent.id, page, 10)
 
       console.log("Fetched student events:", response)
 
@@ -218,18 +214,13 @@ const StudentEvents = ({ selectedStudent }) => {
           setEvents(pageData.content)
           setTotalPages(pageData.totalPages || 0)
           setTotalElements(pageData.totalElements || 0)
-          // Chỉ set currentPage nếu đây là lần fetch đầu tiên
-          if (page === 0 && currentPage !== 0) {
-            setCurrentPage(0)
-          }
+          setCurrentPage(page) // Ensure currentPage is updated correctly
         } else if (Array.isArray(pageData)) {
-          // Handle direct array response
+          // Handle direct array response (if API doesn't paginate)
           setEvents(pageData)
           setTotalPages(1)
           setTotalElements(pageData.length)
-          if (page === 0 && currentPage !== 0) {
-            setCurrentPage(0)
-          }
+          setCurrentPage(0)
         } else {
           setEvents([])
         }
@@ -246,7 +237,7 @@ const StudentEvents = ({ selectedStudent }) => {
 
   useEffect(() => {
     setCurrentPage(0) // Reset về trang đầu khi đổi student
-    fetchEvents(0) // Fixed page size of 10
+    fetchEvents(0)
   }, [selectedStudent?.id])
 
   const handleViewDetail = (event) => {
@@ -263,30 +254,37 @@ const StudentEvents = ({ selectedStudent }) => {
     try {
       setUpdatingResponse((prev) => new Set([...prev, event.eventId]))
 
-      // Determine the event type and call appropriate API
       const consentStatus = response === "approved" ? "APPROVED" : "REJECTED"
       const requestData = { consentStatus }
 
-      // Check event type and call corresponding API
       if (event.type?.toUpperCase() === "VACCINATION") {
         console.log("Vaccination consent updated:", event.consentId, requestData)
         await ParentService.updateAcceptedVaccination(event.consentId, requestData)
-        
       } else if (event.type?.toUpperCase() === "HEALTH_CHECK") {
         console.log("Healthcheck consent updated:", event.consentId, requestData)
         await ParentService.updateAcceptedHealthCheck(event.consentId, requestData)
       } else {
-        // Default to health check API for unknown types
         console.warn("Unknown event type, defaulting to health check API:", event.type)
+        await ParentService.updateAcceptedHealthCheck(event.consentId, requestData)
       }
 
       // Refresh the current page to get updated data
       await fetchEvents(currentPage)
 
-      alert(`Đã ${response === "approved" ? "chấp nhận" : "từ chối"} tham gia sự kiện!`)
+      Toaster({
+        // Changed toast to Toast
+        title: "Cập nhật thành công",
+        description: `Đã ${response === "approved" ? "chấp nhận" : "từ chối"} tham gia sự kiện!`,
+        variant: "success",
+      })
     } catch (error) {
       console.error("Error updating consent:", error)
-      alert("Có lỗi xảy ra khi cập nhật phản hồi")
+      Toaster({
+        // Changed toast to Toast
+        title: "Lỗi cập nhật",
+        description: "Có lỗi xảy ra khi cập nhật phản hồi: " + error.message,
+        variant: "destructive",
+      })
     } finally {
       setUpdatingResponse((prev) => {
         const newSet = new Set(prev)
@@ -298,26 +296,59 @@ const StudentEvents = ({ selectedStudent }) => {
 
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) {
-      setCurrentPage(newPage) // Set currentPage trước
-      fetchEvents(newPage, 10) // Sau đó mới gọi API
+      setCurrentPage(newPage)
+      fetchEvents(newPage) // pageSize is fixed at 10 in fetchEvents
     }
   }
-
-
 
   // Get status counts for display
-  const getStatusCounts = () => {
+  const getEventSummaryCounts = () => {
     if (!Array.isArray(events)) return {}
 
-    return {
-      pending: events.filter((e) => e.resultStatus?.toUpperCase() === "PENDING").length,
-      approved: events.filter((e) => e.resultStatus?.toUpperCase() === "APPROVED").length,
-      rejected: events.filter((e) => e.resultStatus?.toUpperCase() === "REJECTED").length,
-      done: events.filter((e) => e.resultStatus?.toUpperCase() === "DONE").length,
+    const counts = {
+      consentPending: 0,
+      consentApproved: 0,
+      consentRejected: 0,
+      consentDone: 0,
+      resultPending: 0,
+      resultCompleted: 0,
+      resultNoConsent: 0,
     }
+
+    events.forEach((e) => {
+      // Consent Status Counts
+      switch (e.consentStatus?.toUpperCase()) {
+        case "PENDING":
+          counts.consentPending++
+          break
+        case "APPROVED":
+          counts.consentApproved++
+          break
+        case "REJECTED":
+          counts.consentRejected++
+          break
+        case "DONE":
+          counts.consentDone++
+          break
+      }
+
+      // Result Status Counts
+      switch (e.resultStatus?.toUpperCase()) {
+        case "PENDING":
+          counts.resultPending++
+          break
+        case "COMPLETED":
+          counts.resultCompleted++
+          break
+        case "NO_CONSENT":
+          counts.resultNoConsent++
+          break
+      }
+    })
+    return counts
   }
 
-  const statusCounts = getStatusCounts()
+  const eventSummaryCounts = getEventSummaryCounts()
 
   if (loading) {
     return (
@@ -374,11 +405,10 @@ const StudentEvents = ({ selectedStudent }) => {
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="all">Tất cả trạng thái</option>
-                <option value="pending">Chờ đăng ký</option>
-                <option value="approved">Đã đăng ký</option>
-                <option value="rejected">Đã từ chối</option>
-                <option value="done">Đã hoàn thành</option>
+                <option value="all">Tất cả trạng thái kết quả</option>
+                <option value="pending">Chưa ghi nhận kết quả</option>
+                <option value="completed">Đã ghi nhận kết quả</option>
+                <option value="no_consent">Chưa có consent</option>
               </select>
 
               <select
@@ -393,12 +423,12 @@ const StudentEvents = ({ selectedStudent }) => {
             </div>
           </div>
 
-          {/* <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200 flex-wrap gap-2">
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Calendar className="w-4 h-4" />
               <span>
-                Hiển thị {Math.min(currentPage * pageSize + 1, totalElements || filteredEvents.length)} -{" "}
-                {Math.min((currentPage + 1) * pageSize, totalElements || filteredEvents.length)}
+                Hiển thị {Math.min(currentPage * 10 + 1, totalElements || filteredEvents.length)} -{" "}
+                {Math.min((currentPage + 1) * 10, totalElements || filteredEvents.length)}
                 trong tổng số {totalElements || filteredEvents.length} sự kiện
               </span>
             </div>
@@ -406,22 +436,22 @@ const StudentEvents = ({ selectedStudent }) => {
             <div className="flex items-center space-x-2 flex-wrap">
               <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
                 <Clock className="w-3 h-3 mr-1" />
-                Chờ đăng ký: {statusCounts.pending}
+                Consent Chờ: {eventSummaryCounts.consentPending}
               </Badge>
               <Badge variant="outline" className="bg-green-50 text-green-700">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Đã đăng ký: {statusCounts.approved}
+                Consent Đã đồng ý: {eventSummaryCounts.consentApproved}
               </Badge>
               <Badge variant="outline" className="bg-red-50 text-red-700">
                 <XCircle className="w-3 h-3 mr-1" />
-                Đã từ chối: {statusCounts.rejected}
+                Consent Từ chối: {eventSummaryCounts.consentRejected}
               </Badge>
               <Badge variant="outline" className="bg-blue-50 text-blue-700">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Hoàn thành: {statusCounts.done}
+                Consent Hoàn thành: {eventSummaryCounts.consentDone}
               </Badge>
             </div>
-          </div> */}
+          </div>
         </CardContent>
       </Card>
 
@@ -446,6 +476,9 @@ const StudentEvents = ({ selectedStudent }) => {
         ) : (
           filteredEvents.map((event, index) => {
             const resultStatusInfo = getResultStatusInfo(event.resultStatus)
+            // Only allow response if consentStatus is PENDING
+            const canRespondToConsent = event.consentId && event.consentStatus?.toUpperCase() === "PENDING"
+
             return (
               <motion.div
                 key={event.eventId}
@@ -576,8 +609,8 @@ const StudentEvents = ({ selectedStudent }) => {
                           Xem chi tiết
                         </Button>
 
-                        {/* Consent Response Buttons - Only show if can register and has consentId */}
-                        {resultStatusInfo.canRegister && event.consentId && (
+                        {/* Consent Response Buttons - Only show if consentStatus is PENDING */}
+                        {canRespondToConsent && (
                           <div className="flex space-x-2">
                             <Button
                               onClick={() => handleConsentResponse(event, "approved")}
@@ -610,22 +643,15 @@ const StudentEvents = ({ selectedStudent }) => {
                           </div>
                         )}
 
-                        {/* Show status message for non-registerable events */}
-                        {!resultStatusInfo.canRegister &&
-                          event.consentStatusText?.includes("Chiến dịch chưa bắt đầu") && (
-                            <div className="text-sm text-gray-500 italic">Sự kiện chưa mở đăng ký</div>
-                          )}
-
-                        {!resultStatusInfo.canRegister && event.resultStatus?.toUpperCase() === "APPROVED" && (
-                          <div className="text-sm text-green-600 font-medium">✓ Đã đăng ký tham gia</div>
+                        {/* Show status message for non-actionable consent states */}
+                        {event.consentStatus?.toUpperCase() === "APPROVED" && (
+                          <div className="text-sm text-green-600 font-medium">✓ Đã đồng ý tham gia</div>
                         )}
-
-                        {!resultStatusInfo.canRegister && event.resultStatus?.toUpperCase() === "REJECTED" && (
+                        {event.consentStatus?.toUpperCase() === "REJECTED" && (
                           <div className="text-sm text-red-600 font-medium">✗ Đã từ chối tham gia</div>
                         )}
-
-                        {!resultStatusInfo.canRegister && event.resultStatus?.toUpperCase() === "DONE" && (
-                          <div className="text-sm text-blue-600 font-medium">✓ Sự kiện đã hoàn thành</div>
+                        {event.consentStatus?.toUpperCase() === "DONE" && (
+                          <div className="text-sm text-blue-600 font-medium">✓ Consent đã hoàn thành</div>
                         )}
                       </div>
                     </div>
