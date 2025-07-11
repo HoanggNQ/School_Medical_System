@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Heart, Syringe, Stethoscope, Pill, FileText } from "lucide-react"
+import { Heart, Syringe, Stethoscope, Pill, FileText, ClipboardList } from "lucide-react"
 import ParentService from "../../api/services/parent.service"
 import HealthRecords from "./health-records"
 import VaccinationHistory from "./vaccination-history"
 import SendMedicine from "./send-medicine"
 import HealthDeclaration from "./health-declaration"
 import HealthDeclarationHistory from "./health-declaration-history"
+import StudentMedicalEvent from "./StudentMedicalEvent"
 
 const StudentHealth = () => {
   const [students, setStudents] = useState([])
@@ -20,7 +21,7 @@ const StudentHealth = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try { 
+      try {
         setLoading(true)
         const parentRes = await ParentService.getParentProfile()
         console.log("Fetched parent profile:", parentRes.data)
@@ -190,6 +191,19 @@ const StudentHealth = () => {
                   <span>Khai báo sức khỏe</span>
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab("medical-events")}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "medical-events"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <ClipboardList className="w-5 h-5" />
+                  <span>Sự kiện y tế tại trường</span>
+                </div>
+              </button>
             </nav>
           </div>
         </motion.div>
@@ -270,6 +284,7 @@ const StudentHealth = () => {
                 )}
               </div>
             )}
+            {activeTab === "medical-events" && <StudentMedicalEvent selectedStudent={selectedStudent} />}
           </motion.div>
         )}
       </div>
