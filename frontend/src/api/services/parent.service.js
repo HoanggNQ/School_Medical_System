@@ -168,6 +168,19 @@ const ParentService = {
         } catch (error) {
             throw handleApiError(error);
         }
+    },
+    getStudentMedicalEvent: async (studentId, page, size) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_STUDENT_MEDICAL_EVENT(studentId),{
+            params: {
+                page,
+                size
+            }
+        });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
     }
 }
 
