@@ -54,13 +54,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         return [
           ...baseItems,
           { id: 'medicines', label: 'Quản lý thuốc', icon: Pill, path: '/medicines' },
-          { id: 'health-records', label: 'Danh sách yêu cầu thuốc', icon: Activity, path: '/health-records' },
-          { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
+          { id: 'health-records', label: 'Yêu cầu thuốc', icon: Activity, path: '/health-records' },
+          // { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
+          { id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
           { id: 'management-vaccine', label: 'Quản lý tiêm chủng', icon: Shield, path: '/management-vaccine' },
-          { id: 'campaigns', label: 'xem  chiến dịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
+          { id: 'campaigns', label: 'chiến dịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
           { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
-          
+          { id: 'heath-result', label: 'Kết quả khám sức khỏe', icon: ClipboardList, path: '/heath-result' },
+          { id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
+          { id: 'HealthDeclarationSearch', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
       case 'STUDENT':
         return [

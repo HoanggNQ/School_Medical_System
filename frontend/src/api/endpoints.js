@@ -36,6 +36,8 @@ const API_ENDPOINTS = {
     GET_ALL: 'api/v1/medication-requests/pending',
     REQUEST_MEDICATION: (id) => `api/v1/medication-requests/${id}/reject`,
     APPROVE_REQUEST: (id) => `api/v1/medication-requests/${id}/approve`,
+    GET_ALL_APPROVED: 'api/v1/medication-requests/approve',
+    GET_ALL_REJECTED: 'api/v1/medication-requests/reject',
   },
   EVENT: {
     CREATE: 'api/v1/medical-event/create',
@@ -48,12 +50,19 @@ const API_ENDPOINTS = {
     GET_ALL: 'api/vaccination-consent/getAll',
     GET_BY_CAM: (id) => `api/vaccination-consent/campaigns/${id}/consents`,
     CREATE: 'api/vaccination-record/records',
+     GET_RESULT_BY_CAM: (id) => `api/vaccination-record/campaigns/${id}/records`
   },
   HealthCheck: {
-    GET_BY_CAM: (id) => `api/v1/health-check-campaign/campaigns/${id}/consents/approved`,
+    GET_BY_CAM: (id) => `api/v1/health-check-consent/campaigns/${id}/consentsAll/`,
     CREATE: 'api/v1/health-check-result/results',
     STATISTICS: (id) => `api/v1/dashboard/healthCheck/${id}/statistics`,
     GET_ALL_CONSENT: 'api/v1/health-check-consent/getAll',
+    GET_RESULT_BY_CAM: (id) => `api/v1/health-check-result/campaigns/${id}/results`
+  },
+  Health_Declaration:{
+    UPDATE_STATUS: (id)=> `api/v1/health-declarations/${id}/status `,
+    GET_ALL_DECLARATIONS: `api/v1/health-declarations/search`,
+
   },
   Student: {
    
