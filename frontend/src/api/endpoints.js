@@ -58,6 +58,8 @@ const API_ENDPOINTS = {
   Student: {
    
     GET_ALL_Student: 'api/v1/student/getAll',
+  
+
   },
   PARENT: {
     GET_PARENT_PROFILE: '/api/v1/user/profile',
@@ -85,6 +87,7 @@ const API_ENDPOINTS = {
     GET_STUDENT_VACCINATION_RECORD: (studentId) => `/api/vaccination-record/students/${studentId}/records`,
     GET_STUDENT_HEALTH_CHECK_RECORD: (studentId) => `/api/v1/health-check-result/students/${studentId}/results`,
     GET_STUDENT_SCHEDULE: (studentId) => `/api/v1/student/students/${studentId}/events`,
+    CREATE: 'api/v1/student',
   },
   CAMPAIGN_ENDPOINTS: {
     CREATE: 'api/v1/health-check-campaign/campaigns',

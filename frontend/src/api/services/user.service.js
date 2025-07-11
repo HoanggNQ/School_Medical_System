@@ -159,6 +159,32 @@ const UserService = {
         }
     },
 
+    registerstudent: async (data) => {
+        try {
+            // Chuẩn hóa payload chỉ gồm các trường cần thiết
+            const payload = {
+                classId: Number(data.classId) || 0,
+                parentId: Number(data.parentId) || 0,
+                userRegister: {
+                    email: data.userRegister.email,
+                    password: data.userRegister.password,
+                    username: data.userRegister.username,
+                    fullName: data.userRegister.fullName,
+                    address: data.userRegister.address,
+                    gender: data.userRegister.gender,
+                    dob: data.userRegister.dob,
+                    phoneNumber: data.userRegister.phoneNumber,
+                    roleName: 'STUDENT'
+                },
+                emergencyContactName: data.emergencyContactName || '',
+                emergencyContactPhone: data.emergencyContactPhone || ''
+            };
+            const response = await axiosInstance.post(API_ENDPOINTS.STUDENT.CREATE, payload);
+            return response;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 
     getAllHealthCheckConsents: async ({ page, sort, search = '' } = {}) => {
         try {
