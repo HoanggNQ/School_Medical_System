@@ -18,8 +18,7 @@ public class VaccinationConsentResponse {
     private String studentName;
     private Long parentId;
     private int phoneNumber;
-    private String parentName;
-    private String consentFormUrl;
+    private String parentEmail;
     private LocalDate responseDate;
     private String notes;
     private String academicYear;
