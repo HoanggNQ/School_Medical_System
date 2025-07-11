@@ -3,23 +3,7 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { toast } from "@/components/ui/use-toast"
-import {
-  Calendar,
-  MapPin,
-  User,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Heart,
-  Syringe,
-  FileText,
-  Activity,
-  ChevronRight,
-  Filter,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Calendar, MapPin, Clock, AlertCircle, Heart, Syringe, FileText, Activity, Filter } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import studentService from "../../api/services/student.service"
@@ -29,11 +13,7 @@ const StudentAppointments = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
-  const [currentPage, setCurrentPage] = useState(0)
-  const [pageSize] = useState(10)
-  const [totalPages, setTotalPages] = useState(0)
   const [filterType, setFilterType] = useState("ALL")
-  const [filterStatus, setFilterStatus] = useState("ALL")
 
   useEffect(() => {
     const fetchStudentSchedule = async () => {
@@ -46,14 +26,23 @@ const StudentAppointments = () => {
           throw new Error("Không tìm thấy thông tin người dùng")
         }
 
-        const response = await studentService.getStudentSchedule(user.id, currentPage, pageSize)
-        console.log("Student Schedule:", response)
+        const response = await studentService.getStudentSchedule(user.id)
+        console.log("Student Schedule API Response:", response) // Log the full response
 
         if (response && response.data) {
-          setAppointments(response.data.content || response.data)
-          setTotalPages(response.data.totalPages || 1)
+          const fetchedData = response.data // Access the 'data' key
+          console.log("Fetched appointments data:", fetchedData) // Log the fetched data
+          if (Array.isArray(fetchedData)) {
+            // Ensure it's an array
+            setAppointments(fetchedData)
+            console.log("Appointments state set to:", fetchedData) // Log after setting state
+          } else {
+            console.warn("API response data.data is not an array:", fetchedData)
+            setAppointments([])
+          }
         } else {
           setAppointments([])
+          console.log("Appointments set to empty array due to no response data.")
         }
       } catch (error) {
         console.error("Error fetching student schedule:", error)
@@ -70,7 +59,7 @@ const StudentAppointments = () => {
     }
 
     fetchStudentSchedule()
-  }, [currentPage, pageSize])
+  }, [])
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A"
@@ -134,74 +123,11 @@ const StudentAppointments = () => {
     }
   }
 
-  const getConsentStatusBadge = (status, statusText) => {
-    switch (status) {
-      case "DONE":
-        return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            {statusText || "Đã có consent"}
-          </Badge>
-        )
-      case "PENDING":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
-            <Clock className="w-3 h-3 mr-1" />
-            {statusText || "Chờ xử lý"}
-          </Badge>
-        )
-      default:
-        return (
-          <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-            <XCircle className="w-3 h-3 mr-1" />
-            {statusText || "Chưa có consent"}
-          </Badge>
-        )
-    }
-  }
-
-  const getResultStatusBadge = (status) => {
-    switch (status) {
-      case "COMPLETED":
-        return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Đã hoàn thành
-          </Badge>
-        )
-      case "PENDING":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-            <Clock className="w-3 h-3 mr-1" />
-            Đang chờ
-          </Badge>
-        )
-      case "NO_CONSENT":
-        return (
-          <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
-            <XCircle className="w-3 h-3 mr-1" />
-            Chưa có consent
-          </Badge>
-        )
-      default:
-        return (
-          <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-            <AlertCircle className="w-3 h-3 mr-1" />
-            Chưa xác định
-          </Badge>
-        )
-    }
-  }
-
   const getFilteredAppointments = () => {
     let filtered = appointments
 
     if (filterType !== "ALL") {
-      filtered = filtered.filter((appointment) => appointment.type === filterType)
-    }
-
-    if (filterStatus !== "ALL") {
-      filtered = filtered.filter((appointment) => appointment.resultStatus === filterStatus)
+      filtered = filtered.filter((appointment) => appointment.eventType === filterType)
     }
 
     return filtered
@@ -215,9 +141,11 @@ const StudentAppointments = () => {
     }).length
   }
 
-  const getCompletedCount = () => {
-    return appointments.filter((appointment) => appointment.resultStatus === "COMPLETED").length
-  }
+  // Log state before rendering
+  const filteredAppointments = getFilteredAppointments()
+  console.log("Appointments state at render:", appointments)
+  console.log("Filter type at render:", filterType)
+  console.log("Filtered appointments length at render:", filteredAppointments.length)
 
   if (loading) {
     return (
@@ -256,8 +184,6 @@ const StudentAppointments = () => {
     )
   }
 
-  const filteredAppointments = getFilteredAppointments()
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -285,7 +211,7 @@ const StudentAppointments = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -297,19 +223,6 @@ const StudentAppointments = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Đã hoàn thành</p>
-                <p className="text-2xl font-bold text-green-600">{getCompletedCount()}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -346,21 +259,6 @@ const StudentAppointments = () => {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Trạng thái</label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Tất cả</SelectItem>
-                  <SelectItem value="COMPLETED">Đã hoàn thành</SelectItem>
-                  <SelectItem value="PENDING">Đang chờ</SelectItem>
-                  <SelectItem value="NO_CONSENT">Chưa có consent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -391,30 +289,26 @@ const StudentAppointments = () => {
             <div className="space-y-4">
               {filteredAppointments.map((appointment, index) => (
                 <motion.div
-                  key={`${appointment.campaignId}-${appointment.consentId || index}`}
+                  key={`${appointment.campaignId}-${index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 * index }}
-                  className={`border-2 rounded-lg p-6 hover:shadow-md transition-all duration-200 ${getEventColor(appointment.type)}`}
+                  className={`border-2 rounded-lg p-6 hover:shadow-md transition-all duration-200 ${getEventColor(appointment.eventType)}`}
                 >
                   {/* Appointment Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        {getEventIcon(appointment.type)}
+                        {getEventIcon(appointment.eventType)}
                       </div>
                       <div>
                         <h4 className="text-lg font-semibold text-gray-900">{appointment.campaignName}</h4>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
-                          <span>{getEventTypeName(appointment.type)}</span>
+                          <span>{getEventTypeName(appointment.eventType)}</span>
                           <span>•</span>
                           <span>Chiến dịch #{appointment.campaignId}</span>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      {getConsentStatusBadge(appointment.consentStatus, appointment.consentStatusText)}
-                      {getResultStatusBadge(appointment.resultStatus)}
                     </div>
                   </div>
 
@@ -437,64 +331,27 @@ const StudentAppointments = () => {
                         <MapPin className="w-4 h-4 text-gray-500" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Địa điểm</p>
-                        <p className="font-medium text-gray-900">{appointment.location || "N/A"}</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Năm học</p>
+                        <p className="font-medium text-gray-900">{appointment.academicYear || "N/A"}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                        <User className="w-4 h-4 text-gray-500" />
+                        <FileText className="w-4 h-4 text-gray-500" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Học sinh</p>
-                        <p className="font-medium text-gray-900">{appointment.studentName}</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Mô tả</p>
+                        <p className="font-medium text-gray-900">{appointment.description || "N/A"}</p>
                       </div>
                     </div>
                   </div>
-
-                  {/* Consent Information */}
-                  {appointment.consentId && (
-                    <div className="bg-white bg-opacity-60 p-4 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm font-medium text-gray-700">Consent ID:</span>
-                          <span className="text-sm text-gray-900">#{appointment.consentId}</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                      </div>
-                    </div>
-                  )}
                 </motion.div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
-            disabled={currentPage === 0}
-          >
-            Trang trước
-          </Button>
-          <span className="flex items-center px-4 py-2 text-sm text-gray-600">
-            Trang {currentPage + 1} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
-            disabled={currentPage >= totalPages - 1}
-          >
-            Trang sau
-          </Button>
-        </div>
-      )}
     </motion.div>
   )
 }
