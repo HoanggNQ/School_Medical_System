@@ -206,7 +206,7 @@ public class HealthCheckConsentController {
     @Operation(
             summary = "Lấy tất cả consents theo campaignId với phân trang và tìm kiếm"
     )
-    @GetMapping("/getAll")
+    @GetMapping("/campaigns/{campaignId}/consentsAll/")
     public ResponseEntity<ResponseObject> getAll(
             @RequestParam(value = "campaignId", required = false) Long campaignId,
             @RequestParam(value = "search",     required = false) String search,
