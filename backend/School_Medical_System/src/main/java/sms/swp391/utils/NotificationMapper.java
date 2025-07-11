@@ -17,6 +17,7 @@ public class NotificationMapper {
                 .content(e.getContent())
                 .dateCreate(e.getDateCreate())
                 .userId(e.getReceiver().getUserId())
+                .status(e.getStatus())
                 .build();
     }
 

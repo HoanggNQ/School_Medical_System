@@ -2,6 +2,7 @@ package sms.swp391.models.dtos.responses;
 
 
 import lombok.*;
+import sms.swp391.models.dtos.enums.NotificationStatus;
 
 import java.time.LocalDateTime;
 
@@ -25,5 +26,5 @@ public class NotificationResponse {
 
 
     private Long userId ;
-
+    private NotificationStatus status ;
 }
