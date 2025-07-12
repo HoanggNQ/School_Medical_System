@@ -163,7 +163,7 @@ const ParentProfile = () => {
                   </div>
                 </motion.div>
 
-                <motion.div
+                {/* <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
@@ -176,7 +176,7 @@ const ParentProfile = () => {
                       {formatValue(parent.roleName)}
                     </span>
                   </div>
-                </motion.div>
+                </motion.div> */}
 
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -207,7 +207,7 @@ const ParentProfile = () => {
                   </div>
                 </motion.div>
 
-                <motion.div
+                {/* <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
@@ -218,7 +218,7 @@ const ParentProfile = () => {
                     <p className="text-sm font-medium text-gray-500 mb-1">Tên đăng nhập</p>
                     <p className="text-lg font-semibold text-gray-900">{formatValue(parent.userName)}</p>
                   </div>
-                </motion.div>
+                </motion.div> */}
 
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
@@ -255,16 +255,16 @@ const ParentProfile = () => {
               transition={{ duration: 0.5, delay: 0.8 }}
               className="mt-8 pt-6 border-t border-gray-200"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 text-sm text-gray-600">
-                  <Calendar className="w-4 h-4" />
-                  <span>Ngày tạo: {formatDate(parent.dateCreated)}</span>
-                </div>
-                <div className="flex items-center space-x-3 text-sm text-gray-600">
-                  <Calendar className="w-4 h-4" />
-                  <span>Cập nhật lần cuối: {formatDate(parent.updatedAt)}</span>
-                </div>
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center space-x-3 text-sm text-gray-600">
+                <Calendar className="w-4 h-4" />
+                <span>Ngày tạo: {formatDate(parent.dateCreated)}</span>
               </div>
+              <div className="flex items-center space-x-3 text-sm text-gray-600">
+                <Calendar className="w-4 h-4" />
+                <span>Cập nhật lần cuối: {formatDate(parent.updatedAt)}</span>
+              </div>
+            </div> */}
             </motion.div>
           </div>
         </motion.div>
@@ -356,31 +356,31 @@ const ParentProfile = () => {
                           <span className="font-medium">{formatValue(student.user?.address)}</span>
                         </div>
 
-                        <div className="flex items-center space-x-2 text-sm">
+                        {/* <div className="flex items-center space-x-2 text-sm">
                           <UserCheck className="w-4 h-4 text-cyan-500" />
                           <span className="text-gray-600">Tên đăng nhập:</span>
                           <span className="font-medium">{formatValue(student.user?.userName)}</span>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
                     {/* Timestamps */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>Tạo: {formatDate(student.createdAt)}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>Cập nhật: {formatDate(student.updatedAt)}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>User tạo: {formatDate(student.user?.dateCreated)}</span>
-                        </div>
+                    {/* <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Tạo: {formatDate(student.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Cập nhật: {formatDate(student.updatedAt)}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>User tạo: {formatDate(student.user?.dateCreated)}</span>
                       </div>
                     </div>
+                  </div> */}
                   </motion.div>
                 ))}
               </div>
