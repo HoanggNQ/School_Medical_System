@@ -11,6 +11,9 @@ import sms.swp391.models.entities.UserEntity;
 import java.util.List;
 
 public interface MedicationRequestService {
+    @Transactional
+    List<MedicationRequestResponseDTO> getRequestsByParentId(Long parentId);
+
     MedicationRequestResponseDTO createRequest(MedicationRequestCreateDTO dto, Long parentId);
 
     @Transactional
