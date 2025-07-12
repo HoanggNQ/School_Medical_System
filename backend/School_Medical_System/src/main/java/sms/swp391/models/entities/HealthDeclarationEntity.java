@@ -34,10 +34,10 @@ public class HealthDeclarationEntity {
     @ColumnDefault("now()")
     @Column(name = "declaration_date")
     private LocalDate declarationDate;
-
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private MedicalStatus status;
+    private MedicalStatus status = MedicalStatus.PENDING;
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;

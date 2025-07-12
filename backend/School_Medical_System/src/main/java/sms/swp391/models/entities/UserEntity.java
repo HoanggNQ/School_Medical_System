@@ -62,21 +62,20 @@ public class UserEntity implements UserDetails {
 
     @Column(name = "avatarurl", length = Integer.MAX_VALUE)
     private String avatarurl;
-
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private StatusEnum status;
+    private StatusEnum status = StatusEnum.ACTIVE;
     @Builder.Default
     @Column(name = "is_first_login", nullable = false)
     private boolean isFirstLogin = true;
 
-    
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private StudentEntity studentEntity;
-
+    @Builder.Default
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications = new LinkedHashSet<>();
-
+    @Builder.Default
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ContentEntity> contents = new LinkedHashSet<>();
     @Override
