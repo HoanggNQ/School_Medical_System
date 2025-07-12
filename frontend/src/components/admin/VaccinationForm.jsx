@@ -28,6 +28,19 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
+        <Label htmlFor="manufacturer">Nhà sản xuất</Label>
+        <Input
+          id="manufacturer"
+          value={formData.manufacturer}
+          onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+          placeholder="Nhập tên nhà sản xuất"
+        />
+        {errors.manufacturer && <div className="text-red-500 text-sm">{errors.manufacturer}</div>}
+      </div>
+      <div></div>
+    </div>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
         <Label htmlFor="startDate">Ngày bắt đầu</Label>
         <Input
           id="startDate"
@@ -77,7 +90,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="location">Tên quốc gia</Label>
+        <Label htmlFor="location">Tên địa điểm tiêm</Label>
         <Input
           id="location"
           value={formData.location}
