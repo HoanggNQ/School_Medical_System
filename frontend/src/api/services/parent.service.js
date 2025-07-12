@@ -181,7 +181,15 @@ const ParentService = {
         } catch (error) {
             throw handleApiError(error);
         }
-    }
+    },
+    getStudentHealthProfile: async (studentId) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_STUDENT_HEALTH_PROFILE(studentId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 }
 
 export default ParentService;

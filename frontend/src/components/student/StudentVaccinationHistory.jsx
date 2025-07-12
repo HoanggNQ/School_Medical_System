@@ -152,7 +152,7 @@ const StudentVaccinationHistory = () => {
       </div>
 
       {/* Student Info Card */}
-      {currentUser && (
+      {/* {currentUser && (
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
@@ -172,11 +172,11 @@ const StudentVaccinationHistory = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Vaccination Records */}
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex items-center justify-between mb-6">
+        {/* <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-gray-900 flex items-center">
             <Syringe className="w-6 h-6 mr-2 text-purple-500" />
             Hồ sơ tiêm chủng
@@ -185,7 +185,7 @@ const StudentVaccinationHistory = () => {
             <CheckCircle className="w-4 h-4" />
             <span>{vaccinationRecords.length} bản ghi</span>
           </div>
-        </div>
+        </div> */}
 
         {vaccinationRecords.length === 0 ? (
           <div className="text-center py-12">

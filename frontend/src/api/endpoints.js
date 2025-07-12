@@ -77,14 +77,16 @@ const API_ENDPOINTS = {
     UPDATE_ACCEPTED_VACCINATION: (id) => `/api/vaccination-consent/consents/${id}`,
     UPDATE_ACCEPTED_HEALTH_CHECK: (id) => `/api/v1/health-check-consent/consents/${id}`,
     GET_STUDENT_MEDICAL_EVENT: (studentId) => `/api/v1/medical-event/student/${studentId}`,
+    GET_STUDENT_HEALTH_PROFILE: (studentId) => `/api/v1/health-declarations/students/${studentId}/profile`,
   },
 
   STUDENT: {
     GET_STUDENT_BY_PARENT_ID : (parentId) => `api/v1/student/findStudentByParent/${parentId}`,
-    GET_STUDENT_PROFILE: `/api/v1/user/profile`,
+    GET_STUDENT_PROFILE: (studentId)=> `/api/v1/student/getById/${studentId}`,
     GET_STUDENT_VACCINATION_RECORD: (studentId) => `/api/vaccination-record/students/${studentId}/records`,
-    GET_STUDENT_HEALTH_CHECK_RECORD: (studentId) => `/api/v1/health-check-result/students/${studentId}/results`,
+    GET_STUDENT_HEALTH_CHECK_RECORD: (studentId) => `/api/v1/health-declarations/students/${studentId}/profile`,
     GET_STUDENT_SCHEDULE: (studentId) => `/api/v1/student/student/${studentId}/approved-events`,
+    GET_PARENT_PROFILE: (parentId) => `/api/v1/user/${parentId}`,
   },
   CAMPAIGN_ENDPOINTS: {
     CREATE: 'api/v1/health-check-campaign/campaigns',

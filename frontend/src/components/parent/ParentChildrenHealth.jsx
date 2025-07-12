@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Heart, Syringe, Stethoscope, Pill, FileText, ClipboardList } from "lucide-react"
+import { Heart, Syringe, Stethoscope, Pill, FileText, ClipboardList, HeartPulse } from "lucide-react" // Import HeartPulse icon
 import ParentService from "../../api/services/parent.service"
 import HealthRecords from "./health-records"
 import VaccinationHistory from "./vaccination-history"
@@ -10,6 +10,7 @@ import SendMedicine from "./send-medicine"
 import HealthDeclaration from "./health-declaration"
 import HealthDeclarationHistory from "./health-declaration-history"
 import StudentMedicalEvent from "./StudentMedicalEvent"
+import StudentHealthProfile from "./StudentHealthProfile" // Import the new component
 
 const StudentHealth = () => {
   const [students, setStudents] = useState([])
@@ -138,7 +139,9 @@ const StudentHealth = () => {
           className="bg-white rounded-xl shadow-lg mb-8"
         >
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex space-x-8 px-6 overflow-x-auto pb-2">
+              {" "}
+              {/* Added overflow-x-auto for responsiveness */}
               <button
                 onClick={() => setActiveTab("health-records")}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
@@ -204,6 +207,19 @@ const StudentHealth = () => {
                   <span>Sự kiện y tế tại trường</span>
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab("health-profile")} // New tab
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === "health-profile"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <HeartPulse className="w-5 h-5" /> {/* New icon */}
+                  <span>Hồ sơ sức khỏe</span>
+                </div>
+              </button>
             </nav>
           </div>
         </motion.div>
@@ -217,11 +233,8 @@ const StudentHealth = () => {
             transition={{ duration: 0.5 }}
           >
             {activeTab === "health-records" && <HealthRecords selectedStudent={selectedStudent} />}
-
             {activeTab === "vaccination" && <VaccinationHistory selectedStudent={selectedStudent} />}
-
             {activeTab === "send-medicine" && <SendMedicine selectedStudent={selectedStudent} />}
-
             {activeTab === "health-declaration" && (
               <div className="space-y-6">
                 {/* Toggle between form and history */}
@@ -285,6 +298,8 @@ const StudentHealth = () => {
               </div>
             )}
             {activeTab === "medical-events" && <StudentMedicalEvent selectedStudent={selectedStudent} />}
+            {activeTab === "health-profile" && <StudentHealthProfile selectedStudent={selectedStudent} />}{" "}
+            {/* New component rendering */}
           </motion.div>
         )}
       </div>

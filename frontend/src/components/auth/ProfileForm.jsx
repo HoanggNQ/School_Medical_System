@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { User, Mail, Phone, MapPin, Calendar, Shield, Upload, X } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 const ProfileForm = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -29,8 +29,15 @@ const ProfileForm = () => {
   const [originalData, setOriginalData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-
+  const navigate = useNavigate();
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if(user.role === 'PARENT') {
+      navigate('/parent-profile');
+    }
+    if(user.role === 'STUDENT') {
+      navigate('/student-profile');
+    }
     fetchProfile();
   }, []);
 

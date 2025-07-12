@@ -21,6 +21,7 @@ import TestSidebar from './components/layout/TestSidebar';
 import StudentHealthProfile from './components/student/StudentHealthProfile';
 import StudentVaccinationHistory from './components/student/StudentVaccinationHistory';
 import StudentAppointments from './components/student/StudentAppointments';
+import StudentProfile from './components/student/StudentProfile';
 import ParentChildrenHealth from './components/parent/ParentChildrenHealth';
 import Schedule from './components/parent/Schedule';
 import ParentNotifications from './components/parent/ParentNotifications';
@@ -255,15 +256,16 @@ function App() {
               <Route path="health-profile" element={<StudentHealthProfile />} />
               <Route path="vaccination-history" element={<StudentVaccinationHistory />} />
               <Route path="appointments" element={<StudentAppointments />} />
+              <Route path="student-profile" element={<StudentProfile />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['PARENT']} />}>
-
+              <Route path="/parent-profile" element={<ParentProfile />} />
               <Route path="children-health" element={<ParentChildrenHealth />} />
               <Route path="schedule" element={<Schedule />} />
               <Route path="notifications" element={<ParentNotifications />} />
               <Route path="profile" element={<ParentProfile />} />
-
+              <Route path="student-health-profile/:studentId" element={<StudentHealthProfile />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SCHOOL_NURSE']} />}>
