@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Heart, Syringe, Stethoscope, Pill, FileText, ClipboardList, HeartPulse } from "lucide-react" // Import HeartPulse icon
+import { Pill, FileText, ClipboardList, HeartPulse } from "lucide-react" // Import History icon
 import ParentService from "../../api/services/parent.service"
 import HealthRecords from "./health-records"
 import VaccinationHistory from "./vaccination-history"
@@ -10,7 +10,8 @@ import SendMedicine from "./send-medicine"
 import HealthDeclaration from "./health-declaration"
 import HealthDeclarationHistory from "./health-declaration-history"
 import StudentMedicalEvent from "./StudentMedicalEvent"
-import StudentHealthProfile from "./StudentHealthProfile" // Import the new component
+import StudentHealthProfile from "./StudentHealthProfile"
+import MedicineRequestHistory from "./medicine-request-history" // Import the new component
 
 const StudentHealth = () => {
   const [students, setStudents] = useState([])
@@ -19,6 +20,10 @@ const StudentHealth = () => {
   const [loading, setLoading] = useState(true)
   const [showDeclarationForm, setShowDeclarationForm] = useState(false)
   const [editingDeclaration, setEditingDeclaration] = useState(null)
+
+  // New states for Medicine Request
+  const [showMedicineRequestForm, setShowMedicineRequestForm] = useState(false)
+  const [editingMedicineRequest, setEditingMedicineRequest] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,6 +67,45 @@ const StudentHealth = () => {
       .slice(0, 2)
   }
 
+  // Handlers for Health Declaration form/history
+  const handleSaveDeclaration = () => {
+    setShowDeclarationForm(false)
+    setEditingDeclaration(null)
+    // Optionally, trigger a refresh of HealthDeclarationHistory here if needed
+  }
+
+  const handleCancelDeclaration = () => {
+    setShowDeclarationForm(false)
+    setEditingDeclaration(null)
+  }
+
+  const handleEditDeclaration = (declaration) => {
+    setEditingDeclaration(declaration)
+    setShowDeclarationForm(true)
+  }
+
+  // Handlers for Medicine Request form/history
+  const handleSaveMedicineRequest = () => {
+    setShowMedicineRequestForm(false)
+    setEditingMedicineRequest(null)
+    // Optionally, trigger a refresh of MedicineRequestHistory here if needed
+  }
+
+  const handleCancelMedicineRequest = () => {
+    setShowMedicineRequestForm(false)
+    setEditingMedicineRequest(null)
+  }
+
+  const handleEditMedicineRequest = (request) => {
+    setEditingMedicineRequest(request)
+    setShowMedicineRequestForm(true)
+  }
+
+  const handleNewMedicineRequest = () => {
+    setEditingMedicineRequest(null) // Ensure it's a new request
+    setShowMedicineRequestForm(true)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -87,7 +131,7 @@ const StudentHealth = () => {
         >
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <Heart className="w-8 h-8 text-white" />
+              <HeartPulse className="w-8 h-8 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Sức khỏe con em</h1>
@@ -140,8 +184,6 @@ const StudentHealth = () => {
         >
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6 overflow-x-auto pb-2">
-              {" "}
-              {/* Added overflow-x-auto for responsiveness */}
               <button
                 onClick={() => setActiveTab("health-records")}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
@@ -151,7 +193,7 @@ const StudentHealth = () => {
                 }`}
               >
                 <div className="flex items-center space-x-2">
-                  <Stethoscope className="w-5 h-5" />
+                  <ClipboardList className="w-5 h-5" />
                   <span>Giấy khám sức khỏe</span>
                 </div>
               </button>
@@ -164,12 +206,12 @@ const StudentHealth = () => {
                 }`}
               >
                 <div className="flex items-center space-x-2">
-                  <Syringe className="w-5 h-5" />
+                  <Pill className="w-5 h-5" />
                   <span>Lịch sử tiêm vắc-xin</span>
                 </div>
               </button>
               <button
-                onClick={() => setActiveTab("send-medicine")}
+                onClick={() => setActiveTab("send-medicine")} // This tab now handles both send and history
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === "send-medicine"
                     ? "border-blue-500 text-blue-600"
@@ -178,7 +220,7 @@ const StudentHealth = () => {
               >
                 <div className="flex items-center space-x-2">
                   <Pill className="w-5 h-5" />
-                  <span>Gửi thuốc</span>
+                  <span>Gửi thuốc</span> {/* Updated tab name */}
                 </div>
               </button>
               <button
@@ -208,7 +250,7 @@ const StudentHealth = () => {
                 </div>
               </button>
               <button
-                onClick={() => setActiveTab("health-profile")} // New tab
+                onClick={() => setActiveTab("health-profile")}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === "health-profile"
                     ? "border-blue-500 text-blue-600"
@@ -216,7 +258,7 @@ const StudentHealth = () => {
                 }`}
               >
                 <div className="flex items-center space-x-2">
-                  <HeartPulse className="w-5 h-5" /> {/* New icon */}
+                  <HeartPulse className="w-5 h-5" />
                   <span>Hồ sơ sức khỏe</span>
                 </div>
               </button>
@@ -234,7 +276,55 @@ const StudentHealth = () => {
           >
             {activeTab === "health-records" && <HealthRecords selectedStudent={selectedStudent} />}
             {activeTab === "vaccination" && <VaccinationHistory selectedStudent={selectedStudent} />}
-            {activeTab === "send-medicine" && <SendMedicine selectedStudent={selectedStudent} />}
+            {activeTab === "send-medicine" && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Quản lý yêu cầu thuốc</h3>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setShowMedicineRequestForm(false)
+                          setEditingMedicineRequest(null)
+                        }}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          !showMedicineRequestForm
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Lịch sử yêu cầu
+                      </button>
+                      <button
+                        onClick={handleNewMedicineRequest}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          showMedicineRequestForm && !editingMedicineRequest
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Tạo yêu cầu mới
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {showMedicineRequestForm || editingMedicineRequest ? (
+                  <SendMedicine
+                    selectedStudent={selectedStudent}
+                    editingRequest={editingMedicineRequest}
+                    onSave={handleSaveMedicineRequest}
+                    onCancel={handleCancelMedicineRequest}
+                  />
+                ) : (
+                  <MedicineRequestHistory
+                    selectedStudent={selectedStudent}
+                    onEdit={handleEditMedicineRequest}
+                    onNewRequest={handleNewMedicineRequest}
+                  />
+                )}
+              </div>
+            )}
             {activeTab === "health-declaration" && (
               <div className="space-y-6">
                 {/* Toggle between form and history */}
@@ -277,29 +367,16 @@ const StudentHealth = () => {
                   <HealthDeclaration
                     selectedStudent={selectedStudent}
                     editingDeclaration={editingDeclaration}
-                    onSave={() => {
-                      setShowDeclarationForm(false)
-                      setEditingDeclaration(null)
-                    }}
-                    onCancel={() => {
-                      setShowDeclarationForm(false)
-                      setEditingDeclaration(null)
-                    }}
+                    onSave={handleSaveDeclaration}
+                    onCancel={handleCancelDeclaration}
                   />
                 ) : (
-                  <HealthDeclarationHistory
-                    selectedStudent={selectedStudent}
-                    onEdit={(declaration) => {
-                      setEditingDeclaration(declaration)
-                      setShowDeclarationForm(true)
-                    }}
-                  />
+                  <HealthDeclarationHistory selectedStudent={selectedStudent} onEdit={handleEditDeclaration} />
                 )}
               </div>
             )}
             {activeTab === "medical-events" && <StudentMedicalEvent selectedStudent={selectedStudent} />}
-            {activeTab === "health-profile" && <StudentHealthProfile selectedStudent={selectedStudent} />}{" "}
-            {/* New component rendering */}
+            {activeTab === "health-profile" && <StudentHealthProfile selectedStudent={selectedStudent} />}
           </motion.div>
         )}
       </div>

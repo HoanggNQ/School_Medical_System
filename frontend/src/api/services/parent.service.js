@@ -190,6 +190,30 @@ const ParentService = {
             throw handleApiError(error);
         }
     },
+    getMedicineRequest: async (studentId) => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.PARENT.GET_MEDICINE_REQUEST(studentId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+    deleteMedicineRequest: async (id) => {
+        try {
+            const response = await axiosInstance.delete(API_ENDPOINTS.PARENT.DELETE_MEDICINE_REQUEST(id));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+    updateMedicineRequest: async (id, data) => {
+        try {
+            const response = await axiosInstance.put(API_ENDPOINTS.PARENT.UPDATE_MEDICINE_REQUEST(id), data);
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 }
 
 export default ParentService;

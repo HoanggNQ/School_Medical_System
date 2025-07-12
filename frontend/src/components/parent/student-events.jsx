@@ -594,8 +594,8 @@ const StudentEvents = ({ selectedStudent }) => {
                     {/* Action Buttons */}
                     <div className="flex justify-between items-center pt-4 border-t border-white border-opacity-50">
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span>Hoàn thành: {event.completed ? "Có" : "Không"}</span>
+                        {/* <Clock className="w-4 h-4" />
+                        <span>Hoàn thành: {event.completed ? "Có" : "Không"}</span> */}
                       </div>
 
                       <div className="flex space-x-2">
