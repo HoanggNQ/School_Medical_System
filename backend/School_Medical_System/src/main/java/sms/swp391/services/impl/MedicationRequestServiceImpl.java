@@ -34,6 +34,82 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    @Override
+    @Transactional
+    public List<MedicationRequestResponseDTO> getRequestsByStudentId(Long studentId) {
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found with id: " + studentId));
+
+        List<MedicationRequestEntity> requests = requestRepository.findByStudent(student);
+        return requests.stream()
+                .map(MedicationRequestMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public void cancelRequest(Long requestId, Long requesterId) {
+        MedicationRequestEntity request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Medication request not found with id: " + requestId));
+
+        // ✅ Kiểm tra người tạo mới được quyền hủy
+        if (!request.getRequestedBy().getUserId().equals(requesterId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền hủy yêu cầu này.");
+        }
+
+        // ✅ Chỉ hủy nếu đang chờ duyệt
+        if (request.getStatus() != MedicalStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được hủy yêu cầu khi đang chờ duyệt.");
+        }
+
+        request.setStatus(MedicalStatus.REJECTED);
+        request.setReviewDate(LocalDate.now());
+        requestRepository.save(request);
+    }
+
+
+
+    @Override
+    @Transactional
+    public MedicationRequestResponseDTO updateRequest(Long requestId, MedicationRequestCreateDTO dto, Long parentId) {
+        MedicationRequestEntity request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Medication request not found with id: " + requestId));
+
+        if (!request.getRequestedBy().getUserId().equals(parentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền sửa yêu cầu này.");
+        }
+
+        if (request.getStatus() != MedicalStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được sửa yêu cầu khi đang chờ duyệt.");
+        }
+
+        StudentEntity student = studentRepository.findById(dto.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Student not found with id: " + dto.getStudentId()));
+
+        if (!student.getParent().getUserId().equals(parentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Học sinh không thuộc quyền quản lý của phụ huynh.");
+        }
+
+        detailRepository.deleteAllByRequest(request);
+
+        request.setRequestDate(LocalDate.now());
+        request.setNotes(dto.getNotes());
+        request.setStatus(MedicalStatus.PENDING);
+        request.setStudent(student);
+
+        for (MedicationRequestDetailDTO detailDTO : dto.getMedications()) {
+            MedicationEntity medication = medicationRepository.findById(detailDTO.getMedicationId())
+                    .orElseThrow(() -> new NotFoundException("Medication not found"));
+
+            MedicationRequestDetailEntity detail = MedicationRequestMapper.toDetailEntity(detailDTO, request, medication);
+            detailRepository.save(detail);
+        }
+
+        requestRepository.save(request);
+        return MedicationRequestMapper.toResponseDTO(request);
+    }
+
+
     @Transactional
     @Override
     public List<MedicationRequestResponseDTO> getRequestsByParentId(Long parentId) {
