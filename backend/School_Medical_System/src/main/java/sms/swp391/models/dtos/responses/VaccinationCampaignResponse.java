@@ -21,6 +21,7 @@ public class VaccinationCampaignResponse {
     private List<String> targetGrade;
     private String notes;
     private String vaccineType;
+    private String manufacturer;
     private Long createdById;
     private LocalDateTime createdAt;
     private String location;
