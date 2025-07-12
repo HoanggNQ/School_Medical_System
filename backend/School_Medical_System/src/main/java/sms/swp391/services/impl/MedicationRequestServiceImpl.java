@@ -34,6 +34,18 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    @Transactional
+    @Override
+    public List<MedicationRequestResponseDTO> getRequestsByParentId(Long parentId) {
+        UserEntity parent = userRepository.findById(parentId)
+                .orElseThrow(() -> new NotFoundException("Parent not found with id: " + parentId));
+
+        List<MedicationRequestEntity> requests = requestRepository.findByRequestedBy(parent);
+
+        return requests.stream()
+                .map(MedicationRequestMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 
     private String generateAcademicYear() {
         int year = LocalDate.now().getYear();
