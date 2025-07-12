@@ -261,6 +261,42 @@ public class MedicationRequestController {
                         .data(response)
                         .build());
     }
+    @Operation(summary = "Lấy danh sách yêu cầu thuốc của phụ huynh hiện tại", description = "Phụ huynh xem các yêu cầu thuốc mà mình đã gửi.")
+    @GetMapping("/my-requests")
+    public ResponseEntity<ResponseObject> getRequestsByParent(@AuthenticationPrincipal UserEntity currentUser) {
+        if (currentUser == null || currentUser.getRoleName() != RoleEnum.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Bạn cần đăng nhập với tư cách phụ huynh.")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+
+        try {
+            List<MedicationRequestResponseDTO> requests = medicationRequestService.getRequestsByParentId(currentUser.getUserId());
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("FETCH_SUCCESS")
+                            .message("Lấy danh sách yêu cầu thuốc của phụ huynh thành công.")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(requests)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("FETCH_FAILED")
+                            .message("Lỗi khi lấy danh sách yêu cầu: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
 
 //    @GetMapping
 //    public ResponseEntity<ResponseObject> getAllRequests(
