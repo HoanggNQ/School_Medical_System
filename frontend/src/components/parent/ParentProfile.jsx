@@ -330,7 +330,7 @@ const ParentProfile = () => {
                         <div className="flex items-center space-x-2 text-sm">
                           <Hash className="w-4 h-4 text-purple-500" />
                           <span className="text-gray-600">Lớp:</span>
-                          <span className="font-medium">{formatValue(student.classId)}</span>
+                          <span className="font-medium">{formatValue(student.className.substring(6,8))}</span>
                         </div>
                       </div>
 

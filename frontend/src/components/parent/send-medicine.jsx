@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Pill, Send, AlertCircle, Plus, X, Search } from "lucide-react"
+import { Pill, Send, AlertCircle, Plus, X, Search, Save } from "lucide-react" // Added Save icon
 import ParentService from "../../api/services/parent.service"
+import { toast } from "@/components/ui/use-toast" // Ensure toast is imported
 
-const SendMedicine = ({ selectedStudent }) => {
+const SendMedicine = ({ selectedStudent, editingRequest, onSave, onCancel }) => {
   const [availableMedicines, setAvailableMedicines] = useState([])
   const [selectedMedicines, setSelectedMedicines] = useState([])
   const [medicineForm, setMedicineForm] = useState({
@@ -24,12 +25,17 @@ const SendMedicine = ({ selectedStudent }) => {
     return String(value)
   }
 
-  const formatDate = (dateString) => {
+  const formatDateForInput = (dateString) => {
     if (!dateString) return ""
-    return new Date(dateString).toISOString().split("T")[0]
+    try {
+      return new Date(dateString).toISOString().split("T")[0]
+    } catch {
+      return ""
+    }
   }
 
-  const validateDates = (startDate, endDate) => {
+  // Validation logic for dates - now only called on submit
+  const validateDates = (startDate, endDate, isEditing = false, originalStartDate = null) => {
     const errors = []
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -37,14 +43,22 @@ const SendMedicine = ({ selectedStudent }) => {
     const start = new Date(startDate)
     const end = endDate ? new Date(endDate) : null
 
-    // Start date cannot be in the past
-    if (start < today) {
-      errors.push("Ngày bắt đầu không thể là ngày trong quá khứ")
+    // Start date cannot be in the past for new requests or if editing and start date is changed to past
+    if (!isEditing && start < today) {
+      errors.push("Ngày bắt đầu không thể là ngày trong quá khứ.")
+    } else if (
+      isEditing &&
+      originalStartDate &&
+      formatDateForInput(originalStartDate) !== formatDateForInput(startDate) &&
+      start < today
+    ) {
+      // If editing, and start date is changed to a past date, it's an error
+      errors.push("Ngày bắt đầu không thể là ngày trong quá khứ.")
     }
 
     // End date must be after start date
     if (end && end <= start) {
-      errors.push("Ngày kết thúc phải sau ngày bắt đầu")
+      errors.push("Ngày kết thúc phải sau ngày bắt đầu.")
     }
 
     // End date cannot be more than 1 year from start date
@@ -52,7 +66,7 @@ const SendMedicine = ({ selectedStudent }) => {
       const oneYearLater = new Date(start)
       oneYearLater.setFullYear(oneYearLater.getFullYear() + 1)
       if (end > oneYearLater) {
-        errors.push("Ngày kết thúc không thể quá 1 năm từ ngày bắt đầu")
+        errors.push("Ngày kết thúc không thể quá 1 năm từ ngày bắt đầu.")
       }
     }
 
@@ -66,7 +80,6 @@ const SendMedicine = ({ selectedStudent }) => {
         const medicineRes = await ParentService.getAllMedicine()
         console.log("Fetched medicines:", medicineRes.data)
 
-        // Access the content array from the API response
         const medicines = medicineRes.data?.content || []
         setAvailableMedicines(medicines)
       } catch (error) {
@@ -79,6 +92,37 @@ const SendMedicine = ({ selectedStudent }) => {
 
     fetchMedicines()
   }, [])
+
+  // Populate form if editing an existing request
+  useEffect(() => {
+    if (editingRequest) {
+      setMedicineForm({
+        notes: editingRequest.notes || "",
+      })
+      setSelectedMedicines(
+        editingRequest.details.map((detail) => ({
+          medicationId: detail.medicationId,
+          medicineName: detail.medicationName,
+          // Assuming these fields are available in the detail object or can be looked up from availableMedicines
+          // For simplicity, I'll add placeholders if not directly available in the provided structure
+          medicineCategory: detail.medicineCategory || "",
+          medicineDosageForm: detail.dosageForm || "", // Corrected from medicineDosageForm
+          prescriptionRequired: detail.prescriptionRequired || false,
+          activeIngredient: detail.activeIngredient || "",
+          dosage: detail.dosage,
+          frequency: detail.frequency,
+          startDate: formatDateForInput(detail.startDate),
+          endDate: formatDateForInput(detail.endDate),
+          quantity: detail.quantity,
+          providedByParent: detail.providedByParent,
+        })),
+      )
+    } else {
+      // Reset form for new request
+      setSelectedMedicines([])
+      setMedicineForm({ notes: "" })
+    }
+  }, [editingRequest])
 
   const handleFormChange = (field, value) => {
     setMedicineForm((prev) => ({
@@ -97,7 +141,7 @@ const SendMedicine = ({ selectedStudent }) => {
       activeIngredient: medicine.activeIngredient,
       dosage: "",
       frequency: "",
-      startDate: "",
+      startDate: formatDateForInput(new Date()), // Default to today
       endDate: "",
       quantity: 1,
       providedByParent: true,
@@ -114,21 +158,6 @@ const SendMedicine = ({ selectedStudent }) => {
   const updateMedicine = (index, field, value) => {
     const updated = [...selectedMedicines]
     updated[index] = { ...updated[index], [field]: value }
-
-    // Validate dates when start or end date changes
-    if (field === "startDate" || field === "endDate") {
-      const medicine = updated[index]
-      const dateErrors = validateDates(
-        field === "startDate" ? value : medicine.startDate,
-        field === "endDate" ? value : medicine.endDate,
-      )
-
-      if (dateErrors.length > 0) {
-        alert(`Lỗi ngày tháng:\n${dateErrors.join("\n")}`)
-        return // Don't update if validation fails
-      }
-    }
-
     setSelectedMedicines(updated)
   }
 
@@ -143,7 +172,11 @@ const SendMedicine = ({ selectedStudent }) => {
     e.preventDefault()
 
     if (selectedMedicines.length === 0) {
-      alert("Vui lòng chọn ít nhất một loại thuốc")
+      toast({
+        title: "Thiếu thông tin",
+        description: "Vui lòng chọn ít nhất một loại thuốc.",
+        variant: "destructive",
+      })
       return
     }
 
@@ -153,21 +186,31 @@ const SendMedicine = ({ selectedStudent }) => {
     )
 
     if (invalidMedicines.length > 0) {
-      alert("Vui lòng điền đầy đủ thông tin cho tất cả các loại thuốc")
+      toast({
+        title: "Thiếu thông tin",
+        description:
+          "Vui lòng điền đầy đủ thông tin (liều lượng, tần suất, ngày bắt đầu, số lượng) cho tất cả các loại thuốc đã chọn.",
+        variant: "destructive",
+      })
       return
     }
 
-    // Validate dates for all medicines
+    // Validate dates for all medicines on submit
     const dateValidationErrors = []
     selectedMedicines.forEach((med, index) => {
-      const errors = validateDates(med.startDate, med.endDate)
+      const originalStartDate = editingRequest?.details[index]?.startDate // Get original start date if editing
+      const errors = validateDates(med.startDate, med.endDate, !!editingRequest, originalStartDate)
       if (errors.length > 0) {
         dateValidationErrors.push(`Thuốc ${index + 1} (${med.medicineName}): ${errors.join(", ")}`)
       }
     })
 
     if (dateValidationErrors.length > 0) {
-      alert(`Lỗi ngày tháng:\n${dateValidationErrors.join("\n")}`)
+      toast({
+        title: "Lỗi ngày tháng",
+        description: dateValidationErrors.join("\n"),
+        variant: "destructive",
+      })
       return
     }
 
@@ -188,21 +231,34 @@ const SendMedicine = ({ selectedStudent }) => {
         })),
       }
 
-      console.log("Submitting medicine request:", requestData)
+      console.log(editingRequest ? "Updating medicine request:" : "Submitting new medicine request:", requestData)
 
-      // Call API to submit medicine request
-      const response = await ParentService.postMedicineRequest(requestData)
-      console.log("Medicine request submitted successfully:", response)
-      // Reset form after successful submission
-      setSelectedMedicines([])
-      setMedicineForm({
-        notes: "",
-      })
+      let response
+      if (editingRequest) {
+        response = await ParentService.updateMedicineRequest(editingRequest.id, requestData) // Assuming this API exists
+        toast({
+          title: "Cập nhật thành công",
+          description: "Yêu cầu thuốc đã được cập nhật.",
+          variant: "success",
+        })
+      } else {
+        response = await ParentService.postMedicineRequest(requestData)
+        toast({
+          title: "Gửi thành công",
+          description: "Yêu cầu thuốc đã được gửi.",
+          variant: "success",
+        })
+      }
 
-      alert("Đã gửi yêu cầu thuốc thành công!")
+      console.log("Medicine request operation successful:", response)
+      onSave() // Notify parent component to refresh and close form
     } catch (error) {
-      console.error("Error submitting medicine request:", error)
-      alert("Có lỗi xảy ra khi gửi yêu cầu thuốc")
+      console.error("Error submitting/updating medicine request:", error)
+      toast({
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi gửi/cập nhật yêu cầu thuốc: " + error.message,
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -250,7 +306,7 @@ const SendMedicine = ({ selectedStudent }) => {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-gray-900 flex items-center">
             <Pill className="w-6 h-6 mr-2 text-blue-500" />
-            Gửi thuốc cho {formatValue(selectedStudent.user?.fullName)}
+            {editingRequest ? "Chỉnh sửa yêu cầu thuốc" : "Gửi thuốc"} cho {formatValue(selectedStudent.user?.fullName)}
           </h3>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Send className="w-4 h-4" />
@@ -440,24 +496,26 @@ const SendMedicine = ({ selectedStudent }) => {
                         <input
                           type="date"
                           required
-                          min={new Date().toISOString().split("T")[0]} // Prevent past dates
+                          // Removed min attribute here to allow validation only on submit
                           value={medicine.startDate}
                           onChange={(e) => updateMedicine(index, "startDate", e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Không thể chọn ngày trong quá khứ</p>
+                        <p className="text-xs text-gray-500 mt-1">Ngày không thể trong quá khứ (kiểm tra khi gửi)</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc</label>
                         <input
                           type="date"
-                          min={medicine.startDate || new Date().toISOString().split("T")[0]} // Must be after start date
+                          // Removed min attribute here to allow validation only on submit
                           value={medicine.endDate}
                           onChange={(e) => updateMedicine(index, "endDate", e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Phải sau ngày bắt đầu, tối đa 1 năm</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Phải sau ngày bắt đầu, tối đa 1 năm (kiểm tra khi gửi)
+                        </p>
                       </div>
 
                       <div className="flex items-center">
@@ -548,18 +606,15 @@ const SendMedicine = ({ selectedStudent }) => {
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedMedicines([])
-                setMedicineForm({
-                  notes: "",
-                })
-              }}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Xóa tất cả
-            </button>
+            {editingRequest && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+            )}
             <button
               type="submit"
               disabled={isSubmitting || selectedMedicines.length === 0}
@@ -572,8 +627,8 @@ const SendMedicine = ({ selectedStudent }) => {
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4" />
-                  <span>Gửi yêu cầu ({selectedMedicines.length} thuốc)</span>
+                  {editingRequest ? <Save className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                  <span>{editingRequest ? "Cập nhật yêu cầu" : `Gửi yêu cầu (${selectedMedicines.length} thuốc)`}</span>
                 </>
               )}
             </button>
