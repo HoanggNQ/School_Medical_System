@@ -28,15 +28,10 @@ export const medicalService = {
   },
   updateMedication: async (medicineId, updatedMedicineData) => {
     try {
-      const formData = new FormData();
-      const { image, ...medicationDataForBackend } = updatedMedicineData;
-      formData.append('medication', JSON.stringify(medicationDataForBackend));
-      if (image instanceof File) {
-        formData.append('image', image);
-      }
+      // Nếu updatedMedicineData là FormData, truyền trực tiếp
       const response = await axiosInstance.post(
         `api/v1/medications/${medicineId}`,
-        formData,
+        updatedMedicineData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -102,6 +97,16 @@ export const medicalService = {
       throw handleApiError(error);
     }
   },
+  
+  getAllRejectedMedicationRequest: async () => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.MEDICATION_REQUEST.GET_ALL_REJECTED);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 
   // Medical Event APIs
   createMedicalEvent: async (eventData) => {
@@ -159,17 +164,19 @@ export const medicalService = {
       throw handleApiError(error);
     }
   },
-  getVaccinationConsentsByCampaign: async (campaignId) => {
+  getVaccinationConsentsByCampaign: async (campaignId, page = 0, size = 10) => {
     try {
-      const response = await axiosInstance.get(API_ENDPOINTS.Vaccine.GET_BY_CAM(campaignId));
+      const params = { page, size };
+      const response = await axiosInstance.get(API_ENDPOINTS.Vaccine.GET_BY_CAM(campaignId), { params });
       return response.data;
     } catch (error) {
       throw handleApiError(error);
     }
   },
-  getHealthCheckConsentsByCampaign: async (campaignId) => {
+  getHealthCheckConsentsByCampaign: async (campaignId, page = 0, size = 10) => {
     try {
-      const response = await axiosInstance.get(API_ENDPOINTS.HealthCheck.GET_BY_CAM(campaignId));
+      const params = { campaignId, page, size };
+      const response = await axiosInstance.get(API_ENDPOINTS.HealthCheck.GET_BY_CAM(campaignId), { params });
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -193,6 +200,22 @@ export const medicalService = {
       throw handleApiError(error);
     }
   },
+  getHealthCheckResultsByCampaign:async (campaignId) => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.HealthCheck.GET_RESULT_BY_CAM(campaignId));
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  }, 
+  getVaccinationResultsByCampaign:async (campaignId) => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.Vaccine.GET_RESULT_BY_CAM(campaignId));
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  }, 
 
   getHealthCheckStatistics: async (campaignId) => {
     try {
@@ -202,6 +225,22 @@ export const medicalService = {
       throw handleApiError(error);
     }
   },
+
+  //Health- Declaration
+  getAllHealthDeclaration: async (params = {}) => {
+    try {
+      const response = await axiosInstance.get(
+        API_ENDPOINTS.Health_Declaration.GET_ALL_DECLARATIONS, // phải trỏ tới /api/v1/health-declarations/search
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 };
+
+
 
 export default medicalService;
