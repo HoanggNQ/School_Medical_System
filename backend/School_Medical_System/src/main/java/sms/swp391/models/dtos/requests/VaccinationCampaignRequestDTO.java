@@ -35,7 +35,7 @@ public class VaccinationCampaignRequestDTO {
     @NotBlank(message = "Loại vắc xin không được để trống")
     @Size(max = 100, message = "Loại vắc xin không được vượt quá 100 ký tự")
     private String vaccineType;
-
+    private String manufacturer;
     @NotBlank(message = "Địa điểm tiêm không được để trống")
     @Size(max = 255, message = "Địa điểm không được vượt quá 255 ký tự")
     private String location;
