@@ -41,7 +41,11 @@ import StaticCampaign from './components/admin/StaticCampaign';
 import StaticVaccination from './components/admin/StacticVaccination';
 import BlogManagement from './components/admin/BlogManagement';
 import BlogListPage from './components/admin/BlogListPage';
-
+import WatchVaccination from './components/nurse/WatchVaccination';
+import HeathResult from './components/nurse/HeathResult';
+import VaccineResult from './components/nurse/VaccineResult';
+import HealthDeclaration from './components/parent/health-declaration';
+import HealthDeclarationSearch from './components/nurse/HealthDeclarationSearch';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -234,9 +238,13 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>
               <Route path="medicines" element={<MedicineManagement />} />
               <Route path="health-records" element={<PlaceholderPage />} />
-              <Route path="management-vaccine" element={<ManagementVaccine />} />
+              <Route path="management-vaccine/:campaignId" element={<ManagementVaccine />} />
               <Route path="health-check/:campaignId" element={<HealthCheck />} />
               <Route path="event" element={<Event />} />
+              <Route path="watch-vaccination" element={<WatchVaccination />} />
+              <Route path="heath-result" element={<HeathResult />} />
+              <Route path="vaccine-result" element={<VaccineResult />} />
+              <Route path="HealthDeclarationSearch" element={<HealthDeclarationSearch />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['SCHOOL_NURSE']} />}>

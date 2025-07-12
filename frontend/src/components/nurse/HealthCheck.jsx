@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react"
 import { medicalService } from "@/api/services/medical.service"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, Stethoscope, Search, CheckCircle } from "lucide-react"
+import { AlertCircle, Stethoscope, Search, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import {  useParams } from "react-router-dom"
+import {  useParams, useLocation } from "react-router-dom"
 
 const HealthCheck = () => {
   const { toast } = useToast()
@@ -35,8 +35,14 @@ const HealthCheck = () => {
     overallHealthRating: '',
     scheduleTime: '',
   })
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   const { campaignId } = useParams();
+  const location = useLocation();
+  // Lấy trạng thái chiến dịch từ location.state nếu được truyền từ CampaignsNurse
+  const campaignStatus = location.state?.campaignStatus;
 
   console.log("campaignId",campaignId);
   console.log("location.state",location.state);
@@ -53,9 +59,11 @@ const HealthCheck = () => {
       try {
         setLoadingHealth(true)
         setErrorHealth(null)
-        const res = await medicalService.getHealthCheckConsentsByCampaign(campaignId)
+        // Lấy danh sách học sinh khám sức khỏe
+        const res = await medicalService.getHealthCheckConsentsByCampaign(campaignId, page, size);
         console.log("res", res);
-        setStudentsHealth(res.data.healthCheckConsents || [])
+        setStudentsHealth(res.data?.healthCheckConsents || []);
+        setTotalPages(res.data?.totalPages || (res.data?.totalElements ? Math.ceil(res.data.totalElements / size) : 1));
       } catch (err) {
         setErrorHealth("Không thể tải danh sách học sinh chuẩn bị khám sức khỏe.")
       } finally {
@@ -63,7 +71,7 @@ const HealthCheck = () => {
       }
     }
     fetchStudentsHealth()
-  }, [campaignId])
+  }, [campaignId, page, size])
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -75,6 +83,10 @@ const HealthCheck = () => {
   }
 
   const handleOpenDialog = (student) => {
+    if (campaignStatus === 'PENDING') {
+      toast({ title: 'Thông báo', description: 'Chiến dịch đang chờ duyệt. Không thể ghi nhận kết quả.' });
+      return;
+    }
     setSelectedStudent(student)
     setShowDialog(true)
     setFormData({
@@ -189,111 +201,158 @@ const HealthCheck = () => {
                   <td className="px-4 py-2 text-sm">{item.studentName}</td>
                   <td className="px-4 py-2 text-sm">{item.className}</td>
                   <td className="px-4 py-2 text-sm">{item.campaignId}</td>
-                  <td className="px-4 py-2 text-sm">{item.status}</td>
                   <td className="px-4 py-2 text-sm">
-                    <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="success"
-                          onClick={() => handleOpenDialog(item)}
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Ghi nhận kết quả
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl w-full">
-                        <DialogHeader>
-                          <DialogTitle>Ghi nhận kết quả khám sức khỏe</DialogTitle>
-                        </DialogHeader>
-                        <form className="space-y-3">
-                          <div>
-                            <Label>Tên học sinh</Label>
-                            <div className="font-semibold">{item.studentName}</div>
-                          </div>
-                          {/* <div>
-                            <Label>Mã học sinh</Label>
-                            <div className="font-semibold">{item.studentId}</div>
-                          </div>
-                          <div>
-                            <Label>Mã chiến dịch</Label>
-                            <div className="font-semibold">{item.campaignId}</div>
-                          </div> */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {item.status === 'DONE' ? 'Đã khám' :
+                     item.status === 'APPROVED' ? 'Đã đồng ý' :
+                     item.status === 'PENDING' ? 'Chờ xác nhận' :
+                     item.status === 'REJECTED' ? 'Từ chối' :
+                     item.status || 'Không rõ'}
+                  </td>
+                  <td className="px-4 py-2 text-sm">
+                    {/* Chỉ hiển thị nút nếu campaignStatus là 'APPROVED' và học sinh có status là 'APPROVED' */}
+                    {campaignStatus === 'APPROVED' && item.status === 'APPROVED' && (
+                      <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
+                        <DialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="success"
+                            onClick={() => handleOpenDialog(item)}
+                            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Ghi nhận kết quả
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Ghi nhận kết quả khám sức khỏe</DialogTitle>
+                          </DialogHeader>
+                          <form className="space-y-3">
                             <div>
-                              <Label htmlFor="heightCm">Chiều cao (cm)</Label>
-                              <Input id="heightCm" name="heightCm" value={formData.heightCm} onChange={handleInputChange} />
+                              <Label>Tên học sinh</Label>
+                              <div className="font-semibold">{item.studentName}</div>
                             </div>
-                            <div>
-                              <Label htmlFor="weight">Cân nặng (kg)</Label>
-                              <Input id="weight" name="weight" value={formData.weight} onChange={handleInputChange} />
+                            {/* <div>
+                              <Label>Mã học sinh</Label>
+                              <div className="font-semibold">{item.studentId}</div>
                             </div>
                             <div>
-                              <Label htmlFor="visionLeft">Thị lực trái</Label>
-                              <Input id="visionLeft" name="visionLeft" value={formData.visionLeft} onChange={handleInputChange} />
+                              <Label>Mã chiến dịch</Label>
+                              <div className="font-semibold">{item.campaignId}</div>
+                            </div> */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="heightCm">Chiều cao (cm)</Label>
+                                <Input id="heightCm" name="heightCm" value={formData.heightCm} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="weight">Cân nặng (kg)</Label>
+                                <Input id="weight" name="weight" value={formData.weight} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="visionLeft">Thị lực trái</Label>
+                                <Input id="visionLeft" name="visionLeft" value={formData.visionLeft} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="visionRight">Thị lực phải</Label>
+                                <Input id="visionRight" name="visionRight" value={formData.visionRight} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="hearing">Thính lực</Label>
+                                <Input id="hearing" name="hearing" value={formData.hearing} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="dentalHealth">Răng miệng</Label>
+                                <Input id="dentalHealth" name="dentalHealth" value={formData.dentalHealth} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="bloodPressure">Huyết áp</Label>
+                                <Input id="bloodPressure" name="bloodPressure" value={formData.bloodPressure} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="pulse">Mạch</Label>
+                                <Input id="pulse" name="pulse" value={formData.pulse} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="temperature">Nhiệt độ</Label>
+                                <Input id="temperature" name="temperature" value={formData.temperature} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="overallHealthRating">Đánh giá tổng thể</Label>
+                                <Input id="overallHealthRating" name="overallHealthRating" value={formData.overallHealthRating} onChange={handleInputChange} />
+                              </div>
+                              <div className="md:col-span-2">
+                                <Label htmlFor="otherNotes">Ghi chú khác</Label>
+                                <Textarea id="otherNotes" name="otherNotes" value={formData.otherNotes} onChange={handleInputChange} />
+                              </div>
+                              <div className="md:col-span-2">
+                                <Label htmlFor="recommendation">Khuyến nghị</Label>
+                                <Input id="recommendation" name="recommendation" value={formData.recommendation} onChange={handleInputChange} />
+                              </div>
+                              <div className="flex items-center gap-2 md:col-span-2">
+                                <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
+                                <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
+                              </div>
+                              <div className="md:col-span-2">
+                                <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
+                                <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
+                              </div>
+                              <div className="md:col-span-2">
+                                <Label htmlFor="scheduleTime">Thời gian lịch khám</Label>
+                                <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} />
+                              </div>
                             </div>
-                            <div>
-                              <Label htmlFor="visionRight">Thị lực phải</Label>
-                              <Input id="visionRight" name="visionRight" value={formData.visionRight} onChange={handleInputChange} />
+                            <div className="flex justify-end gap-2 pt-2">
+                              <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
+                              <Button className="" type="button" onClick={handleSubmitResult}>Lưu kết quả</Button>
                             </div>
-                            <div>
-                              <Label htmlFor="hearing">Thính lực</Label>
-                              <Input id="hearing" name="hearing" value={formData.hearing} onChange={handleInputChange} />
-                            </div>
-                            <div>
-                              <Label htmlFor="dentalHealth">Răng miệng</Label>
-                              <Input id="dentalHealth" name="dentalHealth" value={formData.dentalHealth} onChange={handleInputChange} />
-                            </div>
-                            <div>
-                              <Label htmlFor="bloodPressure">Huyết áp</Label>
-                              <Input id="bloodPressure" name="bloodPressure" value={formData.bloodPressure} onChange={handleInputChange} />
-                            </div>
-                            <div>
-                              <Label htmlFor="pulse">Mạch</Label>
-                              <Input id="pulse" name="pulse" value={formData.pulse} onChange={handleInputChange} />
-                            </div>
-                            <div>
-                              <Label htmlFor="temperature">Nhiệt độ</Label>
-                              <Input id="temperature" name="temperature" value={formData.temperature} onChange={handleInputChange} />
-                            </div>
-                            <div>
-                              <Label htmlFor="overallHealthRating">Đánh giá tổng thể</Label>
-                              <Input id="overallHealthRating" name="overallHealthRating" value={formData.overallHealthRating} onChange={handleInputChange} />
-                            </div>
-                            <div className="md:col-span-2">
-                              <Label htmlFor="otherNotes">Ghi chú khác</Label>
-                              <Textarea id="otherNotes" name="otherNotes" value={formData.otherNotes} onChange={handleInputChange} />
-                            </div>
-                            <div className="md:col-span-2">
-                              <Label htmlFor="recommendation">Khuyến nghị</Label>
-                              <Input id="recommendation" name="recommendation" value={formData.recommendation} onChange={handleInputChange} />
-                            </div>
-                            <div className="flex items-center gap-2 md:col-span-2">
-                              <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
-                              <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
-                            </div>
-                            <div className="md:col-span-2">
-                              <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
-                              <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
-                            </div>
-                            <div className="md:col-span-2">
-                              <Label htmlFor="scheduleTime">Thời gian lịch khám</Label>
-                              <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} />
-                            </div>
-                          </div>
-                          <div className="flex justify-end gap-2 pt-2">
-                            <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
-                            <Button className="" type="button" onClick={handleSubmitResult}>Lưu kết quả</Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {/* Pagination controls */}
+          <div className="flex justify-between items-center mt-4">
+            <div>
+              <span>Trang {page + 1} / {totalPages}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                disabled={page === 0}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                disabled={page >= totalPages - 1}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+            <div>
+              <label>
+                Số dòng:
+                <select
+                  className="ml-2 border rounded px-2 py-1"
+                  value={size}
+                  onChange={e => { setSize(Number(e.target.value)); setPage(0); }}
+                >
+                  {[5, 10, 20, 50].map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
         </div>
       )}
     </div>

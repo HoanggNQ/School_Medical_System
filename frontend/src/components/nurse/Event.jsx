@@ -10,6 +10,7 @@ import { Calendar, Plus, Search, Filter, Eye, Edit, AlertCircle } from "lucide-r
 import { useToast } from "@/components/ui/use-toast"
 import { medicalService } from "@/api/services/medical.service"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import EventForm from "./FormatEvent";
 
 const Event = () => {
   const { toast } = useToast()
@@ -63,12 +64,13 @@ const Event = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-  }
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+    setFormData({
+      ...formData,
+      [name]: newValue
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -80,8 +82,8 @@ const Event = () => {
         eventType: formData.eventType,
         description: formData.description,
         location: formData.location,
-        reportedById: formData.reportedById ? Number(formData.reportedById) : undefined,
-        studentId: formData.studentId ? Number(formData.studentId) : undefined,
+        reportedById: formData.reportedById ? Number(formData.reportedById) : null,
+        studentId: formData.studentId ? Number(formData.studentId) : null,
         eventDate: formData.eventDate,
         followUpRequired: formData.followUpRequired,
         followUpNotes: formData.followUpNotes
@@ -162,16 +164,16 @@ const Event = () => {
     }
   };
 
-//   const filteredEvents = events.filter(event => {
-//     const matchesSearch = 
-//       event.eventType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       event.studentId.toString().includes(searchTerm)
+  // const filteredEvents = events.filter(event => {
+  //   const matchesSearch = 
+  //     event.eventType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     event.studentId.toString().includes(searchTerm)
     
-//     const matchesStatus = statusFilter === "all" || event.status === statusFilter
+  //   const matchesStatus = statusFilter === "all" || event.status === statusFilter
 
-//     return matchesSearch && matchesStatus
-//   })
+  //   return matchesSearch && matchesStatus
+  // })
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -188,127 +190,40 @@ const Event = () => {
     }
   }
 
-  const EventForm = () => (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="eventType">Tên sự kiện *</Label>
-          <Input
-            id="eventType"
-            name="eventType"
-            value={formData.eventType}
-            onChange={handleInputChange}
-            placeholder="Nhập tên sự kiện"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="eventDate">Ngày sự kiện *</Label>
-          <Input
-            id="eventDate"
-            name="eventDate"
-            type="datetime-local"
-            value={formData.eventDate}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="location">Địa điểm *</Label>
-          <Input
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleInputChange}
-            placeholder="Nhập địa điểm"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="studentId">Mã học sinh *</Label>
-          <Input
-            id="studentId"
-            name="studentId"
-            value={formData.studentId}
-            onChange={handleInputChange}
-            placeholder="Nhập mã học sinh"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="reportedById">Người báo cáo *</Label>
-          <Input
-            id="reportedById"
-            name="reportedById"
-            value={formData.reportedById}
-            onChange={handleInputChange}
-            placeholder="Nhập mã người báo cáo"
-            required
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="description">Mô tả *</Label>
-        <Textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          placeholder="Mô tả chi tiết về sự kiện..."
-          rows={4}
-          required
-        />
-      </div>
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="followUpRequired"
-            name="followUpRequired"
-            checked={formData.followUpRequired}
-            onChange={handleInputChange}
-            className="rounded border-gray-300"
-          />
-          <Label htmlFor="followUpRequired">Cần theo dõi thêm</Label>
-        </div>
-        {formData.followUpRequired && (
-          <div className="space-y-2">
-            <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
-            <Textarea
-              id="followUpNotes"
-              name="followUpNotes"
-              value={formData.followUpNotes}
-              onChange={handleInputChange}
-              placeholder="Nhập các ghi chú cần theo dõi..."
-              rows={3}
-            />
-          </div>
-        )}
-      </div>
-      <div className="flex justify-end space-x-2 pt-4 mt-4 border-t">
-        <Button type="button" variant="outline" onClick={() => {
-          setShowForm(false);
-          setSelectedEvent(null);
-          setFormData({
-            eventType: "",
-            description: "",
-            location: "",
-            reportedById: "",
-            studentId: "",
-            eventDate: "",
-            status: "PENDING",
-            followUpRequired: false,
-            followUpNotes: ""
-          });
-        }}>
-          Hủy
-        </Button>
-        <Button type="submit" className="btn-primary">
-          {selectedEvent ? "Cập nhật" : "Tạo sự kiện"}
-        </Button>
-      </div>
-    </form>
-  );
+  const handleSubmitEventForm = async (formData) => {
+    setLoading(true);
+    try {
+      // Lấy dữ liệu event từ FormData (nếu bạn dùng FormData như trong FormatEvent)
+      let eventObj = formData;
+      if (formData instanceof FormData) {
+        eventObj = JSON.parse(formData.get("event"));
+      }
+      if (selectedEvent) {
+        await medicalService.updateMedicalEvent(selectedEvent.id, eventObj);
+        toast({
+          title: "Thành công",
+          description: "Đã cập nhật sự kiện y tế",
+        });
+      } else {
+        await medicalService.createMedicalEvent(eventObj);
+        toast({
+          title: "Thành công",
+          description: "Đã tạo sự kiện y tế mới",
+        });
+      }
+      setShowForm(false);
+      setSelectedEvent(null);
+      fetchEvents();
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -338,7 +253,19 @@ const Event = () => {
       </div>
 
       {showForm ? (
-        <EventForm />
+        <EventForm
+          initialData={selectedEvent}
+          isEdit={!!selectedEvent}
+          onSuccess={() => {
+            fetchEvents(); // <-- Gọi lại API lấy danh sách mới
+            setShowForm(false);
+            setSelectedEvent(null);
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setSelectedEvent(null);
+          }}
+        />
       ) : (
         <>
           <Card className="p-6 mb-6">
@@ -352,7 +279,8 @@ const Event = () => {
                   className="pl-10"
                 />
               </div>
-              <div className="flex items-center space-x-2">
+              {/* Ẩn dropdown lọc trạng thái */}
+              {/* <div className="flex items-center space-x-2">
                 <Filter className="h-5 w-5 text-gray-400" />
                 <select
                   value={statusFilter}
@@ -361,11 +289,10 @@ const Event = () => {
                 >
                   <option value="all">Tất cả trạng thái</option>
                   <option value="PENDING">Đang xử lý</option>
-                  <option value="APPROVED">Đã duyệt</option>
-                  <option value="REJECTED">Từ chối</option>
                   <option value="DONE">Hoàn thành</option>
+                  <option value="REJECTED">Từ chối</option>
                 </select>
-              </div>
+              </div> */}
             </div>
           </Card>
 
@@ -383,88 +310,96 @@ const Event = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map((event) => (
-                  <Card key={event.id} className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg">{event.eventType}</h3>
-                        <p className="text-sm text-gray-500">Mã HS: {event.studentId}</p>
-                      </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
-                        {event.status}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{event.description}</p>
-                    
-                    <div className="flex items-center text-sm text-gray-500 mb-4">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {new Date(event.eventDate).toLocaleDateString('vi-VN')}
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                            <Eye className="h-4 w-4" />
-                            <span>Chi tiết</span>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Chi tiết sự kiện</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label>Loại sự kiện</Label>
-                              <p className="mt-1">{event.eventType}</p>
-                            </div>
-                            <div>
-                              <Label>Mô tả</Label>
-                              <p className="mt-1">{event.description}</p>
-                            </div>
-                            <div>
-                              <Label>Địa điểm</Label>
-                              <p className="mt-1">{event.location}</p>
-                            </div>
-                            <div>
-                              <Label>Thời gian</Label>
-                              <p className="mt-1">{new Date(event.eventDate).toLocaleString('vi-VN')}</p>
-                            </div>
-                            {event.followUpRequired && (
-                              <div>
-                                <Label>Ghi chú theo dõi</Label>
-                                <p className="mt-1">{event.followUpNotes}</p>
-                              </div>
-                            )}
+              {/* Filter events theo statusFilter */}
+              {(() => {
+                const filteredEvents = statusFilter === 'all'
+                  ? events
+                  : events.filter(event => event.status === statusFilter);
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvents.map((event) => (
+                      <Card key={event.id} className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-semibold text-lg">{event.eventType}</h3>
+                            <p className="text-sm text-gray-500">Mã HS: {event.studentId}</p>
                           </div>
-                        </DialogContent>
-                      </Dialog>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
+                            {event.status}
+                          </span>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+                        
+                        <div className="flex items-center text-sm text-gray-500 mb-4">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {new Date(event.eventDate).toLocaleDateString('vi-VN')}
+                        </div>
 
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(event)}
-                          className="flex items-center space-x-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span>Sửa</span>
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(event.id)}
-                          className="flex items-center space-x-2"
-                        >
-                          <span>Xoá</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                        <div className="flex justify-between items-center">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                                <Eye className="h-4 w-4" />
+                                <span>Chi tiết</span>
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Chi tiết sự kiện</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label>Loại sự kiện</Label>
+                                  <p className="mt-1">{event.eventType}</p>
+                                </div>
+                                <div>
+                                  <Label>Mô tả</Label>
+                                  <p className="mt-1">{event.description}</p>
+                                </div>
+                                <div>
+                                  <Label>Địa điểm</Label>
+                                  <p className="mt-1">{event.location}</p>
+                                </div>
+                                <div>
+                                  <Label>Thời gian</Label>
+                                  <p className="mt-1">{new Date(event.eventDate).toLocaleString('vi-VN')}</p>
+                                </div>
+                               
+                                  <div>
+                                    <Label>Ghi chú theo dõi</Label>
+                                    <p className="mt-1">{event.followUpNotes}</p>
+                                  </div>
+                                
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(event)}
+                              className="flex items-center space-x-2"
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span>Sửa</span>
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDelete(event.id)}
+                              className="flex items-center space-x-2"
+                            >
+                              <span>Xoá</span>
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                );
+              })()}
               {/* Pagination */}
               <div className="flex justify-center items-center mt-8 gap-2">
                 <Button
