@@ -28,7 +28,8 @@ const VaccinationManagement = () => {
     targetGrade: 0,
     notes: '',
     vaccineType: '',
-    location: ''
+    location: '',
+    manufacturer: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -123,7 +124,10 @@ const validate = () => {
         newErrors.vaccineType = "Vui lòng nhập loại vắc xin.";
     }
     if (!formData.location || formData.location.trim() === "") {
-        newErrors.location = "Vui lòng nhập tên quốc gia.";
+        newErrors.location = "Vui lòng nhập Tên địa điểm tiêm.";
+    }
+    if (!formData.manufacturer || formData.manufacturer.trim() === "") {
+        newErrors.manufacturer = "Vui lòng nhập tên nhà sản xuất.";
     }
 
     if (!formData.startDate) {
@@ -167,7 +171,8 @@ const validate = () => {
             targetGrade: 0,
             notes: '',
             vaccineType: '',
-            location: ''
+            location: '',
+            manufacturer: ''
         });
         toast({
             title: 'Thành công!',
@@ -215,7 +220,8 @@ const validate = () => {
             targetGrade: 0,
             notes: '',
             vaccineType: '',
-            location: ''
+            location: '',
+            manufacturer: ''
         });
         toast({
             title: 'Thành công!',
@@ -295,7 +301,8 @@ const validate = () => {
       targetGrade: vaccination.targetGrade,
       notes: vaccination.notes,
       vaccineType: vaccination.vaccineType,
-      location: vaccination.location
+      location: vaccination.location,
+      manufacturer: vaccination.manufacturer || ''
     });
     setIsEditModalOpen(true);
   };
@@ -359,6 +366,7 @@ const validate = () => {
                 <TableHead>ID</TableHead>
                 <TableHead>Tên chiến dịch</TableHead>
                 <TableHead>Loại vắc xin</TableHead>
+                <TableHead>Nhà sản xuất</TableHead>
                 <TableHead>Ngày bắt đầu</TableHead>
                 <TableHead>Ngày kết thúc</TableHead>
                 <TableHead>Khối lớp</TableHead>
@@ -377,6 +385,7 @@ const validate = () => {
                   <TableCell className="font-medium">{vaccination.id}</TableCell>
                   <TableCell className="font-medium">{vaccination.name}</TableCell>
                   <TableCell>{vaccination.vaccineType}</TableCell>
+                  <TableCell>{vaccination.manufacturer}</TableCell>
                   <TableCell>{vaccination.startDate}</TableCell>
                   <TableCell>{vaccination.endDate}</TableCell>
                   <TableCell>{Array.isArray(vaccination.targetGrade) ? (vaccination.targetGrade.length === 0 ? 'Toàn trường' : vaccination.targetGrade.join(', ')) : (vaccination.targetGrade === 0 ? 'Toàn trường' : vaccination.targetGrade)}</TableCell>
@@ -453,6 +462,7 @@ const validate = () => {
           {errors.vaccineType && <div className="text-red-500 text-sm">{errors.vaccineType}</div>}
           {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
           {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
+          {errors.manufacturer && <div className="text-red-500 text-sm">{errors.manufacturer}</div>}
         </DialogContent>
       </Dialog>
 
@@ -476,6 +486,12 @@ const validate = () => {
               <div className="truncate">{selectedDetail.vaccineType}</div>
 
               <div className="flex items-center gap-2">
+                <ClipboardList className="w-4 h-4 text-blue-500" />
+                <span className="font-semibold text-gray-700">Nhà sản xuất:</span>
+              </div>
+              <div className="truncate">{selectedDetail.manufacturer}</div>
+
+              <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-blue-500" />
                 <span className="font-semibold text-gray-700">Ngày bắt đầu:</span>
               </div>
@@ -497,13 +513,13 @@ const validate = () => {
                 <ClipboardList className="w-4 h-4 text-blue-500" />
                 <span className="font-semibold text-gray-700">Ghi chú:</span>
               </div>
-              <div className="truncate">{selectedDetail.notes}</div>
+              <div className="whitespace-pre-line">{selectedDetail.notes}</div>
 
               <div className="flex items-center gap-2">
                 <ClipboardList className="w-4 h-4 text-blue-500" />
                 <span className="font-semibold text-gray-700">Mô tả:</span>
               </div>
-              <div className="truncate">{selectedDetail.description}</div>
+              <div className="whitespace-pre-line">{selectedDetail.description}</div>
 
               <div className="flex items-center gap-2">
                 <BadgeCheck className="w-4 h-4 text-blue-500" />
