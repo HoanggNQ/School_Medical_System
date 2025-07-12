@@ -37,6 +37,7 @@ public class HealthConsultationScheduleEntity {
     @Column(name = "reason", nullable = false)
     private String reason;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private MedicalStatus status = MedicalStatus.PENDING;
