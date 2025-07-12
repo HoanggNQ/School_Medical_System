@@ -11,6 +11,13 @@ import sms.swp391.models.entities.UserEntity;
 import java.util.List;
 
 public interface MedicationRequestService {
+    List<MedicationRequestResponseDTO> getRequestsByStudentId(Long studentId);
+
+    @Transactional
+    void cancelRequest(Long requestId, Long requesterId);
+
+    MedicationRequestResponseDTO updateRequest(Long requestId, MedicationRequestCreateDTO dto, Long parentId);
+
     @Transactional
     List<MedicationRequestResponseDTO> getRequestsByParentId(Long parentId);
 

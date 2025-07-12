@@ -28,6 +28,97 @@ import java.util.List;
 public class MedicationRequestController {
 
     private final MedicationRequestService medicationRequestService;
+    @Operation(summary = "Phụ huynh hủy yêu cầu thuốc", description = "Phụ huynh có thể hủy đơn thuốc khi chưa được duyệt.")
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<ResponseObject> cancelRequestByParent(@PathVariable Long id,
+                                                                @AuthenticationPrincipal UserEntity currentUser) {
+        if (currentUser == null || currentUser.getRoleName() != RoleEnum.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Bạn cần đăng nhập với tư cách phụ huynh.")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+
+        try {
+            medicationRequestService.cancelRequest(id, currentUser.getUserId());
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("REQUEST_CANCELLED")
+                    .message("Đã hủy yêu cầu thuốc thành công.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("CANCEL_FAILED")
+                            .message("Hủy yêu cầu thuốc thất bại: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+    @Operation(summary = "Cập nhật yêu cầu thuốc", description = "Phụ huynh cập nhật đơn thuốc khi đang ở trạng thái chờ duyệt.")
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject> updateRequest(@PathVariable Long id,
+                                                        @RequestBody @Valid MedicationRequestCreateDTO dto,
+                                                        @AuthenticationPrincipal UserEntity currentUser) {
+        if (currentUser == null || currentUser.getRoleName() != RoleEnum.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Bạn cần đăng nhập với tư cách phụ huynh.")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+
+        try {
+            MedicationRequestResponseDTO response = medicationRequestService.updateRequest(id, dto, currentUser.getUserId());
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("REQUEST_UPDATED")
+                    .message("Cập nhật yêu cầu thuốc thành công.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(response)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("UPDATE_FAILED")
+                            .message("Cập nhật yêu cầu thuốc thất bại: " + e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .build());
+        }
+    }
+    @Operation(summary = "Lấy danh sách yêu cầu thuốc theo học sinh", description = "Phụ huynh hoặc nhân viên y tế xem danh sách yêu cầu thuốc theo học sinh cụ thể.")
+    @GetMapping("/by-student/{studentId}")
+    public ResponseEntity<ResponseObject> getRequestsByStudentId(@PathVariable Long studentId) {
+        try {
+            List<MedicationRequestResponseDTO> requests = medicationRequestService.getRequestsByStudentId(studentId);
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("FETCH_SUCCESS")
+                    .message("Lấy danh sách yêu cầu thuốc theo học sinh thành công.")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(requests)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("FETCH_FAILED")
+                            .message("Không thể lấy danh sách yêu cầu thuốc: " + e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .build());
+        }
+    }
 
     @Operation(summary = "Gửi yêu cầu sử dụng thuốc", description = "Phụ huynh gửi đơn xin sử dụng thuốc cho học sinh.")
     @PostMapping

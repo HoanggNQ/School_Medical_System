@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.entities.MedicationRequestEntity;
+import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.UserEntity;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface MedicationRequestRepository extends JpaRepository<MedicationReq
     List<MedicationRequestEntity> findByStatus(MedicalStatus status);
 
     List<MedicationRequestEntity> findByRequestedBy(UserEntity requestedBy);
+
+    List<MedicationRequestEntity> findByStudent(StudentEntity student);
 }
