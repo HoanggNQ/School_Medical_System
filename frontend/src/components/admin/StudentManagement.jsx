@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Eye, Filter } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Filter, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/ui/use-toast';
 import UserService from '../../api/services/user.service';
 import StudentForm from './StudentForm';
-import AuthService from '../../api/services/auth.service';
+
+
 
 const StudentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,12 +29,15 @@ const StudentManagement = () => {
     phoneNumber: '',
     dob: '',
     gender: '',
-    roleName: '',
+    roleName: 'STUDENT',
     address: '',
     username: '',
     password: '',
-    confirmPassword: ''
-    
+    confirmPassword: '',
+    classId: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    parentId: 0
   });
 
   const [users, setUsers] = useState([]);
@@ -112,25 +116,28 @@ const StudentManagement = () => {
     setLoadingCreate(true);
 
     try {
-      // Create registration data without confirmPassword
-      const registrationData = {
-        fullname: formData.fullName,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        roleName: formData.roleName,
-        address: formData.address,
-        gender: formData.gender,
-        phoneNumber: formData.phoneNumber,
-        dob: formData.dob
+      // Chuẩn bị data đúng cấu trúc
+      const data = {
+        classId: Number(formData.classId) || 0,
+        parentId: Number(formData.parentId) || 0,
+        userRegister: {
+          email: formData.email,
+          password: formData.password,
+          username: formData.username,
+          fullName: formData.fullName,
+          address: formData.address,
+          gender: formData.gender,
+          dob: formData.dob ? new Date(formData.dob).toISOString().split('T')[0] : '',
+          phoneNumber: formData.phoneNumber,
+          roleName: 'STUDENT'
+        },
+        emergencyContactName: formData.emergencyContactName,
+        emergencyContactPhone: formData.emergencyContactPhone
       };
 
-      // Convert date to ISO string format
-      if (registrationData.dob) {
-        registrationData.dob = new Date(registrationData.dob).toISOString().split('T')[0];
-      }
-
-      const response = await AuthService.register(registrationData);
+  
+      const response = await UserService.registerstudent(data);
+      
       console.log(response);
 
       toast({
@@ -145,11 +152,15 @@ const StudentManagement = () => {
         phoneNumber: '',
         dob: '',
         gender: '',
-        roleName: '',
+        roleName: 'STUDENT',
         address: '',
         username: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        classId: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        parentId: 0
       });
       fetchUsers(); 
     } catch (error) {
@@ -188,9 +199,9 @@ const StudentManagement = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async (studentId) => {
     try {
-      const response = await UserService.deleteUser({userId});
+      const response = await UserService.deleteUser({studentId});
       console.log(response);
       if (response.data.isSuccess == true) {
         toast({
@@ -326,21 +337,21 @@ const StudentManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Student ID</TableHead>
                 <TableHead>Mã học sinh</TableHead>
                 <TableHead>Họ và tên</TableHead>
                 <TableHead>Lớp</TableHead>
                 <TableHead>Ngày sinh</TableHead>
                 <TableHead>Giới tính</TableHead>
                 <TableHead>Số điện thoại</TableHead>
-                <TableHead>Nhóm máu</TableHead>
-                <TableHead>Chiều cao (cm)</TableHead>
-                <TableHead>Cân nặng (kg)</TableHead>
+                <TableHead>Phụ huynh</TableHead>
+                {/* <TableHead>Mã phụ huynh</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
               {students.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan="9" className="text-center py-8 text-gray-500">
+                  <TableCell colSpan="8" className="text-center py-8 text-gray-500">
                     {searchTerm
                       ? 'Không tìm thấy học sinh nào phù hợp với từ khóa tìm kiếm'
                       : 'Không có học sinh nào'}
@@ -348,16 +359,16 @@ const StudentManagement = () => {
                 </TableRow>
               ) : (
                 students.map((student) => (
-                  <TableRow key={student.userId} className="cursor-pointer" onClick={() => { setSelectedDetail(student); setIsDetailModalOpen(true); }}>
+                  <TableRow key={student.studentId} className="cursor-pointer" onClick={() => { setSelectedDetail(student); setIsDetailModalOpen(true); }}>
+                    <TableCell className="font-medium">{student.studentId || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{student.studentCode || 'N/A'}</TableCell>
                     <TableCell>{student.fullName || 'N/A'}</TableCell>
                     <TableCell>{student.className || 'N/A'}</TableCell>
                     <TableCell>{student.dob ? new Date(student.dob).toLocaleDateString('vi-VN') : 'N/A'}</TableCell>
-                    <TableCell>{student.gender || 'N/A'}</TableCell>
+                    <TableCell>{student.gender === 'MALE' ? 'Nam' : student.gender === 'FEMALE' ? 'Nữ' : 'Khác'}</TableCell>
                     <TableCell>{student.phoneNumber || 'N/A'}</TableCell>
-                    <TableCell>{student.bloodType || 'N/A'}</TableCell>
-                    <TableCell>{student.height || 'N/A'}</TableCell>
-                    <TableCell>{student.weight || 'N/A'}</TableCell>
+                    <TableCell>{student.parentName || 'N/A'}</TableCell>
+                    {/* <TableCell>{student.parentID || 'N/A'}</TableCell> */}
                   </TableRow>
                 ))
               )}
@@ -410,71 +421,69 @@ const StudentManagement = () => {
             <DialogTitle>Chi tiết học sinh</DialogTitle>
           </DialogHeader>
           {selectedDetail && (
+            <div className="flex flex-col items-center mb-4">
+              {selectedDetail.avatarUrl ? (
+                <img src={selectedDetail.avatarUrl} alt="avatar" className="w-20 h-20 rounded-full object-cover border mb-2" />
+              ) : (
+                <UserCircle className="w-20 h-20 text-gray-300 bg-gray-100 rounded-full p-2 border mb-2" />
+              )}
+              <div className="text-lg font-bold text-orange-700">{selectedDetail.fullName}</div>
+              {selectedDetail.studentCode && (
+                <div className="text-gray-500 text-sm">Mã học sinh: <span className="font-semibold text-gray-700">{selectedDetail.studentCode}</span></div>
+              )}
+            </div>
+          )}
+          {selectedDetail && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 py-2">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Mã học sinh:</span>
-              </div>
-              <div>{selectedDetail.studentCode || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Họ và tên:</span>
-              </div>
-              <div>{selectedDetail.fullName || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Lớp:</span>
-              </div>
-              <div>{selectedDetail.className || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Ngày sinh:</span>
-              </div>
-              <div>{selectedDetail.dob ? new Date(selectedDetail.dob).toLocaleDateString('vi-VN') : 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Giới tính:</span>
-              </div>
-              <div>{selectedDetail.gender || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Số điện thoại:</span>
-              </div>
-              <div>{selectedDetail.phoneNumber || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Địa chỉ:</span>
-              </div>
-              <div>{selectedDetail.address || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Nhóm máu:</span>
-              </div>
-              <div>{selectedDetail.bloodType || 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Chiều cao:</span>
-              </div>
-              <div>{selectedDetail.height ? `${selectedDetail.height} cm` : 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Cân nặng:</span>
-              </div>
-              <div>{selectedDetail.weight ? `${selectedDetail.weight} kg` : 'N/A'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Bệnh di truyền:</span>
-              </div>
-              <div>{selectedDetail.geneticDiseases || 'Không có'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Bệnh mãn tính:</span>
-              </div>
-              <div>{selectedDetail.chronicDiseases || 'Không có'}</div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">Dị ứng:</span>
-              </div>
-              <div>{selectedDetail.allergies || 'Không có'}</div>
+              {selectedDetail.fullName && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Họ và tên:</span></div>
+                  <div>{selectedDetail.fullName}</div>
+                </>
+              )}
+              {selectedDetail.className && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Lớp:</span></div>
+                  <div>{selectedDetail.className}</div>
+                </>
+              )}
+              {selectedDetail.dob && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Ngày sinh:</span></div>
+                  <div>{new Date(selectedDetail.dob).toLocaleDateString('vi-VN')}</div>
+                </>
+              )}
+              {selectedDetail.gender && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Giới tính:</span></div>
+                  <div>{selectedDetail.gender === 'MALE' ? 'Nam' : selectedDetail.gender === 'FEMALE' ? 'Nữ' : 'Khác'}</div>
+                </>
+              )}
+              {selectedDetail.phoneNumber && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Số điện thoại:</span></div>
+                  <div>{selectedDetail.phoneNumber}</div>
+                </>
+              )}
+              {selectedDetail.address && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Địa chỉ:</span></div>
+                  <div>{selectedDetail.address}</div>
+                </>
+              )}
+              {selectedDetail.parentName && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Phụ huynh:</span></div>
+                  <div>{selectedDetail.parentName}</div>
+                </>
+              )}
+              {selectedDetail.parentID && (
+                <>
+                  <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Mã phụ huynh:</span></div>
+                  <div>{selectedDetail.parentID}</div>
+                </>
+              )}
+              {/* Thêm các trường khác nếu có dữ liệu */}
             </div>
           )}
           <div className="flex justify-end mt-4">
