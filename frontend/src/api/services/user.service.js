@@ -179,6 +179,7 @@ const UserService = {
                 emergencyContactName: data.emergencyContactName || '',
                 emergencyContactPhone: data.emergencyContactPhone || ''
             };
+            console.log("Payload gửi đi bên service:", payload);
             const response = await axiosInstance.post(API_ENDPOINTS.STUDENT.CREATE, payload);
             return response;
         } catch (error) {

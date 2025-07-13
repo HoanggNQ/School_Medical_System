@@ -419,7 +419,7 @@ const UserManagement = () => {
       </Dialog>
 
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Chi tiết người dùng</DialogTitle>
           </DialogHeader>
