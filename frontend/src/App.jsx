@@ -143,7 +143,8 @@ const AppLayout = () => {
 
   React.useEffect(() => {
     const path = location.pathname.substring(1);
-    setActiveTab(path || 'dashboard');
+    setActiveTab(path || 'dashboard')
+    
   }, [location]);
 
   return (

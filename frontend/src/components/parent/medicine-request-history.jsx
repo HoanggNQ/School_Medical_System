@@ -197,13 +197,13 @@ const MedicineRequestHistory = ({ selectedStudent, onEdit, onNewRequest }) => {
             <Pill className="w-6 h-6 mr-2 text-blue-500" />
             Lịch sử yêu cầu thuốc - {formatValue(selectedStudent.user?.fullName)}
           </h3>
-          {/* <button
+          <button
             onClick={onNewRequest}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Tạo yêu cầu mới</span>
-          </button> */}
+          </button>
         </div>
 
         {medicineRequests.length === 0 ? (
@@ -214,7 +214,8 @@ const MedicineRequestHistory = ({ selectedStudent, onEdit, onNewRequest }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {medicineRequests.map((request, index) => {
+            {/* Reverse the array before mapping */}
+            {[...medicineRequests].reverse().map((request, index) => {
               const canModify = request.status?.toUpperCase() === "PENDING"
               return (
                 <motion.div

@@ -25,8 +25,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const getMenuItems = () => {
     const baseItems = [
-      { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
-  
+      
+        { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+
     ];
 
     switch (user?.role) {
