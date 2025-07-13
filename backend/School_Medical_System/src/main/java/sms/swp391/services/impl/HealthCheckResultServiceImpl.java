@@ -142,6 +142,7 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         if (profile == null) {
             profile = new StudentHealthProfileEntity();
             profile.setStudent(student);
+            profile.setStudentId(student.getId());
             student.setHealthProfile(profile);
         }
 
@@ -187,6 +188,7 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
             HealthConsultationScheduleEntity schedule = HealthConsultationScheduleEntity.builder()
                     .student(student)
                     .result(savedResult)
+                    .parent(student.getParent())
                     .reason("Kết quả kiểm tra y tế bất thường")
                     .scheduleTime(scheduleTime)
                     .status(MedicalStatus.PENDING)

@@ -30,7 +30,6 @@ public class HealthCheckResultResponse {
     private BigDecimal temperature;
     private String otherNotes;
     private String recommendation;
-    private Boolean followUpRequired;
     private String followUpNotes;
     private String overallHealthRating;
     private String academicYear;
