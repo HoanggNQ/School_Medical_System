@@ -62,8 +62,6 @@ public class OTPVerifyController {
             return buildErrorResponse("Resend OTP for password reset failed", e);
         }
     }
-
-    // Helper methods
     private ResponseEntity<ResponseObject> buildSuccessResponse(String message) {
         return ResponseEntity.ok(
                 ResponseObject.builder()
