@@ -43,14 +43,14 @@ const Header = () => {
               className="cursor-pointer text-gray-900 hover:text-blue-700 transition-colors duration-200 font-semibold text-base px-2 py-1 relative group"
               onClick={() => navigate('/homepage')}
             >
-              Homepage
+              Trang chủ
               <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-gradient-to-r from-sky-400 to-blue-600 rounded-full group-hover:w-full transition-all duration-300"></span>
             </span>
             <span
               className="cursor-pointer text-gray-900 hover:text-blue-700 transition-colors duration-200 font-semibold text-base px-2 py-1 relative group"
               onClick={() => navigate('/blog')}
             >
-              Blog
+              Bài viết
               <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-gradient-to-r from-sky-400 to-blue-600 rounded-full group-hover:w-full transition-all duration-300"></span>
             </span>
           </div>
@@ -61,9 +61,9 @@ const Header = () => {
           {user && (
             <span
               className="cursor-pointer text-gray-900 hover:text-blue-700 transition-colors duration-200 font-semibold text-base px-2 py-1 relative group mr-2"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/profile')}
             >
-              Dashboard
+              Cá Nhân
               <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-gradient-to-r from-sky-400 to-blue-600 rounded-full group-hover:w-full transition-all duration-300"></span>
             </span>
           )}
