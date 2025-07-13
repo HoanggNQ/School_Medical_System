@@ -88,14 +88,40 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     }
 
 
-
     @Override
+    @Transactional
     public void endCampaign(Long campaignId) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
+
         campaign.setStatus(MedicalStatus.DONE);
         campaignRepository.save(campaign);
+
+        List<HealthCheckConsentEntity> consents = healthCheckConsentRepository.findByHealthCheckCampaignId(campaignId);
+
+        List<HealthCheckConsentEntity> toUpdate = new ArrayList<>();
+        for (HealthCheckConsentEntity consent : consents) {
+            if (MedicalStatus.PENDING.equals(consent.getConsentStatus())) {
+                consent.setConsentStatus(MedicalStatus.REJECTED);
+                consent.setResponseDate(LocalDate.now());
+                toUpdate.add(consent);
+
+                notificationService.push(
+                        campaign.getCreatedBy().getUserId(),
+                        consent.getParent().getUserId(),
+                        "Chiến dịch kiểm tra sức khỏe đã kết thúc",
+                        "Bạn chưa phản hồi đồng ý cho con tham gia chiến dịch \"" + campaign.getName() + "\". "
+                                + "Chiến dịch hiện đã kết thúc."
+                );
+            }
+        }
+
+        // 4. Lưu các consent bị cập nhật
+        if (!toUpdate.isEmpty()) {
+            healthCheckConsentRepository.saveAll(toUpdate);
+        }
     }
+
     private String getCurrentAcademicYear() {
         int y = LocalDate.now().getYear();
         return y + "-" + (y + 1);   // ví dụ 2025-2026
