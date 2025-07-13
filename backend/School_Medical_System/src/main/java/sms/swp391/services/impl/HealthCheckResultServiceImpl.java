@@ -142,6 +142,7 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         if (profile == null) {
             profile = new StudentHealthProfileEntity();
             profile.setStudent(student);
+            profile.setStudentId(student.getId());
             student.setHealthProfile(profile);
         }
 
