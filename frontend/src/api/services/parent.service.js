@@ -200,7 +200,7 @@ const ParentService = {
     },
     deleteMedicineRequest: async (id) => {
         try {
-            const response = await axiosInstance.delete(API_ENDPOINTS.PARENT.DELETE_MEDICINE_REQUEST(id));
+            const response = await axiosInstance.put(API_ENDPOINTS.PARENT.DELETE_MEDICINE_REQUEST(id));
             return response.data;
         } catch (error) {
             throw handleApiError(error);
@@ -208,6 +208,7 @@ const ParentService = {
     },
     updateMedicineRequest: async (id, data) => {
         try {
+            console.log("Updating medicine request with ID:", id, "and data:", data);
             const response = await axiosInstance.put(API_ENDPOINTS.PARENT.UPDATE_MEDICINE_REQUEST(id), data);
             return response.data;
         } catch (error) {

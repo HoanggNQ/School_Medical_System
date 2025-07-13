@@ -155,9 +155,9 @@ const HealthRecords = ({ selectedStudent }) => {
                       </p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(record.status)}`}>
+                  {/* <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(record.status)}`}>
                     {record.status}
-                  </span>
+                  </span> */}
                 </div>
 
                 {/* Vital Signs Grid */}
