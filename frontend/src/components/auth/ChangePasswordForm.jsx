@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 
 const ChangePasswordForm = () => {
   const { toast } = useToast();
-  const { user, updateFirstLoginStatus } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -44,7 +44,7 @@ const ChangePasswordForm = () => {
       });
       
       // Cập nhật trạng thái isFirstLogin thành false
-      updateFirstLoginStatus(false);
+     
       
       // Reset form
       setFormData({
@@ -55,7 +55,7 @@ const ChangePasswordForm = () => {
       });
       
       // Chuyển hướng đến dashboard sau khi đổi mật khẩu thành công
-      navigate('/dashboard');
+    
     } catch (error) {
       toast({
         title: 'Lỗi',

@@ -47,7 +47,7 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
         navigate('/change-password');
       } else {
      
-        navigate('/dashboard');
+      
       }
     } catch (error) {
       console.error(error);

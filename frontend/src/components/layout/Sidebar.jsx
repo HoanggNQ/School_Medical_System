@@ -25,15 +25,15 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const getMenuItems = () => {
     const baseItems = [
-      
-        { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
-
+     
     ];
 
     switch (user?.role) {
       case 'ADMIN':
         return [
           ...baseItems,
+          { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+  
           { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
           { id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
           { id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
@@ -46,6 +46,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       case 'MANAGER':
         return [
           ...baseItems,
+          { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+  
           { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
           { id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
           { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
@@ -54,17 +56,19 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       case 'SCHOOL_NURSE':
         return [
           ...baseItems,
+          { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+  
           { id: 'medicines', label: 'Quản lý thuốc', icon: Pill, path: '/medicines' },
           { id: 'health-records', label: 'Yêu cầu thuốc', icon: Activity, path: '/health-records' },
           // { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
           { id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
-          { id: 'management-vaccine', label: 'Quản lý tiêm chủng', icon: Shield, path: '/management-vaccine' },
-          { id: 'campaigns', label: 'chiến dịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
-          { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
+          // { id: 'management-vaccine', label: 'Quản lý tiêm chủng', icon: Shield, path: '/management-vaccine' },
+          { id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
+          // { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
           { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
-          { id: 'heath-result', label: 'Kết quả khám sức khỏe', icon: ClipboardList, path: '/heath-result' },
+{ id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
           { id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
-          { id: 'HealthDeclarationSearch', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/HealthDeclarationSearch' }
+          { id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
       case 'STUDENT':
         return [
@@ -135,7 +139,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               {user?.name?.charAt(0) || 'U'}
             </span>
           </div>
-          <div className="flex-1 min-w-0">
+<div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{user?.username}</p>
             <p className={`text-xs px-2 py-1 rounded-full inline-block role-badge ${
               user?.role === 'Admin' ? 'bg-red-100 text-red-800' :
