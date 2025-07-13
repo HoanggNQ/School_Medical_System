@@ -245,44 +245,81 @@ public class VaccinationServiceImpl implements VaccinationService {
 
 
     @Override
+    @Transactional
     public VaccinationCampaignResponse updateCampaign(Long id, VaccinationCampaignRequestDTO request) {
 
         VaccinationCampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
 
-        /* 1. Cập nhật thông tin */
+        // 1. Cập nhật thông tin chiến dịch
         campaign.setName(request.getName());
         campaign.setDescription(request.getDescription());
         campaign.setStartDate(request.getStartDate());
+        campaign.setEndDate(request.getEndDate());
         campaign.setTargetGrade(
                 request.getTargetGrade() != null
                         ? String.join(",", request.getTargetGrade())
                         : campaign.getTargetGrade()
         );
-
         campaign.setNotes(request.getNotes());
         campaign.setVaccineType(request.getVaccineType());
 
-        /* 2. Lưu campaign */
+        // 2. Lưu chiến dịch đã cập nhật
         VaccinationCampaignEntity updatedCampaign = campaignRepository.save(campaign);
 
-        /* 3. Lấy danh sách HS theo khối mới */
-        List<StudentEntity> targetStudents =
-                studentRepository.findByGradesWithUserAndParent(request.getTargetGrade());
+        // 3. Danh sách học sinh mới từ khối lớp được chọn
+        List<StudentEntity> newStudents = studentRepository.findByGradesWithUserAndParent(request.getTargetGrade());
 
-        /* 4. Gửi thông báo cho PH (loại bỏ trùng lặp) */
+        // 4. Lấy các consent hiện tại và tìm học sinh cũ
+        List<VaccinationConsentEntity> existingConsents = consentRepository.findByVaccinationCampaignId(updatedCampaign.getId());
+        Set<Long> oldStudentIds = existingConsents.stream()
+                .map(consent -> consent.getStudent().getId())
+                .collect(Collectors.toSet());
+
+        // 5. Đánh dấu consent cũ là DELETED nếu học sinh không còn trong khối lớp mới
+        for (VaccinationConsentEntity consent : existingConsents) {
+            Long studentId = consent.getStudent().getId();
+            boolean stillExists = newStudents.stream().anyMatch(s -> s.getId().equals(studentId));
+            if (!stillExists) {
+                consent.setConsentStatus(MedicalStatus.DELETED);
+            }
+        }
+        consentRepository.saveAll(existingConsents);
+
+        // 6. Tạo consent mới cho học sinh chưa có, và gửi thông báo/email
         Set<Long> notifiedParents = new HashSet<>();
-        for (StudentEntity student : targetStudents) {
-            Long parentId = student.getParent().getUserId();
-            if (notifiedParents.add(parentId)) {
-                notificationService.push(
-                        updatedCampaign.getCreatedBy().getUserId(),    // creator (người sửa)
-                        parentId,                                      // receiver (PH)
-                        "Cập nhật chiến dịch tiêm chủng",
-                        "Chiến dịch \"" + updatedCampaign.getName() +
-                                "\" (vắc xin: " + updatedCampaign.getVaccineType() + ") đã thay đổi lịch/chi tiết. "
-                                + "Vui lòng kiểm tra thông tin mới."
-                );
+        for (StudentEntity student : newStudents) {
+            if (!oldStudentIds.contains(student.getId())) {
+                VaccinationConsentEntity newConsent = VaccinationConsentEntity.builder()
+                        .vaccinationCampaign(updatedCampaign)
+                        .student(student)
+                        .parent(student.getParent())
+                        .consentStatus(MedicalStatus.PENDING)
+                        .academicYear(getCurrentAcademicYear())
+                        .build();
+                consentRepository.save(newConsent);
+
+                Long parentId = student.getParent().getUserId();
+                if (notifiedParents.add(parentId)) {
+                    // Gửi thông báo
+                    notificationService.push(
+                            updatedCampaign.getCreatedBy().getUserId(),
+                            parentId,
+                            "Yêu cầu đồng ý tiêm chủng",
+                            "Vui lòng xác nhận chiến dịch \"" + updatedCampaign.getName()
+                                    + "\" dành cho học sinh " + student.getUser().getFullname()
+                    );
+
+//                    sendMailService.sendConsentRequestEmail(
+//                            student.getParent().getEmail(),
+//                            student.getParent().getFullname(),
+//                            student.getUser().getFullname(),
+//                            updatedCampaign.getName(),
+//                            updatedCampaign.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+//                            updatedCampaign.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+//                            updatedCampaign.getVaccineType()
+//                    );
+                }
             }
         }
 

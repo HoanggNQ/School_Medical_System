@@ -66,7 +66,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           // { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
           { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
-          { id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
+          { id: 'heath-result', label: 'Kết quả khám sức khỏe', icon: ClipboardList, path: '/heath-result' },
           { id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
           { id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
@@ -139,7 +139,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               {user?.name?.charAt(0) || 'U'}
             </span>
           </div>
-          <div className="flex-1 min-w-0">
+<div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{user?.username}</p>
             <p className={`text-xs px-2 py-1 rounded-full inline-block role-badge ${
               user?.role === 'Admin' ? 'bg-red-100 text-red-800' :

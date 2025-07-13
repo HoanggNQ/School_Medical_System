@@ -22,7 +22,6 @@ public class VaccinationRecordMapper {
                 .administrationByName(e.getAdministeredBy().getFullname())
                 .administrationDate(e.getAdministrationDate())
                 .academicYear(e.getAcademicYear())
-                .nextDoseDate(e.getNextDoseDate())
                 .injectionSite(e.getInjectionSite())
                 .vaccineName(e.getVaccineName())
                 .followUpNotes(e.getFollowUpNotes())
@@ -35,7 +34,6 @@ public class VaccinationRecordMapper {
 
         return VaccinationRecordEntity.builder()
                 .vaccineName(dto.getVaccineName())
-                .nextDoseDate(dto.getNextDoseDate())
                 .injectionSite(dto.getInjectionSite())
                 .followUpNotes(dto.getFollowUpNotes())
                 .reactionNotes(dto.getReactionNotes())
