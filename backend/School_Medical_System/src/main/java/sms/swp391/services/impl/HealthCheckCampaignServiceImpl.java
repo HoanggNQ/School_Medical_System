@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -180,8 +181,8 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
         pool.shutdown();
     }
 
-
     @Override
+    @Transactional
     public HealthCheckCampaignResponse updateCampaign(Long id, HealthCheckCampaignRequestDTO request) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + id));
@@ -195,25 +196,82 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
                         ? String.join(",", request.getTargetGrade())
                         : campaign.getTargetGrade()
         );
-
         campaign.setLocation(request.getLocation());
 
-        HealthCheckCampaignEntity updated = campaignRepository.save(campaign);
+        campaignRepository.save(campaign);
 
-        List<StudentEntity> students = studentRepository.findByGradesWithUserAndParent(request.getTargetGrade());
+        List<StudentEntity> newStudents = studentRepository.findByGradesWithUserAndParent(request.getTargetGrade());
+        Set<Long> newStudentIds = newStudents.stream()
+                .map(StudentEntity::getId)
+                .collect(Collectors.toSet());
+
+        List<HealthCheckConsentEntity> oldConsents = healthCheckConsentRepository.findByHealthCheckCampaignId(campaign.getId());
+        Set<Long> oldStudentIds = oldConsents.stream()
+                .map(c -> c.getStudent().getId())
+                .collect(Collectors.toSet());
+
         Set<Long> notifiedParents = new HashSet<>();
-        for (StudentEntity student : students) {
-            Long parentId = student.getParent().getUserId();
-            if (notifiedParents.add(parentId)) {
-                notificationService.push(
-                        getCurrentUserId(), parentId,
-                        "Cập nhật chiến dịch kiểm tra sức khỏe",
-                        "Chiến dịch \"" + updated.getName() + "\" của khối " + updated.getTargetGrade() + " đã thay đổi."
-                );
+
+        // 4. Đánh dấu DELETED hoặc xóa những học sinh không còn thuộc khối mới
+        for (HealthCheckConsentEntity oldConsent : oldConsents) {
+            Long studentId = oldConsent.getStudent().getId();
+            if (!newStudentIds.contains(studentId)) {
+                if (oldConsent.getConsentStatus() == MedicalStatus.PENDING) {
+                    healthCheckConsentRepository.delete(oldConsent); // xóa nếu chưa đồng ý
+                } else {
+                    oldConsent.setConsentStatus(MedicalStatus.DELETED); // đánh dấu nếu đã tương tác
+                    healthCheckConsentRepository.save(oldConsent);
+                }
+
+                Long parentId = oldConsent.getParent().getUserId();
+                if (notifiedParents.add(parentId)) {
+                    notificationService.push(
+                            getCurrentUserId(), parentId,
+                            "Chiến dịch kiểm tra sức khỏe",
+                            "Học sinh " + oldConsent.getStudent().getUser().getFullname()
+                                    + " không còn thuộc chiến dịch \"" + campaign.getName() + "\" sau khi cập nhật."
+                    );
+                }
             }
         }
 
-        return HealthCheckCampaignMapper.toDTO(updated);
+        for (StudentEntity student : newStudents) {
+            if (!oldStudentIds.contains(student.getId())) {
+                // Tạo consent mới
+                HealthCheckConsentEntity newConsent = HealthCheckConsentEntity.builder()
+                        .healthCheckCampaign(campaign)
+                        .student(student)
+                        .parent(student.getParent())
+                        .consentStatus(MedicalStatus.PENDING)
+                        .academicYear(getCurrentAcademicYear())
+                        .build();
+                healthCheckConsentRepository.save(newConsent);
+
+                Long parentId = student.getParent().getUserId();
+                if (notifiedParents.add(parentId)) {
+                    // Gửi thông báo
+                    notificationService.push(
+                            getCurrentUserId(), parentId,
+                            "Yêu cầu đồng ý khám sức khỏe",
+                            "Vui lòng xác nhận chiến dịch \"" + campaign.getName()
+                                    + "\" dành cho học sinh " + student.getUser().getFullname()
+                    );
+
+//                    // Gửi email nếu cần
+//                    sendMailService.sendConsentRequestEmail(
+//                            student.getParent().getEmail(),
+//                            student.getParent().getFullname(),
+//                            student.getUser().getFullname(),
+//                            campaign.getName(),
+//                            campaign.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+//                            campaign.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+//                            "Khám sức khỏe định kỳ"
+//                    );
+                }
+            }
+        }
+
+        return HealthCheckCampaignMapper.toDTO(campaign);
     }
 
     @Override
