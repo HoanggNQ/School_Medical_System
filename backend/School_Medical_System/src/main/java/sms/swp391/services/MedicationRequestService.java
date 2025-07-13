@@ -24,9 +24,6 @@ public interface MedicationRequestService {
     MedicationRequestResponseDTO createRequest(MedicationRequestCreateDTO dto, Long parentId);
 
     @Transactional
-    MedicationRequestResponseDTO createMedicationRequest(MedicationRequestCreateDTO dto, UserEntity parent);
-
-    @Transactional
     List<MedicationRequestResponseDTO> getApproveRequests();
 
     @Transactional
