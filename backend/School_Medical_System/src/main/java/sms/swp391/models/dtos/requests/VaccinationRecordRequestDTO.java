@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class VaccinationRecordRequestDTO {
     private Long campaignId;
     private Long studentId;
-    private LocalDate nextDoseDate;
     private String injectionSite;
     private String vaccineName;
     private String followUpNotes;
