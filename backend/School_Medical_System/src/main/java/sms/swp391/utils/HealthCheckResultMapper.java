@@ -41,6 +41,7 @@ public class HealthCheckResultMapper {
                 .hearing(profile != null ? profile.getHearing() : null)
                 .dentalHealth(profile != null ? profile.getDentalHealth() : null)
                 .bloodPressure(profile != null ? profile.getBloodPressure() : null)
+                .otherNotes(entity.getFollowUpNotes())
                 .pulse(profile != null ? profile.getPulse() : null)
                 .temperature(profile != null ? profile.getTemperature() : null)
                 .recommendation(entity.getRecommendation())

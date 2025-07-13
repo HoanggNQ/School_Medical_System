@@ -187,6 +187,7 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
             HealthConsultationScheduleEntity schedule = HealthConsultationScheduleEntity.builder()
                     .student(student)
                     .result(savedResult)
+                    .parent(student.getParent())
                     .reason("Kết quả kiểm tra y tế bất thường")
                     .scheduleTime(scheduleTime)
                     .status(MedicalStatus.PENDING)
