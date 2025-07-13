@@ -42,8 +42,6 @@ public class MedicationRequestDetailEntity {
     @Column(name = "frequency", nullable = false, length = Integer.MAX_VALUE)
     private String frequency;
 
-    @Column(name = "administration_time")
-    private List<LocalTime> administrationTime;
 
     @NotNull
     @Column(name = "start_date", nullable = false)
@@ -59,9 +57,5 @@ public class MedicationRequestDetailEntity {
 
     @Column(name = "provided_by_parent")
     private Boolean providedByParent;
-
-    @Column(name = "status", length = 20)
-    @Enumerated(EnumType.STRING)
-    private MedicalStatus status;
 
 }

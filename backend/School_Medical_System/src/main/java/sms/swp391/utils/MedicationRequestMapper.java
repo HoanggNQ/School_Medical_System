@@ -34,7 +34,6 @@ public class MedicationRequestMapper {
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
                 .quantity(dto.getQuantity())
-                .status(MedicalStatus.PENDING)
                 .providedByParent(dto.getProvidedByParent())
                 .build();
     }
