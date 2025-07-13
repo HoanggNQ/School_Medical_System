@@ -134,9 +134,12 @@ const StudentManagement = () => {
         emergencyContactName: formData.emergencyContactName,
         emergencyContactPhone: formData.emergencyContactPhone
       };
-
+      console.log("data gưi điđi:", data);
   
       const response = await UserService.registerstudent(data);
+      
+
+
       
       console.log(response);
 
