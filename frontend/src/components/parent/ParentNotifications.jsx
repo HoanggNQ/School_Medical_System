@@ -386,10 +386,10 @@ const NotificationsPage = () => {
                               {notification.title}
                             </h4>
                             <div className="flex items-center space-x-2 mt-1">
-                              <Badge variant="secondary" className="text-xs">
+                              {/* <Badge variant="secondary" className="text-xs">
                                 {getTypeLabel(getNotificationType(notification.title, notification.content))}
                               </Badge>
-                              <span className="text-xs text-gray-500">ID: {notification.notificationId}</span>
+                              <span className="text-xs text-gray-500">ID: {notification.notificationId}</span> */}
                             </div>
                           </div>
 
@@ -411,8 +411,8 @@ const NotificationsPage = () => {
                         {/* Actions */}
                         <div className="flex items-center justify-between mt-3 pt-3 border-t border-white border-opacity-50">
                           <div className="flex items-center space-x-2 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />
-                            <span>User ID: {notification.userId}</span>
+                            {/* <Clock className="w-3 h-3" />
+                            <span>User ID: {notification.userId}</span> */}
                           </div>
 
                           <div className="flex items-center space-x-2">
