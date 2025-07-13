@@ -90,32 +90,25 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Học sinh không thuộc quyền quản lý của phụ huynh.");
         }
 
-        // Hoàn lại thuốc cũ nếu do trường cấp
-        List<MedicationRequestDetailEntity> oldDetails = detailRepository.findByRequest(request);
-        for (MedicationRequestDetailEntity oldDetail : oldDetails) {
+        for (MedicationRequestDetailEntity oldDetail : request.getMedicationRequestDetails()) {
             if (!oldDetail.getProvidedByParent()) {
-                MedicationEntity medication = oldDetail.getMedication();
-                medication.setQuantity(medication.getQuantity() + oldDetail.getQuantity());
-                medicationRepository.save(medication);
+                MedicationEntity med = oldDetail.getMedication();
+                med.setQuantity(med.getQuantity() + oldDetail.getQuantity());
+                medicationRepository.save(med);
             }
         }
 
-        detailRepository.deleteAllByRequest(request);
+        request.getMedicationRequestDetails().clear();
 
-        request.setRequestDate(LocalDate.now());
-        request.setNotes(dto.getNotes());
-        request.setStatus(MedicalStatus.PENDING);
-        request.setStudent(student);
-
-        Set<MedicationRequestDetailEntity> newDetails = new HashSet<>();
+        Set<MedicationRequestDetailEntity> updatedDetails = new HashSet<>();
 
         for (MedicationRequestDetailDTO detailDTO : dto.getMedications()) {
             MedicationEntity medication = medicationRepository.findById(detailDTO.getMedicationId())
-                    .orElseThrow(() -> new NotFoundException("Medication not found with id: " + detailDTO.getMedicationId()));
+                    .orElseThrow(() -> new NotFoundException("Medication not found"));
 
-            boolean providedByParent = Boolean.TRUE.equals(detailDTO.getProvidedByParent());
+            boolean provided = detailDTO.getProvidedByParent() != null && detailDTO.getProvidedByParent();
 
-            if (!providedByParent) {
+            if (!provided) {
                 if (medication.getQuantity() == null || medication.getQuantity() < detailDTO.getQuantity()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng thuốc trong kho không đủ.");
                 }
@@ -124,16 +117,21 @@ public class MedicationRequestServiceImpl implements MedicationRequestService {
                 medicationRepository.save(medication);
             }
 
-            MedicationRequestDetailEntity detail = MedicationRequestMapper.toDetailEntity(detailDTO, request, medication);
-            newDetails.add(detail);
+            MedicationRequestDetailEntity newDetail = MedicationRequestMapper.toDetailEntity(detailDTO, request, medication);
+            updatedDetails.add(newDetail);
         }
 
-        request.setMedicationRequestDetails(newDetails);
+        request.setRequestDate(LocalDate.now());
+        request.setNotes(dto.getNotes());
+        request.setStatus(MedicalStatus.PENDING);
+        request.setStudent(student);
+        request.getMedicationRequestDetails().addAll(updatedDetails);
+
         requestRepository.save(request);
-        detailRepository.saveAll(newDetails);
 
         return MedicationRequestMapper.toResponseDTO(request);
     }
+
 
 
 
