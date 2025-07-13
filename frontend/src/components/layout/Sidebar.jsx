@@ -66,7 +66,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           // { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
           { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
-          { id: 'heath-result', label: 'Kết quả khám sức khỏe', icon: ClipboardList, path: '/heath-result' },
+          { id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
           { id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
           { id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
