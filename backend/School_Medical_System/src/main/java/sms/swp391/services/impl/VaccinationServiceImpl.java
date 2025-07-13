@@ -135,13 +135,40 @@ public class VaccinationServiceImpl implements VaccinationService {
     }
 
     // Campaign Methods
+    @Override
+    @Transactional
     public void endCampaign(Long campaignId) {
         VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
 
         campaign.setStatus(MedicalStatus.DONE);
         campaignRepository.save(campaign);
+
+        List<VaccinationConsentEntity> consents = consentRepository.findByVaccinationCampaignId(campaignId);
+
+        List<VaccinationConsentEntity> toUpdate = new ArrayList<>();
+
+        for (VaccinationConsentEntity consent : consents) {
+            if (MedicalStatus.PENDING.equals(consent.getConsentStatus())) {
+                consent.setConsentStatus(MedicalStatus.REJECTED);
+                consent.setResponseDate(LocalDate.now());
+                toUpdate.add(consent);
+
+                notificationService.push(
+                        campaign.getCreatedBy().getUserId(),
+                        consent.getParent().getUserId(),
+                        "Chiến dịch tiêm chủng đã kết thúc",
+                        "Bạn chưa phản hồi đồng ý tiêm cho con trong chiến dịch \"" + campaign.getName() + "\". "
+                                + "Chiến dịch hiện đã kết thúc."
+                );
+            }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            consentRepository.saveAll(toUpdate);
+        }
     }
+
 
 
     @Transactional
