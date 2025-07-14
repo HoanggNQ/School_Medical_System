@@ -48,6 +48,9 @@ public class HealthCheckResultMapper {
                 .followUpNotes(entity.getFollowUpNotes())
                 .overallHealthRating(entity.getOverallHealthRating())
                 .academicYear(entity.getAcademicYear())
+                .healthStatus(isAbnormal(entity) ? "XẤU" : "TỐT")
+
+
                 .build();
     }
 
