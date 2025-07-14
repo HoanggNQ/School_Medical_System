@@ -87,10 +87,11 @@ public class HealthConsultationScheduleController {
         );
     }
 
-    @Operation(summary = "Cập nhật trạng thái lịch hẹn", description = "Chỉnh sửa trạng thái lịch hẹn tư vấn (PENDING, DONE, REJECTED).")
+    @Operation(summary = "Cập nhật trạng thái lịch hẹn và điền lý do", description = "Chỉnh sửa trạng thái lịch hẹn tư vấn (DONE, REJECTED).")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ResponseObject> updateStatus(@PathVariable Long id, @RequestParam MedicalStatus status) {
-        HealthConsultationScheduleResponseDTO updated = scheduleService.updateStatus(id, status);
+    public ResponseEntity<ResponseObject> updateStatus(@PathVariable Long id, @RequestParam MedicalStatus status,
+                                                       @RequestParam(required = false) String note) {
+        HealthConsultationScheduleResponseDTO updated = scheduleService.updateStatus(id, status, note);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("UPDATE_SUCCESS")
@@ -108,7 +109,7 @@ public class HealthConsultationScheduleController {
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long resultId,
             @RequestParam(required = false) MedicalStatus status,
-            @ParameterObject                     // để SpringDoc hiểu Pageable
+            @ParameterObject
             @PageableDefault(size = 10,
                     sort = "scheduleTime",
                     direction = Sort.Direction.DESC) Pageable pageable) {
