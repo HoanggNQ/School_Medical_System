@@ -3,6 +3,7 @@ package sms.swp391.services.impl;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.responses.MedicalCalendarEventDTO;
 import sms.swp391.repositories.HealthCheckCampaignRepository;
 import sms.swp391.repositories.HealthConsultationScheduleRepository;
@@ -49,11 +50,11 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
         });
 
         medicationRepo.findAll().forEach(mr -> {
-            if (mr.getMedicationRequestDetails() != null && !mr.getMedicationRequestDetails().isEmpty()) {
+            if (mr.getMedicationRequestDetails() != null && mr.getStatus().equals(MedicalStatus.APPROVED) && !mr.getMedicationRequestDetails().isEmpty()) {
                 mr.getMedicationRequestDetails().forEach(detail -> {
                     events.add(MedicalCalendarEventDTO.builder()
-                            .eventId(null)
-                            .name("Uống thuốc: " + detail.getMedication().getMedicationName())
+                            .eventId(mr.getId())
+                            .name("Cho student: "+mr.getStudent().getStudentCode() +" Uống thuốc: " + detail.getMedication().getMedicationName())
                             .location("Tại trường")
                             .startDate(detail.getStartDate())
                             .endDate(detail.getEndDate())
@@ -64,8 +65,9 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
         });
 
         consultationRepo.findAll().forEach(cs -> {
+            if (cs.getStudent() == null || cs.getScheduleTime() == null || !cs.getStatus().equals(MedicalStatus.PENDING)) return; // Skip if student or schedule time is null
             events.add(MedicalCalendarEventDTO.builder()
-                    .eventId(null)
+                    .eventId(cs.getId())
                     .name("Tư vấn sức khỏe cho " + cs.getStudent().getUser().getFullname())
                     .location("Phòng y tế")
                     .startDate(cs.getScheduleTime().toLocalDate())

@@ -18,7 +18,6 @@ public class VaccinationRecordResponse {
     private String administrationByName;
     private LocalDate administrationDate;
     private String academicYear;
-    private LocalDate nextDoseDate;
     private String injectionSite;
     private String vaccineName;
     private String followUpNotes;

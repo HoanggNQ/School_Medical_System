@@ -34,9 +34,10 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
     private final UserRepository userRepo;
 
     @Override
-    public HealthConsultationScheduleResponseDTO updateStatus(Long id, MedicalStatus status) {
+    public HealthConsultationScheduleResponseDTO updateStatus(Long id, MedicalStatus status,String note) {
         HealthConsultationScheduleEntity schedule = scheduleRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));
+        schedule.setReason(note);
         schedule.setStatus(status);
         return toResponse(scheduleRepo.save(schedule));
     }
