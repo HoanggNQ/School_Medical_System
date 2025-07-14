@@ -36,8 +36,6 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final HealthCheckConsentRepository consentRepository;
-    private final HealthConsultationScheduleRepository consultationScheduleRepository;
-    private final SendMailService sendMailService;
     private final NotificationService notificationService;
 
     @Transactional
@@ -215,33 +213,4 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         return currentYear + "-" + (currentYear + 1);
     }
 
-    private BigDecimal calculateBMI(BigDecimal heightCm, BigDecimal weightKg) {
-        BigDecimal heightM = heightCm.divide(new BigDecimal("100"));
-        return weightKg.divide(heightM.multiply(heightM), 2, BigDecimal.ROUND_HALF_UP);
-    }
-
-    private boolean isAbnormal(HealthCheckResultEntity result) {
-        StudentHealthProfileEntity p = result.getStudent().getHealthProfile();
-        if (p == null) return false;
-        if (p.getTemperature() != null && p.getTemperature().compareTo(BigDecimal.valueOf(38.0)) > 0) return true;
-        if (p.getBloodPressure() != null && p.getBloodPressure().contains("/")) {
-            try {
-                String[] parts = p.getBloodPressure().split("/");
-                int sys = Integer.parseInt(parts[0].trim());
-                int dia = Integer.parseInt(parts[1].trim());
-                if (sys > 140 || dia > 90) return true;
-            } catch (Exception ignored) {}
-        }
-        try {
-            if (p.getVisionLeft() != null && Float.parseFloat(p.getVisionLeft()) < 5.0f) return true;
-            if (p.getVisionRight() != null && Float.parseFloat(p.getVisionRight()) < 5.0f) return true;
-        } catch (NumberFormatException ignored) {}
-        return false;
-    }
-
-    private int extractFollowUpDays(String followUpNotes) {
-        if (followUpNotes == null) return 1;
-        Matcher matcher = Pattern.compile("(\\d+)\\s*ngày", Pattern.CASE_INSENSITIVE).matcher(followUpNotes);
-        return matcher.find() ? Integer.parseInt(matcher.group(1)) : 1;
-    }
 }

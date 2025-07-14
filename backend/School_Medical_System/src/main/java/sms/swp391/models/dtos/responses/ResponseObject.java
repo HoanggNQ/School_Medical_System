@@ -1,14 +1,19 @@
 package sms.swp391.models.dtos.responses;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Data
 @Builder
-public record ResponseObject(
-        Object data,
-        String code,
-        Boolean isSuccess,
-        HttpStatus status,
-        String message
-) {
+@AllArgsConstructor
+@NoArgsConstructor
+public class ResponseObject {
+    private String code;
+    private String message;
+    private Object data;
+    private boolean isSuccess;
+    private HttpStatus status;
 }
