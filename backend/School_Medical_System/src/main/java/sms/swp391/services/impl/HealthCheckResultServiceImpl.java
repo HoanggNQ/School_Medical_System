@@ -133,18 +133,20 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         UserEntity checker = userRepository.findById(checkedById)
                 .orElseThrow(() -> new NotFoundException("Checker not found"));
 
-        HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
+        HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(
+                campaign.getId(), student);
         if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
             throw new BusinessException("Parent consent not approved for this examination");
         }
 
-        StudentHealthProfileEntity profile = student.getHealthProfile();
-        if (profile == null) {
-            profile = new StudentHealthProfileEntity();
-            profile.setStudent(student);
-            profile.setStudentId(student.getId());
-            student.setHealthProfile(profile);
-        }
+        StudentHealthProfileEntity profile = Optional.ofNullable(student.getHealthProfile())
+                .orElseGet(() -> {
+                    StudentHealthProfileEntity p = new StudentHealthProfileEntity();
+                    p.setStudent(student);
+                    p.setStudentId(student.getId());
+                    student.setHealthProfile(p);
+                    return p;
+                });
 
         profile.setHeight(request.getHeightCm());
         profile.setWeight(request.getWeightKg());
@@ -157,7 +159,8 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         profile.setTemperature(request.getTemperature());
 
         if (request.getHeightCm() != null && request.getWeightKg() != null) {
-            profile.setBmi(calculateBMI(request.getHeightCm(), request.getWeightKg()));
+            profile.setBmi(HealthCheckResultMapper.calculateBMI(
+                    request.getHeightCm(), request.getWeightKg()));
         }
 
         HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(request);
@@ -175,44 +178,14 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         studentRepository.save(student);
 
         notificationService.push(
-                checkedById, student.getParent().getUserId(),
+                checkedById,
+                student.getParent().getUserId(),
                 "Kết quả kiểm tra sức khỏe",
                 "Kết quả kiểm tra của " + student.getUser().getFullname() + " đã sẵn sàng."
         );
-
-        if (isAbnormal(savedResult)) {
-            LocalDateTime scheduleTime = request.getScheduleTime() != null
-                    ? request.getScheduleTime()
-                    : LocalDate.now().plusDays(extractFollowUpDays(savedResult.getFollowUpNotes())).atTime(8, 0);
-
-            HealthConsultationScheduleEntity schedule = HealthConsultationScheduleEntity.builder()
-                    .student(student)
-                    .result(savedResult)
-                    .parent(student.getParent())
-                    .reason("Kết quả kiểm tra y tế bất thường")
-                    .scheduleTime(scheduleTime)
-                    .status(MedicalStatus.PENDING)
-                    .build();
-
-            consultationScheduleRepository.save(schedule);
-
-            sendMailService.sendConsultationScheduleEmail(
-                    student.getParent().getEmail(),
-                    student.getUser().getFullname(),
-                    scheduleTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")),
-                    schedule.getReason()
-            );
-
-            notificationService.push(
-                    checkedById,
-                    student.getParent().getUserId(),
-                    "Lịch tư vấn sức khỏe",
-                    "Con bạn cần tư vấn sức khỏe vào " + scheduleTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
-            );
-        }
-
         return HealthCheckResultMapper.toDTO(savedResult);
     }
+
 
     @Override
     public HealthCheckResultResponse getResultById(Long id) {

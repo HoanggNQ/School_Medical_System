@@ -48,6 +48,9 @@ public class HealthCheckResultMapper {
                 .followUpNotes(entity.getFollowUpNotes())
                 .overallHealthRating(entity.getOverallHealthRating())
                 .academicYear(entity.getAcademicYear())
+                .healthStatus(isAbnormal(entity) ? "XẤU" : "TỐT")
+
+
                 .build();
     }
 
@@ -61,11 +64,42 @@ public class HealthCheckResultMapper {
                 .build();
     }
 
-    private static BigDecimal calculateBMI(BigDecimal height, BigDecimal weight) {
+    public static BigDecimal calculateBMI(BigDecimal height, BigDecimal weight) {
         if (height == null || weight == null || height.compareTo(BigDecimal.ZERO) == 0)
             return null;
 
         BigDecimal heightM = height.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         return weight.divide(heightM.multiply(heightM), 2, RoundingMode.HALF_UP);
+    }
+
+    public static boolean isAbnormal(HealthCheckResultEntity result) {
+        StudentHealthProfileEntity p = result.getStudent().getHealthProfile();
+        if (p == null) return false;
+
+        if (p.getTemperature() != null && p.getTemperature().compareTo(BigDecimal.valueOf(38.0)) > 0)
+            return true;
+
+        if (p.getBloodPressure() != null && p.getBloodPressure().contains("/")) {
+            try {
+                String[] parts = p.getBloodPressure().split("/");
+                int sys = Integer.parseInt(parts[0].trim());
+                int dia = Integer.parseInt(parts[1].trim());
+                if (sys > 140 || dia > 90) return true;
+            } catch (Exception ignored) {
+                return false;
+            }
+        }
+
+        try {
+            if (p.getVisionLeft() != null && !p.getVisionLeft().isBlank() &&
+                    Float.parseFloat(p.getVisionLeft()) < 5.0f) return true;
+
+            if (p.getVisionRight() != null && !p.getVisionRight().isBlank() &&
+                    Float.parseFloat(p.getVisionRight()) < 5.0f) return true;
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+
+        return false;
     }
 }
