@@ -56,4 +56,6 @@ public class HealthCheckResultEntity {
     @NotNull
     @Column(name = "academic_year", nullable = false, length = 9)
     private String academicYear;
+    @OneToOne(mappedBy = "result", fetch = FetchType.LAZY)
+    private HealthConsultationScheduleEntity healthConsultationSchedule;
 }
