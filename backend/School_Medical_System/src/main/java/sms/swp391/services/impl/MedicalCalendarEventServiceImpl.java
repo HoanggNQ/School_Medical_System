@@ -28,6 +28,9 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
 
         vaccinationRepo.findAll().forEach(vc -> {
             events.add(MedicalCalendarEventDTO.builder()
+                    .eventId(vc.getId())
+                    .name(vc.getName())
+                    .location(vc.getLocation())
                     .startDate(vc.getStartDate())
                     .endDate(vc.getEndDate())
                     .type("VACCINATION")
@@ -36,6 +39,9 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
 
         healthCheckRepo.findAll().forEach(hc -> {
             events.add(MedicalCalendarEventDTO.builder()
+                    .eventId(hc.getId())
+                    .name(hc.getName())
+                    .location(hc.getLocation())
                     .startDate(hc.getStartDate())
                     .endDate(hc.getEndDate())
                     .type("HEALTH_CHECK")
@@ -43,10 +49,12 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
         });
 
         medicationRepo.findAll().forEach(mr -> {
-            // Nếu không có medication details thì bỏ qua
             if (mr.getMedicationRequestDetails() != null && !mr.getMedicationRequestDetails().isEmpty()) {
                 mr.getMedicationRequestDetails().forEach(detail -> {
                     events.add(MedicalCalendarEventDTO.builder()
+                            .eventId(null)
+                            .name("Uống thuốc: " + detail.getMedication().getMedicationName())
+                            .location("Tại trường")
                             .startDate(detail.getStartDate())
                             .endDate(detail.getEndDate())
                             .type("MEDICATION-REQUEST")
@@ -57,12 +65,16 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
 
         consultationRepo.findAll().forEach(cs -> {
             events.add(MedicalCalendarEventDTO.builder()
+                    .eventId(null)
+                    .name("Tư vấn sức khỏe cho " + cs.getStudent().getUser().getFullname())
+                    .location("Phòng y tế")
                     .startDate(cs.getScheduleTime().toLocalDate())
-                    .endDate(null) // chỉ 1 ngày
+                    .endDate(null)
                     .type("CONSULTATION")
                     .build());
         });
 
         return events;
     }
+
 }
