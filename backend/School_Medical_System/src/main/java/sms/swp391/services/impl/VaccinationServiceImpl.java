@@ -5,8 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
@@ -49,6 +51,7 @@ public class VaccinationServiceImpl implements VaccinationService {
                 .getAuthentication().getPrincipal();
         return principal.getUserId();
     }
+
     @Transactional
     @Override
     public void remindUnconfirmedParents(Long campaignId) {
@@ -81,58 +84,66 @@ public class VaccinationServiceImpl implements VaccinationService {
         }
     }
 
-    @Override
+
+
     @Transactional
-    public List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO req,
-                                                             Long nurseId) {
-
-
-
-        // 1. Campaign & nurse
-        VaccinationCampaignEntity campaign = campaignRepository.findById(req.getCampaignId())
-                .orElseThrow(() -> new NotFoundException("Campaign not found " + req.getCampaignId()));
+    @Override
+    public List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO request, Long nurseId) {
+        List<VaccinationRecordRequestDTO> records = request.getRecords();
 
         UserEntity nurse = userRepository.findById(nurseId)
                 .orElseThrow(() -> new NotFoundException("Nurse not found"));
 
-        List<VaccinationRecordEntity> toSave = new ArrayList<>();
+        List<VaccinationRecordResponse> responses = new ArrayList<>();
 
-        for (VaccinationRecordRequestDTO dto : req.getRecords()) {
+        for (VaccinationRecordRequestDTO recordRequest : records) {
+            Long campaignId = recordRequest.getCampaignId();
+            Long studentId = recordRequest.getStudentId();
 
-            StudentEntity student = studentRepository.findById(dto.getStudentId())
-                    .orElseThrow(() -> new NotFoundException("Student not found: " + dto.getStudentId()));
+            VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
+                    .orElseThrow(() -> new NotFoundException("Campaign not found: " + campaignId));
 
-            VaccinationConsentEntity consent =
-                    consentRepository.findByVaccinationCampaignIdAndStudent(campaign.getId(), student);
+            StudentEntity student = studentRepository.findById(studentId)
+                    .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
+
+            VaccinationConsentEntity consent = consentRepository
+                    .findByVaccinationCampaignIdAndStudent(campaignId, student);
 
             if (consent == null || consent.getConsentStatus() != MedicalStatus.APPROVED) {
-                continue;
+                throw new BusinessException("Không có sự chấp thuận từ phụ huynh cho học sinh ID " + studentId);
             }
 
-            VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(dto);
+            VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(recordRequest);
             record.setVaccinationCampaign(campaign);
             record.setStudent(student);
             record.setAdministeredBy(nurse);
-            record.setAdministrationDate(LocalDate.now());
             record.setAcademicYear(getCurrentAcademicYear());
+            record.setAdministrationDate(LocalDate.now());
             record.setConsent(consent);
 
-            consent.setConsentStatus(MedicalStatus.DONE);
+            VaccinationRecordEntity saved = recordRepository.save(record);
 
-            toSave.add(record);
+            // Cập nhật trạng thái consent
+            consent.setConsentStatus(MedicalStatus.DONE);
+            consentRepository.save(consent);
+
+            // Gửi thông báo cho phụ huynh
+            notificationService.push(
+                    nurseId,
+                    student.getParent().getUserId(),
+                    "Kết quả tiêm chủng",
+                    "Con bạn (" + student.getUser().getFullname() + ") đã được tiêm vắc-xin " +
+                            record.getVaccineName() + " ngày " +
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            );
+
+            responses.add(VaccinationRecordMapper.toDTO(saved));
         }
 
-        // 3. Lưu batch
-        recordRepository.saveAll(toSave);
-        consentRepository.saveAll(toSave.stream()
-                .map(VaccinationRecordEntity::getConsent)
-                .toList());
-
-        // 4. Trả kết quả
-        return toSave.stream()
-                .map(VaccinationRecordMapper::toDTO)
-                .toList();
+        return responses;
     }
+
+
 
     // Campaign Methods
     @Override
@@ -140,7 +151,9 @@ public class VaccinationServiceImpl implements VaccinationService {
     public void endCampaign(Long campaignId) {
         VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
-
+        if (campaign.getEndDate().isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa đến kết thúc. Ngày kết thúc là: " + campaign.getEndDate());
+        }
         campaign.setStatus(MedicalStatus.DONE);
         campaignRepository.save(campaign);
 
@@ -168,7 +181,6 @@ public class VaccinationServiceImpl implements VaccinationService {
             consentRepository.saveAll(toUpdate);
         }
     }
-
 
 
     @Transactional
@@ -208,6 +220,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         return VaccinationCampaignMapper.toDTO(campaign);
     }
+
     @Transactional
     @Override
     public void sendConsentNotifications(Long campaignId, Long triggeredByUserId) {
@@ -232,7 +245,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
         perParent.values().forEach(consent -> pool.submit(() -> {
 
-            UserEntity parent   = consent.getParent();
+            UserEntity parent = consent.getParent();
             StudentEntity student = consent.getStudent();
 
             // (1) Gửi email – nếu bạn đã có sendMailService riêng
@@ -265,7 +278,9 @@ public class VaccinationServiceImpl implements VaccinationService {
         VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found " + campaignId));
 
-        // Không tạo consent nữa – chỉ chuyển trạng thái
+        if (campaign.getStartDate().isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + campaign.getEndDate());
+        }
         campaign.setStatus(MedicalStatus.ACTIVE);
         campaignRepository.save(campaign);
     }
@@ -399,6 +414,22 @@ public class VaccinationServiceImpl implements VaccinationService {
     }
 
     // ------------ SAVE RECORD (STAFF) -------------
+    @Transactional
+    public int importVaccinationResults(List<VaccinationRecordRequestDTO> records, Long nurseId) {
+        int successCount = 0;
+
+        for (VaccinationRecordRequestDTO dto : records) {
+            try {
+                saveRecord(dto, nurseId);
+                successCount++;
+            } catch (Exception ex) {
+                throw new RuntimeException("Lỗi khi lưu kết quả tiêm cho studentId=" + dto.getStudentId() + ": " + ex.getMessage());
+            }
+        }
+
+        return successCount;
+    }
+
     @Override
     @Transactional
     public VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request,
@@ -552,7 +583,7 @@ public class VaccinationServiceImpl implements VaccinationService {
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
         campaign.setStatus(MedicalStatus.REJECTED);
 
-        List<VaccinationConsentEntity> consentEntities=
+        List<VaccinationConsentEntity> consentEntities =
                 consentRepository.findByVaccinationCampaignId(campaignId);
         for (VaccinationConsentEntity c : consentEntities) {
             c.setConsentStatus(MedicalStatus.REJECTED);
