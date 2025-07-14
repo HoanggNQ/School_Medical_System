@@ -2,15 +2,37 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Calendar, Clock, User, FileText, CheckCircle, AlertCircle, XCircle } from "lucide-react"
+import { User, Mail, Phone, Calendar, MapPin, Hash } from "lucide-react"
 import ParentService from "../../api/services/parent.service"
 
-const ParentSchedule = () => {
-  const [schedules, setSchedules] = useState([])
+const ParentProfile = () => {
+  const [students, setStudents] = useState([])
+  const [parent, setParent] = useState({})
   const [loading, setLoading] = useState(true)
-  const [userInfo, setUserInfo] = useState(null)
 
-  // Helper functions
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const [studentRes, parentRes] = await Promise.all([
+          ParentService.getStudent(),
+          ParentService.getParentProfile(),
+        ])
+        setStudents(studentRes.data)
+        console.log("Students:", studentRes.data)
+
+        setParent(parentRes.data)
+        console.log("Parent:", parentRes.data)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const formatValue = (value) => {
     if (value === null || value === undefined || value === "") {
       return "N/A"
@@ -21,382 +43,380 @@ const ParentSchedule = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A"
     try {
-      return new Date(dateString).toLocaleDateString("vi-VN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      return new Date(dateString).toLocaleDateString("vi-VN")
     } catch {
       return "N/A"
     }
   }
 
-  const formatTime = (timeString) => {
-    if (!timeString) return "N/A"
-    try {
-      return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    } catch {
-      return timeString
-    }
+  const getStatusBadge = (status) => {
+    if (!status)
+      return <span className="px-3 py-1 text-sm font-medium bg-gray-100 text-gray-600 rounded-full">N/A</span>
+
+    const isActive = status === "ACTIVE"
+    return (
+      <span
+        className={`px-3 py-1 text-sm font-medium rounded-full ${
+          isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+        }`}
+      >
+        {status}
+      </span>
+    )
   }
 
-  const formatDateTime = (dateTimeString) => {
-    if (!dateTimeString) return { date: "N/A", time: "N/A" }
-    try {
-      const dateTime = new Date(dateTimeString)
-      const date = dateTime.toLocaleDateString("vi-VN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-      const time = dateTime.toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-      return { date, time }
-    } catch {
-      return { date: "N/A", time: "N/A" }
-    }
+  const getInitials = (name) => {
+    if (parent.avartaUrl != null)
+      return (
+        <img
+          src={parent.avartaUrl || "/placeholder.svg"}
+          className="w-10 h-10 rounded-full object-cover"
+          alt="Avatar"
+        />
+      )
+    if (!name) return "N/A"
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
   }
 
-  const getStatusColor = (status) => {
-    switch (status?.toUpperCase()) {
-      case "COMPLETED":
-        return "bg-green-100 text-green-800"
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800"
-      case "CANCELLED":
-        return "bg-red-100 text-red-800"
-      case "IN_PROGRESS":
-        return "bg-blue-100 text-blue-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
+  const getStudentInitials = (name, student) => {
+    // Added student parameter
+    if (student.avartaUrl != null)
+      return (
+        <img
+          src={student.avartaUrl || "/placeholder.svg"}
+          className="w-10 h-10 rounded-full object-cover"
+          alt="Avatar"
+        />
+      )
+    if (!name) return "N/A"
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
   }
-
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case "completed":
-        return <CheckCircle className="w-4 h-4" />
-      case "pending":
-        return <Clock className="w-4 h-4" />
-      case "cancelled":
-        return <XCircle className="w-4 h-4" />
-      case "in_progress":
-        return <AlertCircle className="w-4 h-4" />
-      default:
-        return <Clock className="w-4 h-4" />
-    }
-  }
-
-  const getStatusLabel = (status) => {
-    switch (status?.toUpperCase()) {
-      case "COMPLETED":
-        return "Đã hoàn thành"
-      case "PENDING":
-        return "Chờ xử lý"
-      case "CANCELLED":
-        return "Đã hủy"
-      case "IN_PROGRESS":
-        return "Đang xử lý"
-      default:
-        return "Chưa xác định"
-    }
-  }
-
-  // Get user info from localStorage
-  const getUserFromStorage = () => {
-    try {
-      const userStr = localStorage.getItem("user")
-      if (userStr) {
-        const user = JSON.parse(userStr)
-        return user
-      }
-      return null
-    } catch (error) {
-      console.error("Error parsing user from localStorage:", error)
-      return null
-    }
-  }
-
-  // Fetch schedules using user ID from localStorage
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        setLoading(true)
-
-        // Get user info from localStorage
-        const user = getUserFromStorage()
-        if (!user || !user.id) {
-          console.error("No user found in localStorage or user ID missing")
-          setSchedules([])
-          return
-        }
-
-        setUserInfo(user)
-        console.log("User from localStorage:", user)
-
-        // Fetch schedules using user ID
-        const response = await ParentService.getParentSchedule(user.id)
-        const schedulesData = response.data || []
-
-        console.log("Fetched schedules for user ID:", user.id, schedulesData)
-        setSchedules(schedulesData)
-      } catch (error) {
-        console.error("Error fetching schedules:", error)
-        setSchedules([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSchedules()
-  }, [])
-
-  // Sort schedules by date (newest first)
-  const sortedSchedules = [...schedules].sort((a, b) => {
-    const dateA = new Date(a.scheduleTime)
-    const dateB = new Date(b.scheduleTime)
-    return dateB - dateA
-  })
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-            <span className="ml-2 text-gray-600">Đang tải lịch trình...</span>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <Calendar className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Lịch trình cá nhân</h2>
-              <p className="text-purple-100">Quản lý lịch hẹn và cuộc hẹn y tế của {userInfo?.fullName || "bạn"}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">{schedules.length}</div>
-            <div className="text-sm text-purple-100">Tổng lịch trình</div>
-          </div>
-        </div>
-      </div>
-
-      {/* User Info Card */}
-      {userInfo && (
-        <div className="bg-white rounded-xl shadow-lg p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-gray-50 py-8"
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Card */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 mb-8"
+        >
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-              <User className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{userInfo.fullName}</h3>
-              <div className="flex items-center space-x-4 text-sm text-gray-600">
-                {userInfo.email && (
-                  <>
-                    <span>•</span>
-                    <span>{userInfo.email}</span>
-                  </>
-                )}
-                {userInfo.phone && (
-                  <>
-                    <span>•</span>
-                    <span>{userInfo.phone}</span>
-                  </>
-                )}
+              <h1 className="text-2xl font-bold text-white">Thông tin Phụ huynh</h1>
+              <p className="text-blue-100">Hệ thống quản lý sức khỏe học sinh</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Main Profile Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-8">
+            <div className="flex items-center space-x-6">
+              <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                {getInitials(parent.fullName)}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{formatValue(parent.fullName)}</h2>
+                <p className="text-gray-600 flex items-center mt-1">
+                  <Mail className="w-4 h-4 mr-2" />
+                  {formatValue(parent.email)}
+                </p>
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Schedules List */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900 flex items-center">
-            <Calendar className="w-6 h-6 mr-2 text-purple-500" />
-            Lịch trình của bạn
-          </h3>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Clock className="w-4 h-4" />
-              <span>{sortedSchedules.length} lịch trình</span>
-            </div>
-            {/* Status Summary */}
-            <div className="flex items-center space-x-2">
-              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                Chờ: {sortedSchedules.filter((s) => s.status === "PENDING").length}
-              </span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                Hoàn thành: {sortedSchedules.filter((s) => s.status === "COMPLETED").length}
-              </span>
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                Đang xử lý: {sortedSchedules.filter((s) => s.status === "IN_PROGRESS").length}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {sortedSchedules.length === 0 ? (
-          <div className="text-center py-12">
-            <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 mb-2">Chưa có lịch trình nào</h4>
-            <p className="text-gray-500">Lịch trình sẽ được cập nhật khi có thông báo từ nhà trường</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {sortedSchedules.map((schedule, index) => {
-              const { date, time } = formatDateTime(schedule.scheduleTime)
-              return (
+          {/* Profile Details */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-6">
                 <motion.div
-                  key={schedule.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.05 * index }}
-                  className="border-2 rounded-lg p-6 hover:shadow-md transition-all duration-200 bg-orange-50 border-orange-200 hover:bg-orange-100"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
                 >
-                  {/* Schedule Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        <FileText className="w-6 h-6 text-orange-500" />
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-900">Lịch hẹn y tế #{schedule.id}</h4>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                          {schedule.studentName && (
-                            <>
-                              <span>•</span>
-                              <span className="font-medium text-purple-600">{schedule.studentName}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(schedule.status)}`}
-                    >
-                      {getStatusIcon(schedule.status)}
-                      <span>{getStatusLabel(schedule.status)}</span>
-                    </span>
+                  <User className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Họ và tên</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatValue(parent.fullName)}</p>
                   </div>
+                </motion.div>
 
-                  {/* Schedule Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày hẹn</p>
-                        <p className="font-medium text-gray-900">{date}</p>
-                      </div>
-                    </div>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+                >
+                  <Phone className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Số điện thoại</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatValue(parent.phoneNumber)}</p>
+                  </div>
+                </motion.div>
 
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-gray-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Thời gian</p>
-                        <p className="font-medium text-gray-900">{time}</p>
-                      </div>
-                    </div>
+                {/* <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+              >
+                <Shield className="w-5 h-5 text-purple-500 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-500 mb-1">Vai trò</p>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                    {formatValue(parent.roleName)}
+                  </span>
+                </div>
+              </motion.div> */}
 
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+                >
+                  <Calendar className="w-5 h-5 text-orange-500 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Ngày sinh</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatDate(parent.dob)}</p>
+                  </div>
+                </motion.div>
+              </div>
 
-                    {schedule.studentId && (
-                      <div className="flex items-center space-x-3 md:col-span-2">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-500" />
+              {/* Right Column */}
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+                >
+                  <Mail className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
+                    <p className="text-lg font-semibold text-gray-900 break-all">{formatValue(parent.email)}</p>
+                  </div>
+                </motion.div>
+
+                {/* <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+              >
+                <UserCheck className="w-5 h-5 text-cyan-500 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-500 mb-1">Tên đăng nhập</p>
+                  <p className="text-lg font-semibold text-gray-900">{formatValue(parent.userName)}</p>
+                </div>
+              </motion.div> */}
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+                >
+                  <MapPin className="w-5 h-5 text-pink-500 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Địa chỉ</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatValue(parent.address)}</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
+                >
+                  <User className="w-5 h-5 text-indigo-500 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Giới tính</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatValue(parent.gender)}</p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="mt-8 pt-6 border-t border-gray-200"
+            >
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3 text-sm text-gray-600">
+              <Calendar className="w-4 h-4" />
+              <span>Ngày tạo: {formatDate(parent.dateCreated)}</span>
+            </div>
+            <div className="flex items-center space-x-3 text-sm text-gray-600">
+              <Calendar className="w-4 h-4" />
+              <span>Cập nhật lần cuối: {formatDate(parent.updatedAt)}</span>
+            </div>
+          </div> */}
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Students Section - Detailed */}
+        {students && students.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="mt-8 space-y-6"
+          >
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <User className="w-6 h-6 mr-2 text-blue-500" />
+                Danh sách học sinh ({students.length})
+              </h3>
+
+              <div className="grid gap-6">
+                {students.map((student, index) => (
+                  <motion.div
+                    key={student.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 * index }}
+                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                  >
+                    {/* Student Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                          {getStudentInitials(student.user?.fullName, student)}
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">ID học sinh</p>
-                          <p className="font-medium text-gray-900">{schedule.studentId}</p>
+                          <h4 className="text-lg font-semibold text-gray-900">{formatValue(student.user?.fullName)}</h4>
+                          <p className="text-sm text-gray-600">
+                            Mã học sinh:{" "}
+                            <span className="font-medium text-blue-600">{formatValue(student.studentCode)}</span>
+                          </p>
                         </div>
                       </div>
-                    )}
+                      <div className="text-right">{getStatusBadge(student.user?.status)}</div>
+                    </div>
+
+                    {/* Student Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Basic Info */}
+                      <div className="space-y-3">
+                        <h5 className="font-medium text-gray-700 border-b pb-1">Thông tin cơ bản</h5>
+
+                        <div className="flex items-center space-x-2 text-sm">
+                          <User className="w-4 h-4 text-blue-500" />
+                          <span className="text-gray-600">Giới tính:</span>
+                          <span className="font-medium">{formatValue(student.user?.gender)}</span>
+                        </div>
+
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Calendar className="w-4 h-4 text-orange-500" />
+                          <span className="text-gray-600">Ngày sinh:</span>
+                          <span className="font-medium">{formatDate(student.user?.dob)}</span>
+                        </div>
+
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Hash className="w-4 h-4 text-purple-500" />
+                          <span className="text-gray-600">Lớp:</span>
+                          <span className="font-medium">{formatValue(student.className.substring(6, 8))}</span>
+                        </div>
+                      </div>
+
+                      {/* Contact Info */}
+                      <div className="space-y-3">
+                        <h5 className="font-medium text-gray-700 border-b pb-1">Thông tin liên hệ</h5>
+
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Phone className="w-4 h-4 text-green-500" />
+                          <span className="text-gray-600">SĐT:</span>
+                          <span className="font-medium">{formatValue(student.user?.phoneNumber)}</span>
+                        </div>
+
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Mail className="w-4 h-4 text-red-500" />
+                          <span className="text-gray-600">Email:</span>
+                          <span className="font-medium text-xs break-all">{formatValue(student.user?.email)}</span>
+                        </div>
+
+                        <div className="flex items-center space-x-2 text-sm">
+                          <MapPin className="w-4 h-4 text-pink-500" />
+                          <span className="text-gray-600">Địa chỉ:</span>
+                          <span className="font-medium">{formatValue(student.user?.address)}</span>
+                        </div>
+
+                        {/* <div className="flex items-center space-x-2 text-sm">
+                        <UserCheck className="w-4 h-4 text-cyan-500" />
+                        <span className="text-gray-600">Tên đăng nhập:</span>
+                        <span className="font-medium">{formatValue(student.user?.userName)}</span>
+                      </div> */}
+                      </div>
+                    </div>
+
+                    {/* Timestamps */}
+                    {/* <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>Tạo: {formatDate(student.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>Cập nhật: {formatDate(student.updatedAt)}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>User tạo: {formatDate(student.user?.dateCreated)}</span>
+                    </div>
                   </div>
-
-                  {/* Reason */}
-                  <div className="bg-white bg-opacity-60 p-4 rounded-lg mb-4">
-                    <h6 className="font-medium text-gray-800 mb-2 flex items-center">
-                      <FileText className="w-4 h-4 mr-2" />
-                      Lý do hẹn:
-                    </h6>
-                    <p className="text-sm text-gray-700 leading-relaxed">{schedule.reason}</p>
-                  </div>
-
-                  {/* Status Info */}
-                  {schedule.status === "PENDING" && (
-                    <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-                      <h6 className="font-medium text-yellow-800 mb-1 flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        Lưu ý:
-                      </h6>
-                      <p className="text-sm text-yellow-700">
-                        Lịch hẹn đang chờ xử lý. Vui lòng theo dõi thông báo từ nhà trường.
-                      </p>
-                    </div>
-                  )}
-
-                  {schedule.status === "COMPLETED" && (
-                    <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
-                      <h6 className="font-medium text-green-800 mb-1 flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Hoàn thành:
-                      </h6>
-                      <p className="text-sm text-green-700">
-                        Lịch hẹn đã được hoàn thành. Kết quả có thể xem trong phần kết quả khám sức khỏe.
-                      </p>
-                    </div>
-                  )}
-
-                  {schedule.status === "IN_PROGRESS" && (
-                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                      <h6 className="font-medium text-blue-800 mb-1 flex items-center">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        Đang xử lý:
-                      </h6>
-                      <p className="text-sm text-blue-700">Lịch hẹn đang được xử lý. Vui lòng chờ thông báo kết quả.</p>
-                    </div>
-                  )}
-
-                  {schedule.status === "CANCELLED" && (
-                    <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
-                      <h6 className="font-medium text-red-800 mb-1 flex items-center">
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Đã hủy:
-                      </h6>
-                      <p className="text-sm text-red-700">
-                        Lịch hẹn đã bị hủy. Vui lòng liên hệ nhà trường để biết thêm chi tiết.
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-              )
-            })}
-          </div>
+                </div> */}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-export default ParentSchedule
+export default ParentProfile

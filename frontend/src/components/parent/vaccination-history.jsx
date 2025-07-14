@@ -124,7 +124,7 @@ const VaccinationHistory = ({ selectedStudent }) => {
                     </p>
                   </div>
                 </div>
-                {getVaccinationStatusBadge(vaccination.reactionNotes, vaccination.nextDoseDate)}
+                {/* {getVaccinationStatusBadge(vaccination.reactionNotes, vaccination.nextDoseDate)} */}
               </div>
 
               {/* Vaccination Details Grid */}
