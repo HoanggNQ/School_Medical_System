@@ -77,7 +77,7 @@ const ParentProfile = () => {
   }
 
   const getStudentInitials = (name) => {
-    if(parent.avartaUrl!=null) return <img src={student.avartaUrl} className="w-10 h-10 rounded-full object-cover" alt="Avatar" />
+    if(student.avartaUrl!=null) return <img src={student.avartaUrl} className="w-10 h-10 rounded-full object-cover" alt="Avatar" />
     if (!name) return "N/A"
     return name
       .split(" ")
