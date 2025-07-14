@@ -66,6 +66,18 @@ const ParentProfile = () => {
   }
 
   const getInitials = (name) => {
+    if(parent.avartaUrl!=null) return <img src={parent.avartaUrl} className="w-10 h-10 rounded-full object-cover" alt="Avatar" />
+    if (!name) return "N/A"
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const getStudentInitials = (name) => {
+    if(parent.avartaUrl!=null) return <img src={student.avartaUrl} className="w-10 h-10 rounded-full object-cover" alt="Avatar" />
     if (!name) return "N/A"
     return name
       .split(" ")
@@ -296,7 +308,7 @@ const ParentProfile = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-lg font-bold">
-                          {getInitials(student.user?.fullName)}
+                          {getStudentInitials(student.user?.fullName)}
                         </div>
                         <div>
                           <h4 className="text-lg font-semibold text-gray-900">{formatValue(student.user?.fullName)}</h4>
