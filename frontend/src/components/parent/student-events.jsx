@@ -366,7 +366,7 @@ const StudentEvents = ({ selectedStudent }) => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
+      {/* <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -381,7 +381,7 @@ const StudentEvents = ({ selectedStudent }) => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Search and Filter Section */}
       <Card>

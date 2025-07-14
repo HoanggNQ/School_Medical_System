@@ -57,7 +57,8 @@ const StudentHealth = () => {
     return String(value)
   }
 
-  const getInitials = (name) => {
+  const getInitials = (name,avartaUrl) => {
+    if(avartaUrl!=null) return <img src={student.avartaUrl} className="w-10 h-10 rounded-full object-cover" alt="Avatar" />
     if (!name) return "N/A"
     return name
       .split(" ")
@@ -162,7 +163,7 @@ const StudentHealth = () => {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {getInitials(student.user?.fullName)}
+                      {getInitials(student.user?.fullName, student.user?.avartaUrl)}
                     </div>
                     <div className="text-left">
                       <p className="font-medium text-gray-900">{formatValue(student.user?.fullName)}</p>
