@@ -13,9 +13,11 @@ import java.time.LocalDate;
 @Builder
 public class HealthDeclarationResponseDTO {
     private Long id;
-    private Long studentId;
+    private Long studentId; // show student code in frontend
+
     private Long declaredById;
     private String studentName;
+    private String studentCode;
     private String declaredByName;
 
     private LocalDate declarationDate;

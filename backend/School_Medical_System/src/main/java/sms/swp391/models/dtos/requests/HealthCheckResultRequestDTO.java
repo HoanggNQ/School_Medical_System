@@ -63,6 +63,6 @@ public class HealthCheckResultRequestDTO {
     private String overallHealthRating;
 
     // Có thể kiểm tra không ở quá khứ nếu là lịch hẹn
-    private LocalDateTime scheduleTime;
+  //  private LocalDateTime scheduleTime;
 
 }
