@@ -96,6 +96,7 @@ const WatchVaccination = () => {
                 <TableHead>ID</TableHead>
                 <TableHead>Tên chiến dịch</TableHead>
                 <TableHead>Loại vắc xin</TableHead>
+                <TableHead>Nhà sản xuất</TableHead>
                 <TableHead>Ngày bắt đầu</TableHead>
                 <TableHead>Ngày kết thúc</TableHead>
                 <TableHead>Khối lớp</TableHead>
@@ -114,6 +115,7 @@ const WatchVaccination = () => {
                   <TableCell className="font-medium">{vaccination.id}</TableCell>
                   <TableCell className="font-medium">{vaccination.name}</TableCell>
                   <TableCell>{vaccination.vaccineType}</TableCell>
+                  <TableCell>{vaccination.manufacturer}</TableCell>
                   <TableCell>{vaccination.startDate}</TableCell>
                   <TableCell>{vaccination.endDate}</TableCell>
                   <TableCell>{vaccination.targetGrade === 0 ? 'Toàn trường' : `Khối ${vaccination.targetGrade}`}</TableCell>

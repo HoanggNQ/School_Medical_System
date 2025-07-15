@@ -20,7 +20,7 @@ const HealthCheck = () => {
   const [showDialog, setShowDialog] = useState(false)
   const [formData, setFormData] = useState({
     heightCm: '',
-    weight: '',
+    weightKg: '',
     visionLeft: '',
     visionRight: '',
     hearing: '',
@@ -33,7 +33,7 @@ const HealthCheck = () => {
     // followUpRequired: false,
     followUpNotes: '',
     overallHealthRating: '',
-    scheduleTime: '',
+    // scheduleTime: '',
   })
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -91,7 +91,7 @@ const HealthCheck = () => {
     setShowDialog(true)
     setFormData({
       heightCm: '',
-      weight: '',
+      weightKg: '',
       visionLeft: '',
       visionRight: '',
       hearing: '',
@@ -104,7 +104,7 @@ const HealthCheck = () => {
       // followUpRequired: false,
       followUpNotes: '',
       overallHealthRating: '',
-      scheduleTime: '',
+      // scheduleTime: '',
     })
   }
 
@@ -120,7 +120,7 @@ const HealthCheck = () => {
         campaignId: Number(selectedStudent.campaignId),
         studentId: Number(selectedStudent.studentId),
         heightCm: Number(formData.heightCm),
-        weight: Number(formData.weight),
+        weightKg: Number(formData.weightKg),
         visionLeft: formData.visionLeft,
         visionRight: formData.visionRight,
         hearing: formData.hearing,
@@ -133,7 +133,7 @@ const HealthCheck = () => {
         // followUpRequired: !!formData.followUpRequired,
         followUpNotes: formData.followUpNotes,
         overallHealthRating: formData.overallHealthRating,
-        scheduleTime: formData.scheduleTime ? new Date(formData.scheduleTime).toISOString() : null,
+        // scheduleTime: formData.scheduleTime ? new Date(formData.scheduleTime).toISOString() : null,
       };
       console.log('payload gửi lên:', payload);
       const response = await medicalService.createHealthCheckResult(payload);
@@ -149,19 +149,7 @@ const HealthCheck = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Stethoscope className="h-6 w-6 text-blue-600"/>Danh sách học sinh chuẩn bị khám sức khỏe</h2>
-        {/* <form onSubmit={handleSearch} className="flex items-center gap-2">
-          <Label htmlFor="search-campaign">Tìm kiếm chiến dịch</Label>
-          <Input
-            id="search-campaign"
-            type="number"
-            min={1}
-            value={searchCampaignId}
-            onChange={e => setSearchCampaignId(e.target.value)}
-            className="w-32"
-            placeholder="Nhập mã chiến dịch khám sức khỏe"
-          />
-          <Button type="submit" variant="outline" className="flex items-center gap-1"><Search className="h-4 w-4"/>Tìm kiếm</Button>
-        </form> */}
+       
       </div>
       {loadingHealth ? (
         <div className="flex items-center justify-center min-h-[120px]">
@@ -246,8 +234,8 @@ const HealthCheck = () => {
                                 <Input id="heightCm" name="heightCm" value={formData.heightCm} onChange={handleInputChange} />
                               </div>
                               <div>
-                                <Label htmlFor="weight">Cân nặng (kg)</Label>
-                                <Input id="weight" name="weight" value={formData.weight} onChange={handleInputChange} />
+                                <Label htmlFor="weightKg">Cân nặng (kg)</Label>
+                                <Input id="weightKg" name="weightKg" value={formData.weightKg} onChange={handleInputChange} />
                               </div>
                               <div>
                                 <Label htmlFor="visionLeft">Thị lực trái</Label>
@@ -297,10 +285,10 @@ const HealthCheck = () => {
                                 <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
                                 <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
                               </div>
-                              <div className="md:col-span-2">
+                              {/* <div className="md:col-span-2">
                                 <Label htmlFor="scheduleTime">Thời gian lịch tái khám</Label>
                                 <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} />
-                              </div>
+                              </div> */}
                             </div>
                             <div className="flex justify-end gap-2 pt-2">
                               <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>

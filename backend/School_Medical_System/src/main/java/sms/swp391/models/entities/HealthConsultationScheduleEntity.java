@@ -28,7 +28,7 @@ public class HealthConsultationScheduleEntity {
     @JoinColumn(name = "parent_id", nullable = true)
     private UserEntity parent;
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "result_id", nullable = false)
+    @JoinColumn(name = "result_id", nullable = true)
     private HealthCheckResultEntity result;
 
     @Column(name = "schedule_time", nullable = false)

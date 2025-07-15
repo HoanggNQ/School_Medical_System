@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react"
 import { medicalService } from "@/api/services/medical.service"
 import { Button } from "@/components/ui/button"
@@ -7,7 +5,7 @@ import { AlertCircle, Syringe, Search } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
- import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useParams, useLocation } from "react-router-dom";
 
@@ -40,6 +38,9 @@ const ManagementVaccine = () => {
 
   
 
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10); // Số học sinh mỗi trang
+
   useEffect(() => {
     if (!campaignId) {
       setStudentsVaccine([]);
@@ -51,6 +52,7 @@ const ManagementVaccine = () => {
         setErrorVaccine(null)
         const res = await medicalService.getVaccinationConsentsByCampaign(campaignId);
         setStudentsVaccine(res.data || [])
+        setPage(0); // Reset về trang đầu khi đổi chiến dịch
       } catch (err) {
         setErrorVaccine("Không thể tải danh sách học sinh chuẩn bị tiêm chủng.")
       } finally {
@@ -81,7 +83,6 @@ const ManagementVaccine = () => {
     })
   }
 
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
@@ -108,6 +109,11 @@ const ManagementVaccine = () => {
       toast({ title: 'Lỗi', description: err?.message || 'Không thể ghi nhận kết quả.' });
     }
   }
+
+  // Tính toán phân trang phía client
+  const totalElements = studentsVaccine.length;
+  const totalPages = Math.ceil(totalElements / size);
+  const paginatedStudents = studentsVaccine.slice(page * size, (page + 1) * size);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -161,7 +167,7 @@ const ManagementVaccine = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {studentsVaccine.map((item) => (
+              {paginatedStudents.map((item) => (
                 <tr key={item.id}>
                   <td className="px-4 py-2 text-sm">{item.studentId}</td>
                   <td className="px-4 py-2 text-sm">{item.studentName}</td>
@@ -191,34 +197,34 @@ const ManagementVaccine = () => {
                               <Label>Tên học sinh</Label>
                               <div className="font-semibold">{item.studentName}</div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                               <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
                               <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
-                            </div>
-                            <div>
+                            </div> */}
+                            {/* <div>
                               <Label htmlFor="nextDoseDate">Ngày tiêm liều tiếp theo</Label>
                               <Input id="nextDoseDate" name="nextDoseDate" type="date" value={formData.nextDoseDate} onChange={handleInputChange} className="w-full" />
-                            </div>
-                            <div>
+                            </div> */}
+                            {/* <div>
                               <Label htmlFor="expirationDate">Ngày hết hạn</Label>
                               <Input id="expirationDate" name="expirationDate" type="date" value={formData.expirationDate} onChange={handleInputChange} className="w-full" />
-                            </div>
+                            </div> */}
                             <div>
                               <Label htmlFor="injectionSite">Vị trí tiêm</Label>
                               <Input id="injectionSite" name="injectionSite" value={formData.injectionSite} onChange={handleInputChange} className="w-full" />
                             </div>
-                            <div>
+                            {/* <div>
                               <Label htmlFor="lotNumber">Số lô</Label>
                               <Input id="lotNumber" name="lotNumber" value={formData.lotNumber} onChange={handleInputChange} className="w-full" />
-                            </div>
+                            </div> */}
                             <div>
                               <Label htmlFor="vaccineName">Tên vaccine</Label>
                               <Input id="vaccineName" name="vaccineName" value={formData.vaccineName} onChange={handleInputChange} className="w-full" />
                             </div>
-                            <div>
+                            {/* <div>
                               <Label htmlFor="vaccineBatch">Số lô vaccine (vaccineBatch)</Label>
                               <Input id="vaccineBatch" name="vaccineBatch" value={formData.vaccineBatch} onChange={handleInputChange} className="w-full" />
-                            </div>
+                            </div> */}
                             <div>
                               <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
                               <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} className="w-full" />
@@ -244,6 +250,29 @@ const ManagementVaccine = () => {
               ))}
             </tbody>
           </table>
+          {/* Pagination UI dưới bảng */}
+          <div className="flex justify-center items-center mt-8 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+              disabled={page === 0}
+            >
+              Trang trước
+            </Button>
+            <span>
+              Trang {page + 1} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+              disabled={page >= totalPages - 1}
+            >
+              Trang sau
+            </Button>
+            <span className="ml-4 text-sm text-gray-500">Tổng: {totalElements} học sinh</span>
+          </div>
         </div>
       )}
     </div>

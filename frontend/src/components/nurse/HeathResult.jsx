@@ -4,6 +4,7 @@ import { medicalService } from "@/api/services/medical.service";
 import { AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const HeathResult = () => {
   const params = useParams();

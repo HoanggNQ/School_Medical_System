@@ -4,18 +4,30 @@ package sms.swp391.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
 import sms.swp391.models.dtos.responses.ResponseObject;
-import sms.swp391.models.entities.UserEntity;
+import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.BusinessException;
 import sms.swp391.models.exception.NotFoundException;
+import sms.swp391.repositories.HealthCheckCampaignRepository;
+import sms.swp391.repositories.HealthCheckConsentRepository;
+import sms.swp391.repositories.VaccinationCampaignRepository;
+import sms.swp391.repositories.VaccinationConsentRepository;
 import sms.swp391.services.HealthCheckResultService;
+import sms.swp391.utils.ExcelExporter;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,13 +35,138 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HealthCheckResultController {
     private final HealthCheckResultService healthCheckService;
+    private final HealthCheckCampaignRepository healthCheckCampaignRepository;
+    private final HealthCheckConsentRepository healthCheckConsentRepository;
+
+    @Operation(summary = "Nhập kết quả khám sức khỏe từ file Excel", description = "Nhập nhiều kết quả khám sức khỏe từ file Excel.")
+    @Transactional
+    @PostMapping(
+            path = "/import",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseObject> importResults(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserEntity checkedById) {
+
+        if (checkedById == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản nurse.")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        try {
+            List<HealthCheckResultRequestDTO> resultDTOs = ExcelExporter.parseHealthCheckResultsFromExcel(file.getInputStream());
+
+            if (resultDTOs.isEmpty()) {
+                throw new BusinessException("File không có dữ liệu.");
+            }
+
+            Long campaignId = resultDTOs.get(0).getCampaignId(); // giả định tất cả cùng campaign
+
+            CreateHealthCheckResultListRequestDTO dto = new CreateHealthCheckResultListRequestDTO();
+            dto.setCampaignId(campaignId);
+            dto.setResults(resultDTOs);
+
+            List<HealthCheckResultResponse> responses = healthCheckService.createBulkResults(dto, checkedById.getUserId());
+
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("IMPORT_RESULT_SUCCESS")
+                            .message("Đã nhập thành công " + responses.size() + " kết quả từ file.")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(responses)
+                            .build()
+            );
+
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("IMPORT_FAILED")
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .build()
+            );
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("FILE_READ_ERROR")
+                            .message("Không thể đọc file Excel: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .code("IMPORT_UNKNOWN_ERROR")
+                            .message("Lỗi không xác định: " + e.getMessage())
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .isSuccess(false)
+                            .build()
+            );
+        }
+    }
+
+    @Operation(summary = "Export danh sách học sinh đủ điều kiện tiêm chủng")
+    @Transactional
+    @GetMapping("/list-results-export")
+    public ResponseEntity<?> exportEligibleStudents(@RequestParam Long campaignId) {
+        HealthCheckCampaignEntity campaign = healthCheckCampaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy chiến dịch khám sức khỏe"));
+
+        List<HealthCheckConsentEntity> consents = healthCheckConsentRepository.findEligibleStudents(campaignId);
+        if (consents.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .code("NO_ELIGIBLE_STUDENTS")
+                            .message("Không có học sinh nào đủ điều kiện ghi kết quả trong chiến dịch này.")
+                            .status(HttpStatus.BAD_REQUEST)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        try (ByteArrayInputStream in = ExcelExporter.exportEligibleStudentsForResult(consents)) {
+            byte[] content = in.readAllBytes();
+
+            String filename = "HealthCheck_Id_" + campaignId + ".xlsx";
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (IOException e) {
+            throw new RuntimeException("Không thể xuất file Excel: " + e.getMessage(), e);
+        }
+    }
     @Operation(summary = "Lưu kết quả khám sức khỏe hàng loạt", description = "Lưu nhiều kết quả khám sức khỏe cùng lúc.")
     @PostMapping("/results/bulk")
     public ResponseEntity<ResponseObject> createBulkResults(
             @Valid @RequestBody CreateHealthCheckResultListRequestDTO request,
-            @AuthenticationPrincipal UserEntity checker) {
+            @AuthenticationPrincipal UserEntity checkedById) {
 
-        List<HealthCheckResultResponse> saved = healthCheckService.createBulkResults(request, checker.getUserId());
+        if (checkedById == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản nurse ")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        List<HealthCheckResultResponse> saved = healthCheckService.createBulkResults(request, checkedById.getUserId());
 
         return ResponseEntity.ok(
                 ResponseObject.builder()
@@ -135,6 +272,7 @@ public class HealthCheckResultController {
             );
         }
     }
+
     @Operation(summary = "Lấy danh sách kết quả theo chiến dịch", description = "Trả về danh sách các kết quả khám của một chiến dịch cụ thể.")
 
     @GetMapping("/campaigns/{campaignId}/results")
@@ -161,6 +299,7 @@ public class HealthCheckResultController {
             );
         }
     }
+
     @Operation(summary = "Lấy danh sách kết quả theo học sinh", description = "Trả về tất cả kết quả khám sức khỏe của một học sinh theo ID.")
 
     @GetMapping("/students/{studentId}/results")

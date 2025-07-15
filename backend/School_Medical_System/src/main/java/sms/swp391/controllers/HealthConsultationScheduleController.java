@@ -10,11 +10,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthConsultationScheduleRequestDTO;
 import sms.swp391.models.dtos.responses.HealthConsultationScheduleResponseDTO;
 import sms.swp391.models.dtos.responses.ResponseObject;
+import sms.swp391.models.entities.UserEntity;
 import sms.swp391.services.HealthConsultationScheduleService;
 import sms.swp391.utils.PageUtils;
 
@@ -30,8 +33,21 @@ public class HealthConsultationScheduleController {
 
     @Operation(summary = "Tạo lịch tư vấn y tế", description = "Tạo mới một lịch hẹn tư vấn y tế cho học sinh.")
     @PostMapping
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody HealthConsultationScheduleRequestDTO requestDTO) {
-        HealthConsultationScheduleResponseDTO created = scheduleService.createSchedule(requestDTO);
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody HealthConsultationScheduleRequestDTO requestDTO , @AuthenticationPrincipal UserEntity currentUser
+    ) {
+
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .code("UNAUTHORIZED")
+                            .message("Hãy đăng nhập bằng tài khoản nurse ")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+        HealthConsultationScheduleResponseDTO created = scheduleService.createSchedule(requestDTO, currentUser.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ResponseObject.builder()
                         .code("CREATE_SUCCESS")
@@ -71,10 +87,11 @@ public class HealthConsultationScheduleController {
         );
     }
 
-    @Operation(summary = "Cập nhật trạng thái lịch hẹn", description = "Chỉnh sửa trạng thái lịch hẹn tư vấn (PENDING, DONE, REJECTED).")
+    @Operation(summary = "Cập nhật trạng thái lịch hẹn và điền lý do", description = "Chỉnh sửa trạng thái lịch hẹn tư vấn (DONE, REJECTED).")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ResponseObject> updateStatus(@PathVariable Long id, @RequestParam MedicalStatus status) {
-        HealthConsultationScheduleResponseDTO updated = scheduleService.updateStatus(id, status);
+    public ResponseEntity<ResponseObject> updateStatus(@PathVariable Long id, @RequestParam MedicalStatus status,
+                                                       @RequestParam(required = false) String note) {
+        HealthConsultationScheduleResponseDTO updated = scheduleService.updateStatus(id, status, note);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .code("UPDATE_SUCCESS")
@@ -92,7 +109,7 @@ public class HealthConsultationScheduleController {
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long resultId,
             @RequestParam(required = false) MedicalStatus status,
-            @ParameterObject                     // để SpringDoc hiểu Pageable
+            @ParameterObject
             @PageableDefault(size = 10,
                     sort = "scheduleTime",
                     direction = Sort.Direction.DESC) Pageable pageable) {

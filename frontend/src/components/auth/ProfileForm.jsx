@@ -29,15 +29,15 @@ const ProfileForm = () => {
   const [originalData, setOriginalData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if(user.role === 'PARENT') {
-      navigate('/parent-profile');
-    }
-    if(user.role === 'STUDENT') {
-      navigate('/student-profile');
-    }
+    // const user = JSON.parse(localStorage.getItem('user'));
+    // if(user.role === 'PARENT') {
+    //   navigate('/parent-profile');
+    // }
+    // if(user.role === 'STUDENT') {
+    //   navigate('/student-profile');
+    // }
     fetchProfile();
   }, []);
 
