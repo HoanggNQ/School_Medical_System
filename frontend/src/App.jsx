@@ -11,6 +11,8 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 // import PublicHeader from '@/components/layout/PublicHeader';
 import Dashboard from '@/components/dashboard/Dashboard';
+import DashboardNurse1 from '@/components/dashboard/DashboardNurse1';
+import DashboardNurse from '@/components/nurse/DashboardNurse';
 import UserManagement from '@/components/admin/UserManagement';
 import StudentManagement from './components/admin/StudentManagement';
 import VaccinationManagement from '@/components/admin/VaccinationManagement';
@@ -33,6 +35,7 @@ import ManagementVaccine from './components/nurse/ManagementVaccine';
 import HealthCheck from './components/nurse/HealthCheck';
 import Event from './components/nurse/Event';
 import PlaceholderPage from './components/nurse/PlaceholderPage';
+import MedicationRequestDetail from './components/nurse/MedicationRequestDetail';
 import CampaignsNurse from './components/nurse/CampaignsNurse';
 import HomePage from './components/auth/HomePage';
 import ShowListCampaign from './components/admin/ShowLIstCampaign';
@@ -140,7 +143,7 @@ const AppLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* <TestSidebar activeTab={activeTab} setActiveTab={setActiveTab} /> */}
+     
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* <Header /> */}
@@ -187,9 +190,10 @@ const NotFoundPage = () => (
 // Hàm xác định route mặc định cho từng role
 const getDefaultRoute = (role) => {
   switch (role) {
-    
     case 'ADMIN':
       return '/dashboard';
+    case 'SCHOOL_NURSE':
+      return '/dashboard-nurse';
     case 'STUDENT':
     case 'PARENT':
     default:
@@ -218,6 +222,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<AppLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard-nurse" element={<DashboardNurse />} />
             <Route path="profile" element={<ProfileForm />} />
             <Route path="change-password" element={<ChangePasswordForm />} />
 
@@ -235,8 +240,12 @@ function App() {
             
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="health-records" element={<PlaceholderPage />} />
+            <Route path="medication-requests/:eventId" element={<MedicationRequestDetail />} />
+
             <Route path="management-vaccine/:campaignId" element={<ManagementVaccine />} />
             <Route path="health-check/:campaignId" element={<HealthCheck />} />
+
+
             <Route path="event" element={<Event />} />
             <Route path="watch-vaccination" element={<WatchVaccination />} />
             <Route path="heath-result" element={<HeathResult />} />

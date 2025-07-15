@@ -28,10 +28,15 @@ export const medicalService = {
   },
   updateMedication: async (medicineId, updatedMedicineData) => {
     try {
-      // Nếu updatedMedicineData là FormData, truyền trực tiếp
+      const formData = new FormData();
+      const { image, ...medicationDataForBackend } = updatedMedicineData;
+      formData.append('medication', JSON.stringify(medicationDataForBackend));
+      if (image instanceof File) {
+        formData.append('image', image);
+      }
       const response = await axiosInstance.post(
-        `api/v1/medications/${medicineId}`,
-        updatedMedicineData,
+        `/api/v1/medications/${medicineId}`,
+        formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',

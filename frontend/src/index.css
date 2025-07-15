@@ -178,3 +178,10 @@ body {
 .role-badge:hover::after {
   left: 100%;
 }
+
+/* Xóa nền xám/đen của các ngày ngoài tháng hiện tại trong react-big-calendar */
+.rbc-off-range-bg {
+  background: #fff !important;
+}
+
+
