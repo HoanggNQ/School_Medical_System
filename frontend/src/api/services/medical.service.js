@@ -112,6 +112,15 @@ export const medicalService = {
     }
   },
 
+  getMedicationRequestById: async (requestId) => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.MEDICATION_REQUEST.GET_BY_ID(requestId));
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 
   // Medical Event APIs
   createMedicalEvent: async (eventData) => {

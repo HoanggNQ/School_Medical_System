@@ -62,6 +62,17 @@ const MedicineForm = ({ initialData, onSubmit, onCancel, isEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Validation: ngày hết hạn phải sau ngày hiện tại
+    const today = new Date();
+    const expDate = new Date(formData.exp);
+    if (expDate <= today) {
+      toast({
+        title: "Lỗi!",
+        description: "Ngày hết hạn phải sau ngày hiện tại.",
+        variant: "destructive"
+      });
+      return;
+    }
     const medication = {
       medicationName: formData.medicationName,
       category: formData.category,
@@ -71,15 +82,10 @@ const MedicineForm = ({ initialData, onSubmit, onCancel, isEdit }) => {
       medicationInformation: formData.medicationInformation,
       manufacturer: formData.manufacturer,
       quantity: formData.quantity,
-      exp: formData.exp
+      exp: formData.exp,
+      image: formData.image // truyền file image lên luôn
     };
-    const data = new FormData();
-    data.append('medication', JSON.stringify(medication));
-    if (formData.image instanceof File) {
-      data.append('image', formData.image);
-    }
-    // Truyền FormData ra ngoài, component cha sẽ tự quyết định gọi API tạo mới hay cập nhật
-    if (onSubmit) onSubmit(data);
+    if (onSubmit) onSubmit(medication);
   };
   
 

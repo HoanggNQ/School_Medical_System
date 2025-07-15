@@ -32,10 +32,12 @@ const ManagementVaccine = () => {
   })
   const { campaignId } = useParams();
   const location = useLocation();
-  const campaignStatus = location.state?.campaignStatus;
+  const vaccinationStatus = location.state?.vaccinationStatus;
   console.log("campaignId",campaignId);
   console.log("location.state",location.state);
   console.log("location",location);
+  console.log("vaccinationStatus",vaccinationStatus);
+
   
 
   useEffect(() => {
@@ -59,7 +61,7 @@ const ManagementVaccine = () => {
   }, [campaignId]);
 
   const handleOpenDialog = (student) => {
-    if (campaignStatus === 'PENDING') {
+    if (vaccinationStatus === 'PENDING') {
       toast({ title: 'Thông báo', description: 'Chiến dịch đang chờ duyệt. Không thể ghi nhận kết quả.' });
       return;
     }
@@ -172,8 +174,8 @@ const ManagementVaccine = () => {
                      item.consentStatus || 'Không rõ'}
                   </td>
                   <td className="px-4 py-2 text-sm">
-                    {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và campaignStatus là 'ACTIVE' */}
-                    {item.consentStatus === 'APPROVED' && campaignStatus === 'ACTIVE' && (
+                    {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và vaccinationStatus là 'ACTIVE' */}
+                    {item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="success" onClick={() => handleOpenDialog(item)}>
