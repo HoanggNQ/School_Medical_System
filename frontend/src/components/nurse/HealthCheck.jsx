@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import {  useParams, useLocation } from "react-router-dom"
+import {  useParams, useLocation, useNavigate } from "react-router-dom"
 
 const HealthCheck = () => {
   const { toast } = useToast()
@@ -41,6 +41,7 @@ const HealthCheck = () => {
 
   const { campaignId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   // Lấy trạng thái chiến dịch từ location.state nếu được truyền từ CampaignsNurse
   const campaignStatus = location.state?.campaignStatus;
 
@@ -149,7 +150,6 @@ const HealthCheck = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Stethoscope className="h-6 w-6 text-blue-600"/>Danh sách học sinh chuẩn bị khám sức khỏe</h2>
-       
       </div>
       {loadingHealth ? (
         <div className="flex items-center justify-center min-h-[120px]">
@@ -170,7 +170,19 @@ const HealthCheck = () => {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <h3 className="text-xl font-bold mb-2">Chiến dịch {campaignId}</h3>
+          
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-xl font-bold">Chiến dịch {campaignId}</h3>
+            {campaignId && (
+              <Button
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={() => navigate(`/consultation-schedules-nurse/${campaignId}`)}
+              >
+                Xem lịch tư vấn
+              </Button>
+            )}
+          </div>
+          
           <table className="min-w-full bg-white border border-gray-200 rounded-lg">
             <thead className="bg-gray-50">
               <tr>

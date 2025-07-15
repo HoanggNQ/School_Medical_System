@@ -253,6 +253,26 @@ export const medicalService = {
     }
   },
 
+  // Nurse Consultation Schedules
+  getNurseConsultationSchedules: async () => {
+    try {
+      const params = { page: 0, size: 10, sort: 'scheduleTime,DESC' };
+      const response = await axiosInstance.get('/api/v1/consultation-schedules/search', { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  createConsultationSchedule: async (data) => {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CONSULTATION_SCHEDULE.CREATE, data);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 };
 
 

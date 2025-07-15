@@ -49,6 +49,7 @@ import HeathResult from './components/nurse/HeathResult';
 import VaccineResult from './components/nurse/VaccineResult';
 import HealthDeclaration from './components/parent/health-declaration';
 import HealthDeclarationSearch from './components/nurse/HealthDeclarationSearch';
+import EventListNurse from './components/nurse/EventListNurse';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -253,6 +254,7 @@ function App() {
             <Route path="HealthDeclarationSearch" element={<HealthDeclarationSearch />} />
 
             <Route path="campaigns-nurse" element={<CampaignsNurse />} />
+            <Route path="consultation-schedules-nurse/:campaignId" element={<EventListNurse />} />
 
             <Route path="reports" element={<PlaceholderPage title="Trang báo cáo" />} />
 
