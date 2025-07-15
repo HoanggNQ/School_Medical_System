@@ -215,6 +215,15 @@ const ParentService = {
             throw handleApiError(error);
         }
     },
+
+    updateConsultationStatus: async(id, data) =>{
+        try{
+            const response = await axiosInstance.patch(API_ENDPOINTS.PARENT.UPDATE_CONSULTATION_STATUS(id), data);
+            return response.data;
+        }catch(error){
+            throw handleApiError(error);
+        }
+    }
 }
 
 export default ParentService;
