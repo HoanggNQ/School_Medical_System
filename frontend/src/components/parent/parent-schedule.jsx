@@ -461,8 +461,9 @@ const ParentSchedule = () => {
                         Đã từ chối:
                       </h6>
                       <p className="text-sm text-red-700">
-                        Bạn đã từ chối lịch hẹn này. Lý do: {formatValue(schedule.note)}
+                        Bạn đã từ chối lịch hẹn này.
                       </p>
+                      <p className="text-sm text-red-700">Lý do: {formatValue(schedule.reason)}</p>
                     </div>
                   )}
 

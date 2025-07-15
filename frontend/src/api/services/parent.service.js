@@ -216,14 +216,24 @@ const ParentService = {
         }
     },
 
-    updateConsultationStatus: async(id, data) =>{
-        try{
-            const response = await axiosInstance.patch(API_ENDPOINTS.PARENT.UPDATE_CONSULTATION_STATUS(id), data);
-            return response.data;
-        }catch(error){
-            throw handleApiError(error);
-        }
+    // updateConsultationStatus: async(id, data) =>{
+    //     try{
+    //         const response = await axiosInstance.patch(API_ENDPOINTS.PARENT.UPDATE_CONSULTATION_STATUS(id), data);
+    //         return response.data;
+    //     }catch(error){
+    //         throw handleApiError(error);
+    //     }
+    // }
+    updateConsultationStatus: async (id, status, note = "") => {
+    try {
+      let url = `https://school-medical-system.onrender.com/api/v1/consultation-schedules/${id}/status?status=${status}&note=${note}`
+      const response = await axiosInstance.patch(url) // PATCH request with parameters in URL
+      return response.data
+    } catch (error) {
+      // Assuming handleApiError is defined elsewhere or throw error directly
+      throw error
     }
+  },
 }
 
 export default ParentService;
