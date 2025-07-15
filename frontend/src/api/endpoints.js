@@ -92,6 +92,7 @@ const API_ENDPOINTS = {
     GET_MEDICINE_REQUEST: (studentId) => `/api/v1/medication-requests/by-student/${studentId}`,
     DELETE_MEDICINE_REQUEST: (id) => `/api/v1/medication-requests/${id}/cancel`,
     UPDATE_MEDICINE_REQUEST: (id) => `/api/v1/medication-requests/${id}`,
+    UPDATE_CONSULTATION_STATUS: (id) => `/api/v1/consultation-schedules/${id}/status`,
   },
 
   STUDENT: {
