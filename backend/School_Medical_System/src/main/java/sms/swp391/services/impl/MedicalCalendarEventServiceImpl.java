@@ -34,6 +34,7 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
                     .location(vc.getLocation())
                     .startDate(vc.getStartDate())
                     .endDate(vc.getEndDate())
+                    .status(vc.getStatus())
                     .type("VACCINATION")
                     .build());
         });
@@ -45,6 +46,7 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
                     .location(hc.getLocation())
                     .startDate(hc.getStartDate())
                     .endDate(hc.getEndDate())
+                    .status(hc.getStatus())
                     .type("HEALTH_CHECK")
                     .build());
         });
@@ -54,10 +56,11 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
                 mr.getMedicationRequestDetails().forEach(detail -> {
                     events.add(MedicalCalendarEventDTO.builder()
                             .eventId(mr.getId())
-                            .name("Cho student: "+mr.getStudent().getStudentCode() +" Uống thuốc: " + detail.getMedication().getMedicationName())
+                            .name("Cho student: " + mr.getStudent().getStudentCode() + " Uống thuốc: " + detail.getMedication().getMedicationName())
                             .location("Tại trường")
                             .startDate(detail.getStartDate())
                             .endDate(detail.getEndDate())
+                            .status(mr.getStatus())
                             .type("MEDICATION-REQUEST")
                             .build());
                 });
@@ -65,13 +68,15 @@ public class MedicalCalendarEventServiceImpl implements MedicalCalendarEventServ
         });
 
         consultationRepo.findAll().forEach(cs -> {
-            if (cs.getStudent() == null || cs.getScheduleTime() == null || !cs.getStatus().equals(MedicalStatus.PENDING)) return; // Skip if student or schedule time is null
+            if (cs.getStudent() == null || cs.getScheduleTime() == null || !cs.getStatus().equals(MedicalStatus.PENDING))
+                return; // Skip if student or schedule time is null
             events.add(MedicalCalendarEventDTO.builder()
                     .eventId(cs.getId())
                     .name("Tư vấn sức khỏe cho " + cs.getStudent().getUser().getFullname())
                     .location("Phòng y tế")
                     .startDate(cs.getScheduleTime().toLocalDate())
                     .endDate(null)
+                    .status(cs.getStatus())
                     .type("CONSULTATION")
                     .build());
         });
