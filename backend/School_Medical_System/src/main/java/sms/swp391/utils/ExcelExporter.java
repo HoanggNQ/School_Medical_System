@@ -268,7 +268,7 @@ public class ExcelExporter {
 
             String[] headers = {
                     "campaignId", "studentId", "studentName", "className",
-                    "injectionSite", "vaccineName", "reactionNotes", "followUpNotes", "scheduleTime"
+                    "injectionSite", "vaccineName", "reactionNotes", "followUpNotes"
             };
 
             // Create header row
@@ -295,10 +295,7 @@ public class ExcelExporter {
                 row.createCell(5).setCellValue(""); // vaccineName
                 row.createCell(6).setCellValue(""); // reactionNotes
                 row.createCell(7).setCellValue(""); // followUpNotes
-                // Set default scheduleTime to "yyyy-MM-dd HH:mm" format (e.g., 2025-07-20 09:00)
-                LocalDateTime defaultTime = LocalDateTime.of(2025, 7, 20, 9, 0);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-                row.createCell(8).setCellValue(defaultTime.format(formatter));
+
 
             }
 
@@ -325,19 +322,12 @@ public class ExcelExporter {
 
                 VaccinationRecordRequestDTO dto = new VaccinationRecordRequestDTO();
 
-                dto.setCampaignId(parseLong(fmt.formatCellValue(row.getCell(0))));
-                dto.setStudentId(parseLong(fmt.formatCellValue(row.getCell(1))));
+                dto.setCampaignId(parseLongSafe(fmt.formatCellValue(row.getCell(0))));
+                dto.setStudentId(parseLongSafe(fmt.formatCellValue(row.getCell(1))));
                 dto.setInjectionSite(fmt.formatCellValue(row.getCell(4)));
                 dto.setVaccineName(fmt.formatCellValue(row.getCell(5)));
                 dto.setReactionNotes(fmt.formatCellValue(row.getCell(6)));
                 dto.setFollowUpNotes(fmt.formatCellValue(row.getCell(7)));
-
-                String dateTimeStr = fmt.formatCellValue(row.getCell(8));
-                if (!dateTimeStr.isBlank()) {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-                    dto.setScheduleTime(LocalDateTime.parse(dateTimeStr, formatter));
-                }
-
 
                 list.add(dto);
             }
@@ -348,5 +338,7 @@ public class ExcelExporter {
 
         return list;
     }
+
+
 
 }
