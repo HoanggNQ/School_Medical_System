@@ -19,6 +19,7 @@ import sms.swp391.repositories.MedicalEventRepository;
 import sms.swp391.repositories.StudentRepository;
 import sms.swp391.repositories.UserRepository;
 import sms.swp391.services.MedicalEventService;
+import sms.swp391.services.NotificationService;
 import sms.swp391.utils.MedicalEventMapper;
 import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
 import sms.swp391.utils.PageUtils;
@@ -35,6 +36,8 @@ public class MedicalEventServiceImpl implements MedicalEventService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
 
+    private final NotificationService notificationService;
+
     @Override
     public MedicalEventResponse create(Long reportedById, MedicalEventCreateRequestDTO request) {
         StudentEntity student = null;
@@ -42,13 +45,27 @@ public class MedicalEventServiceImpl implements MedicalEventService {
             student = studentRepository.findById(request.getStudentId())
                     .orElseThrow(() -> new NotFoundException("Student not found: " + request.getStudentId()));
         }
+
         UserEntity reporter = null;
         if (reportedById != null) {
             reporter = userRepository.findById(reportedById)
                     .orElseThrow(() -> new NotFoundException("User not found: " + reportedById));
         }
+
         MedicalEventEntity entity = MedicalEventMapper.toEntity(request, student, reporter);
-        return MedicalEventMapper.toDTO(medicalEventRepository.save(entity));
+        MedicalEventEntity saved = medicalEventRepository.save(entity);
+
+        if (student != null && student.getParent() != null) {
+            notificationService.push(
+                    reporter != null ? reporter.getUserId() : null,
+                    student.getParent().getUserId(),
+                    "Sự kiện y tế liên quan đến con bạn",
+                    "Con bạn (" + student.getUser().getFullname() + ") vừa gặp phải sự kiện y tế: "
+                            + request.getEventType() + ". Vui lòng kiểm tra chi tiết."
+            );
+        }
+
+        return MedicalEventMapper.toDTO(saved);
     }
 
     @Override

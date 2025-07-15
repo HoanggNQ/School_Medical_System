@@ -29,9 +29,9 @@ const StudentMedicalEvent = ({ selectedStudent }) => {
         const response = await ParentService.getStudentMedicalEvent(selectedStudent.id, currentPage, pageSize)
         console.log("Student Medical Events:", response)
 
-        if (response && response.data) {
-          setMedicalEvents(response.data.content || response.data)
-          setTotalPages(response.data.totalPages || 1)
+        if (response) {
+          setMedicalEvents(response.content)
+          setTotalPages(response.totalPages || 1)
         } else {
           setMedicalEvents([])
         }
@@ -176,17 +176,17 @@ const StudentMedicalEvent = ({ selectedStudent }) => {
                       </div>
                       <div>
                         <h4 className="text-lg font-semibold text-gray-900">{formatValue(event.eventType)}</h4>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        {/* <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <span>Sự kiện ID: #{event.id}</span>
                           <span>•</span>
                           <span>Học sinh ID: #{event.studentId}</span>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
-                    <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
+                    {/* <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
                       <AlertCircle className="w-3 h-3 mr-1" />
                       Sự cố
-                    </Badge>
+                    </Badge> */}
                   </div>
 
                   {/* Event Details */}

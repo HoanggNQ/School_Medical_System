@@ -366,7 +366,7 @@ const StudentEvents = ({ selectedStudent }) => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
+      {/* <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -381,7 +381,7 @@ const StudentEvents = ({ selectedStudent }) => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Search and Filter Section */}
       <Card>
@@ -528,40 +528,61 @@ const StudentEvents = ({ selectedStudent }) => {
 
                     {/* Event Details Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      {/* Ngày khám */}
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <Calendar className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày khám</p>
-                          <p className="font-medium text-gray-900">{formatDate(event.checkDate)}</p>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày bắt đầu</p>
+                          <p className="font-medium text-gray-900 truncate">{formatDate(event.startDate)}</p>
                         </div>
                       </div>
 
+                      {/* Ngày khám */}
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <Calendar className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày kết thúc</p>
+                          <p className="font-medium text-gray-900 truncate">{formatDate(event.endDate)}</p>
+                        </div>
+                      </div>
+                      {/* Địa điểm */}
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <MapPin className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Địa điểm</p>
-                          <p className="font-medium text-gray-900 truncate" title={formatValue(event.location)}>
+                          <p
+                            className="font-medium text-gray-900 truncate"
+                            title={formatValue(event.location)}
+                          >
                             {formatValue(event.location)}
                           </p>
                         </div>
                       </div>
 
+                      {/* Học sinh */}
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <User className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Học sinh</p>
-                          <p className="font-medium text-gray-900 truncate" title={formatValue(event.studentName)}>
+                          <p
+                            className="font-medium text-gray-900 truncate"
+                            title={formatValue(event.studentName)}
+                          >
                             {formatValue(event.studentName)}
                           </p>
                         </div>
                       </div>
                     </div>
+                    
+
 
                     {/* Description Preview */}
                     {event.description && (
@@ -778,8 +799,12 @@ const StudentEvents = ({ selectedStudent }) => {
                         <p className="font-medium">{getEventTypeLabel(selectedEvent.type)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Ngày khám</p>
-                        <p className="font-medium">{formatDate(selectedEvent.checkDate)}</p>
+                        <p className="text-sm text-gray-500">Ngày bắt đầu</p>
+                        <p className="font-medium">{formatDate(selectedEvent.startDate)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Ngày kết thúc</p>
+                        <p className="font-medium">{formatDate(selectedEvent.endDate)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Địa điểm</p>

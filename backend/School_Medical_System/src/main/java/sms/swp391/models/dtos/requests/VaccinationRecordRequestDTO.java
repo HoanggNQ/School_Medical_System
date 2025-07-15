@@ -16,5 +16,4 @@ public class VaccinationRecordRequestDTO {
     private String vaccineName;
     private String followUpNotes;
     private String reactionNotes;
-    private LocalDateTime scheduleTime;
 }

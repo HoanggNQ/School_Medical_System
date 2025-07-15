@@ -3,6 +3,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -11,8 +12,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class HealthCheckResultResponse {
     private Long id;
-    private Long campaignId;
     private Long studentId;
+    private Long campaignId;
     private String studentName;
     private String campaignName;
     private Long checkedById;
@@ -33,4 +34,5 @@ public class HealthCheckResultResponse {
     private String followUpNotes;
     private String overallHealthRating;
     private String academicYear;
+    private String healthStatus;
 }

@@ -181,7 +181,7 @@ const ParentSchedule = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg p-6">
+      {/* <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -197,10 +197,10 @@ const ParentSchedule = () => {
             <div className="text-sm text-purple-100">Tổng lịch trình</div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* User Info Card */}
-      {userInfo && (
+      {/* {userInfo && (
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
@@ -225,7 +225,7 @@ const ParentSchedule = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Schedules List */}
       <div className="bg-white rounded-xl shadow-lg p-6">
