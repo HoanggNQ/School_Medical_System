@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
+import sms.swp391.models.entities.UserEntity;
 
 import java.util.List;
 
