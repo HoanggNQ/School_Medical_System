@@ -7,35 +7,32 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+
+        // Chỉ định origin cụ thể
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowCredentials(true); // Bắt buộc nếu bạn dùng cookies hoặc Authorization header
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList(
                 "Accept",
-                "Access-Control-Allow-Headers",
-                "Access-Control-Allow-Methods",
-                "Access-Control-Allow-Origin",
                 "Authorization",
                 "Content-Type",
                 "Origin",
-                "X-Requested-With"));
-        configuration.setExposedHeaders(Arrays.asList(
-                "Accept",
-                "Access-Control-Allow-Headers",
-                "Access-Control-Allow-Methods",
-                "Access-Control-Allow-Origin",
-                "Authorization",
-                "Content-Type",
-                "Origin",
-                "X-Requested-With"));
+                "X-Requested-With"
+        ));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }
+
