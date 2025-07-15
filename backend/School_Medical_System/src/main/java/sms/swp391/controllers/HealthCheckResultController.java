@@ -39,6 +39,7 @@ public class HealthCheckResultController {
     private final HealthCheckConsentRepository healthCheckConsentRepository;
 
     @Operation(summary = "Nhập kết quả khám sức khỏe từ file Excel", description = "Nhập nhiều kết quả khám sức khỏe từ file Excel.")
+    @Transactional
     @PostMapping(
             path = "/import",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
@@ -115,6 +116,7 @@ public class HealthCheckResultController {
     }
 
     @Operation(summary = "Export danh sách học sinh đủ điều kiện tiêm chủng")
+    @Transactional
     @GetMapping("/list-results-export")
     public ResponseEntity<?> exportEligibleStudents(@RequestParam Long campaignId) {
         HealthCheckCampaignEntity campaign = healthCheckCampaignRepository.findById(campaignId)
