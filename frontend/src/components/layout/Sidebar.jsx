@@ -31,51 +31,57 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     switch (user?.role) {
       case 'ADMIN':
         return [
-          ...baseItems,
-          { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
-  
-          { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
-          { id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
-          { id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
-
-          { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
-          { id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
+          { type: 'section', label: 'Thống kê' },
+         
+          { type: 'item', id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+          { type: 'item', id: 'show-campaigns', label: 'Thống kê chiến dịch', icon: ClipboardList, path: '/show-campaigns' },
+          { type: 'section', label: 'Người dùng' },
+          { type: 'item', id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
+          { type: 'item', id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
+          { type: 'section', label: 'Chiến dịch' },
+          { type: 'item', id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
+          { type: 'item', id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
       
-          { id: 'show-campaigns', label: 'Thống kê chiến dịch',  icon: ClipboardList, path: '/show-campaigns' },
+          { type: 'section', label: 'Bài viết' },
+          { type: 'item', id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
         ];
       case 'MANAGER':
         return [
-          ...baseItems,
-          { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
-  
-          { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
-          { id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
-          { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
-          { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' }
+          { type: 'section', label: 'Thống kê' },
+          { type: 'item', id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
+          { type: 'section', label: 'Người dùng' },
+          { type: 'item', id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/users' },
+          { type: 'section', label: 'Chiến dịch' },
+          { type: 'item', id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
+          { type: 'item', id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
+          { type: 'section', label: 'Bài viết' },
+          { type: 'item', id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
         ];
       case 'SCHOOL_NURSE':
         return [
-          ...baseItems,
-          { id: 'dashboard', label: 'Tổng quan', icon: BarChart3, path: '/dashboard' },
-  
-          { id: 'medicines', label: 'Quản lý thuốc', icon: Pill, path: '/medicines' },
-          { id: 'health-records', label: 'Yêu cầu thuốc', icon: Activity, path: '/health-records' },
-          // { id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
-          { id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
-          // { id: 'management-vaccine', label: 'Quản lý tiêm chủng', icon: Shield, path: '/management-vaccine' },
-          { id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
-          // { id: 'health-check', label: 'Khám sức khỏe', icon: Shield, path: '/health-check' },
-          { id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
-{ id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
-          { id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
-          { id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
+          { type: 'section', label: 'Tổng quan' },
+          { type: 'item', id: 'dashboard-nurse', label: 'Tổng quan', icon: BarChart3, path: '/dashboard-nurse' },
+
+          { type: 'section', label: 'Quản lý thuốc' },
+          { type: 'item', id: 'medicines', label: 'Quản lý thuốc', icon: Pill, path: '/medicines' },
+          { type: 'item', id: 'health-records', label: 'Yêu cầu thuốc', icon: Activity, path: '/health-records' },
+
+          { type: 'section', label: 'Lịch và kết quả' },
+          { type: 'item', id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
+          { type: 'item', id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
+          { type: 'item', id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
+          // { type: 'item', id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
+          // { type: 'item', id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
+          { type: 'item', id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
       case 'STUDENT':
         return [
-          ...baseItems,
-          { id: 'health-profile', label: 'Hồ sơ sức khỏe', icon: Heart, path: '/health-profile' },
-          { id: 'vaccination-history', label: 'Lịch sử tiêm chủng', icon: Shield, path: '/vaccination-history' },
-          { id: 'appointments', label: 'Lịch hẹn', icon: Calendar, path: '/appointments' }
+          { type: 'section', label: 'Người dùng' },
+          { type: 'item', id: 'health-profile', label: 'Hồ sơ sức khỏe', icon: Heart, path: '/health-profile' },
+          { type: 'section', label: 'Chiến dịch' },
+          { type: 'item', id: 'vaccination-history', label: 'Lịch sử tiêm chủng', icon: Shield, path: '/vaccination-history' },
+          { type: 'section', label: 'Thống kê' },
+          { type: 'item', id: 'appointments', label: 'Lịch hẹn', icon: Calendar, path: '/appointments' },
         ];
       case 'PARENT':
         return [
@@ -108,26 +114,35 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       <nav className="flex-1 p-4">
         <div className="space-y-2">
           {menuItems.map((item, index) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            
-            return (
-              <motion.button
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => handleTabClick(item.id, item.path)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 sidebar-item ${
-                  isActive
-                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'}`} />
-                <span className="font-medium">{item.label}</span>
-              </motion.button>
-            );
+            if (item.type === 'section') {
+              return (
+                <div key={item.label} className="px-4 pt-4 pb-1 text-xs font-bold text-gray-400 uppercase tracking-wider select-none">
+                  {item.label}
+                </div>
+              );
+            }
+            if (item.type === 'item' || !item.type) { // fallback for old items
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <motion.button
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => handleTabClick(item.id, item.path)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 sidebar-item ${
+                    isActive
+                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+                  <span className="font-medium">{item.label}</span>
+                </motion.button>
+              );
+            }
+            return null;
           })}
         </div>
       </nav>

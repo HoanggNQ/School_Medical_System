@@ -41,7 +41,7 @@ const HealthCheck = () => {
 
   const { campaignId } = useParams();
   const location = useLocation();
-  // Lấy trạng thái chiến dịch từ location.state nếu được truyền từ CampaignsNurse
+  
   const campaignStatus = location.state?.campaignStatus;
 
   console.log("campaignId",campaignId);

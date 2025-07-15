@@ -34,6 +34,7 @@ const API_ENDPOINTS = {
   },
   MEDICATION_REQUEST: {
     GET_ALL: 'api/v1/medication-requests/pending',
+    GET_BY_ID: (id) => `api/v1/medication-requests/${id}`,
     REQUEST_MEDICATION: (id) => `api/v1/medication-requests/${id}/reject`,
     APPROVE_REQUEST: (id) => `api/v1/medication-requests/${id}/approve`,
     GET_ALL_APPROVED: 'api/v1/medication-requests/approve',
@@ -138,6 +139,7 @@ const API_ENDPOINTS = {
   },
   DASHBOARD: {
     OVERVIEW: 'api/v1/dashboard/overview',
+    NURSE: 'api/v1/dashboard/calendar-events',
   },
 };
 

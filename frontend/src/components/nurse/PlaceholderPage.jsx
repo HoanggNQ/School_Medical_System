@@ -58,18 +58,31 @@ const PlaceholderPage = () => {
     }
   }
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "pending":
-        return "text-orange-600 bg-orange-50 border-orange-200"
-      case "approved":
-        return "text-green-600 bg-green-50 border-green-200"
-      case "rejected":
-        return "text-red-600 bg-red-50 border-red-200"
+  const getStatusColor = (statusLabel) => {
+    switch (statusLabel?.toLowerCase()) {
+      case 'chờ duyệt':
+        return 'text-orange-600 bg-orange-50 border-orange-200';
+      case 'đã duyệt':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'từ chối':
+        return 'text-red-600 bg-red-50 border-red-200';
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200"
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
-  }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return 'Chờ duyệt';
+      case 'approved':
+        return 'Đã duyệt';
+      case 'rejected':
+        return 'Từ chối';
+      default:
+        return 'Chờ duyệt';
+    }
+  };
 
   const handleAccept = async (requestId) => {
     setProcessingId(requestId)
@@ -78,6 +91,7 @@ const PlaceholderPage = () => {
       toast({ title: "Thành công", description: "Yêu cầu đã được chấp nhận." })
       const data = await medicalService.getAllMedicationRequest()
       setRequests(data)
+      
     } catch (err) {
       toast({ title: "Lỗi", description: err?.message || "Không thể chấp nhận yêu cầu." })
     } finally {
@@ -142,6 +156,7 @@ const PlaceholderPage = () => {
             try {
               const res = await medicalService.getAllApprovedMedicationRequest();
               setApprovedRequests(res.data || []);
+              console.log("API data appro", res.data)
             } catch (err) {
               setError("Không thể tải danh sách đã chấp nhận.");
             } finally {
@@ -211,9 +226,9 @@ const PlaceholderPage = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(request.status)}`}
+                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(getStatusLabel(request.status))}`}
                         >
-                          {request.status || "N/A"}
+                          {getStatusLabel(request.status)}
                         </span>
                       </div>
                     </div>
@@ -376,9 +391,9 @@ const PlaceholderPage = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(request.status)}`}
+                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(getStatusLabel(request.status))}`}
                         >
-                          {request.status || "N/A"}
+                          {getStatusLabel(request.status)}
                         </span>
                       </div>
                     </div>
@@ -542,9 +557,9 @@ const PlaceholderPage = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(request.status)}`}
+                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(getStatusLabel(request.status))}`}
                         >
-                          {request.status || "N/A"}
+                          {getStatusLabel(request.status)}
                         </span>
                         {/* Thêm nút Chấp nhận và Từ chối nếu trạng thái là pending */}
                         {request.status?.toLowerCase() === 'pending' && (

@@ -47,6 +47,7 @@ const WatchVaccination = () => {
       const response = await vaccinationService.getAllVaccinations();
       setVaccinations(response || []);
       setError(null);
+      console.log("response",response)
     } catch (err) {
       setError('Failed to fetch vaccination campaigns. Please try again later.');
     } finally {
@@ -92,6 +93,7 @@ const WatchVaccination = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Tên chiến dịch</TableHead>
                 <TableHead>Loại vắc xin</TableHead>
                 <TableHead>Ngày bắt đầu</TableHead>
@@ -109,6 +111,7 @@ const WatchVaccination = () => {
                   className="cursor-pointer"
                   onClick={() => navigate(`/management-vaccine/${vaccination.id}`)}
                 >
+                  <TableCell className="font-medium">{vaccination.id}</TableCell>
                   <TableCell className="font-medium">{vaccination.name}</TableCell>
                   <TableCell>{vaccination.vaccineType}</TableCell>
                   <TableCell>{vaccination.startDate}</TableCell>
