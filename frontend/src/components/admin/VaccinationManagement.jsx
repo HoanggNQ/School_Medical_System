@@ -41,7 +41,7 @@ const VaccinationManagement = () => {
   const [errors, setErrors] = useState({});
 
   const statusOrder = {
-    'ACTIVE': 0, // Đang diễn ra
+    'APPROVED': 0, // Đang diễn ra
     'PENDING': 1, // Chờ duyệt
     'DONE': 2    // Đã xong
   };
@@ -392,13 +392,13 @@ const validate = () => {
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      vaccination.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                      vaccination.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                       vaccination.status === 'DONE' ? 'bg-orange-500 text-white' :
                       vaccination.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                       'bg-red-100 text-red-800'
                     }`}>
                       {vaccination.status === 'PENDING' ? 'Chờ diễn ra' :
-                        vaccination.status === 'ACTIVE' ? 'Đang diễn ra' :
+                        vaccination.status === 'APPROVED' ? 'Đang diễn ra' :
                         vaccination.status === 'DONE' ? 'Đã xong' :
                         vaccination.status === 'REJECTED' ? 'Đã xóa' :
                         vaccination.status}
@@ -425,7 +425,7 @@ const validate = () => {
                           Bắt đầu 
                         </Button>
                       )}
-                      {vaccination.status === 'ACTIVE' && (
+                      {vaccination.status === 'APPROVED' && (
                         <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndVaccination(vaccination.id)} disabled={loading}>
                           Kết thúc 
                         </Button>
@@ -528,13 +528,13 @@ const validate = () => {
               <div>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                   selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                  selectedDetail.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                  selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                   selectedDetail.status === 'DONE' ? 'bg-orange-500 text-white' :
                   selectedDetail.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {selectedDetail.status === 'PENDING' ? 'Chờ diễn ra' :
-                    selectedDetail.status === 'ACTIVE' ? 'Đang diễn ra' :
+                    selectedDetail.status === 'APPROVED' ? 'Đang diễn ra' :
                     selectedDetail.status === 'DONE' ? 'Đã xong' :
                     selectedDetail.status === 'REJECTED' ? 'Đã xóa' :
                     selectedDetail.status}

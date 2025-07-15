@@ -25,9 +25,9 @@ const WatchVaccination = () => {
       (vaccination.targetGrade + '').includes(searchTerm)
     )
     .sort((a, b) => {
-      // Thứ tự ưu tiên: ACTIVE > PENDING > DONE > REJECTED/khác
+      // Thứ tự ưu tiên: APPROVED > PENDING > DONE > REJECTED/khác
       const statusOrder = {
-        'ACTIVE': 0,
+        'APPROVED': 0,
         'PENDING': 1,
         'DONE': 2,
         'REJECTED': 3
@@ -109,7 +109,7 @@ const WatchVaccination = () => {
                 <TableRow
                   key={vaccination.id}
                   className="cursor-pointer"
-                  onClick={() => navigate(`/management-vaccine/${vaccination.id}`)}
+                  onClick={() => navigate(`/management-vaccine/${vaccination.id}`, { state: { vaccinationStatus: vaccination.status } })}
                 >
                   <TableCell className="font-medium">{vaccination.id}</TableCell>
                   <TableCell className="font-medium">{vaccination.name}</TableCell>
@@ -120,15 +120,15 @@ const WatchVaccination = () => {
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      vaccination.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                      vaccination.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                       vaccination.status === 'DONE' ? 'bg-gray-400 text-white' :
-                      vaccination.status === 'APPROVED' ? 'bg-red-100 text-red-800' :
+                      vaccination.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
                       'bg-red-100 text-red-800'
                     }`}>
                       {vaccination.status === 'PENDING' ? 'Chờ duyệt' :
-                        vaccination.status === 'ACTIVE' ? 'Đang diễn ra' :
+                        vaccination.status === 'APPROVED' ? 'Đang diễn ra' :
                         vaccination.status === 'DONE' ? 'Đã xong' :
-                        vaccination.status === 'APPROVED' ? 'Từ chối' :
+                        vaccination.status === 'REJECTED' ? 'Từ chối' :
                         vaccination.status}
                     </span>
                   </TableCell>

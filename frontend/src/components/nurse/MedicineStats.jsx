@@ -1,20 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, AlertTriangle, Calendar } from 'lucide-react';
+import medicalService from '@/api/services/medical.service';
 
 const MedicineStats = ({ medicines, totalElements }) => {
   const totalMedicines = medicines.length;
-  const lowStockMedicines = medicines.filter(m => (m.quantity ?? 0) < 5).length;
-  const expiringSoonMedicines = medicines.filter(m => {
-    const expiry = new Date(m.expiryDate);
-    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    return expiry < thirtyDaysFromNow && expiry >= new Date();
-  }).length;
+  const [allMedicines, setAllMedicines] = useState([]);
+
+  useEffect(() => {
+    const fetchAllMedicines = async () => {
+      const response = await medicalService.getAllMedications({ page: 0, size: 1000 });
+      setAllMedicines(response.data?.content || []);
+    };
+    fetchAllMedicines();
+  }, []);
+
+  // Đếm số thuốc sắp hết hàng trên toàn bộ kho
+  const lowStockMedicines = allMedicines.filter(m => (m.quantity ?? 0) < 5).length;
+
+  // Đếm số loại thuốc (id duy nhất) có ngày hết hạn trong 30 ngày tới
+  const expiringSoonMedicineIds = new Set();
+  const now = new Date();
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  allMedicines.forEach(m => {
+    const expiry = new Date(m.exp);
+    if (expiry < thirtyDaysFromNow && expiry >= now) {
+      expiringSoonMedicineIds.add(m.id);
+    }
+  });
+  const expiringSoonMedicinesCount = expiringSoonMedicineIds.size;
 
   const totalQuantity = medicines.reduce((sum, m) => sum + (m.quantity ?? 0), 0);
 
   const expiringSoonMedicinesQuantity = medicines.reduce((sum, m) => {
-    const expiry = new Date(m.expiryDate);
+    const expiry = new Date(m.exp);
     const now = new Date();
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     if (expiry < thirtyDaysFromNow && expiry >= now) {
@@ -66,7 +85,7 @@ const MedicineStats = ({ medicines, totalElements }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-red-600">
-            {expiringSoonMedicinesQuantity}
+            {expiringSoonMedicinesCount}
           </div>
           <p className="text-xs text-gray-500">Trong 30 ngày</p>
         </CardContent>

@@ -64,6 +64,7 @@ const DashboardNurse = () => {
     end: new Date(event.endDate),
     resource: event,
     location: event.location,
+    status: event.status,
     type: event.type,
     eventId: event.eventId
   }));
@@ -90,9 +91,9 @@ const DashboardNurse = () => {
   // Handle event click
   const handleEventClick = (event) => {
     if (event.type === 'VACCINATION') {
-      navigate(`/management-vaccine/${event.eventId}`);
+      navigate(`/management-vaccine/${event.eventId}`, { state: { vaccinationStatus: event.status } });
     } else if (event.type === 'HEALTH_CHECK') {
-      navigate(`/health-check/${event.eventId}`);
+      navigate(`/health-check/${event.eventId}`, { state: { campaignStatus: event.status } });
     } else if (event.type === 'MEDICATION-REQUEST') {
       navigate(`/medication-requests/${event.eventId}`);
     } else {
