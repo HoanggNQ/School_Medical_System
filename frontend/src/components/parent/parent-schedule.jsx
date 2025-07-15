@@ -346,7 +346,7 @@ const ParentSchedule = () => {
                         <FileText className="w-6 h-6 text-orange-500" />
                       </div>
                       <div>
-                        <h4 className="text-lg font-semibold text-gray-900">Lịch hẹn y tế #{schedule.id}</h4>
+                        <h4 className="text-lg font-semibold text-gray-900">Lịch hẹn y tế</h4>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           {schedule.studentName && (
                             <>
