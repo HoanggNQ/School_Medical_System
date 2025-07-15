@@ -1,6 +1,7 @@
 package sms.swp391.models.dtos.responses;
 
 import lombok.*;
+import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDate;
 
@@ -15,6 +16,7 @@ public class MedicalCalendarEventDTO {
 
     private LocalDate startDate;
     private LocalDate endDate;         // Nếu không có thì FE dùng startDate
+    private MedicalStatus status;
     private String type;               // VACCINATION, HEALTH_CHECK, MEDICATION, CONSULTATION
 }
 
