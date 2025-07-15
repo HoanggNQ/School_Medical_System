@@ -141,6 +141,9 @@ const API_ENDPOINTS = {
     OVERVIEW: 'api/v1/dashboard/overview',
     NURSE: 'api/v1/dashboard/calendar-events',
   },
+  CONSULTATION_SCHEDULE: {
+    CREATE: 'api/v1/consultation-schedules',
+  },
 };
 
 export default API_ENDPOINTS;
