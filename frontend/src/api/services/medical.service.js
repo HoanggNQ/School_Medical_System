@@ -273,6 +273,25 @@ export const medicalService = {
     }
   },
 
+  getConsultationSchedules: async (page = 0, size = 10) => {
+    try {
+      const params = { page, size, sort: 'scheduleTime,DESC' };
+      const response = await axiosInstance.get('/api/v1/consultation-schedules/search', { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  getConsultationScheduleById: async (id) => {
+    try {
+      const response = await axiosInstance.get(`/api/v1/consultation-schedules/${id}`);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 };
 
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
@@ -50,6 +50,8 @@ import VaccineResult from './components/nurse/VaccineResult';
 import HealthDeclaration from './components/parent/health-declaration';
 import HealthDeclarationSearch from './components/nurse/HealthDeclarationSearch';
 import EventListNurse from './components/nurse/EventListNurse';
+import ConsultationScheduleList from './components/nurse/ConsultationScheduleList';
+import ConsultationScheduleDetail from './components/nurse/ConsultationScheduleDetail';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -219,6 +221,7 @@ function App() {
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/auth" element={user ? <Navigate to={getDefaultRoute(user.role)} /> : <AuthPage />} />
         <Route path="/blog" element={<BlogListPage />} />
+    
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<AppLayout />}>
@@ -272,6 +275,8 @@ function App() {
             <Route path="student-health-profile/:studentId" element={<StudentHealthProfile />} />
 
             <Route path="campaigns" element={<CampaignManagement />} />
+            <Route path="consultation-schedules" element={<ConsultationScheduleList />} />
+            <Route path="consultation-schedules/:id" element={<ConsultationScheduleDetail />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
@@ -292,3 +297,4 @@ function Root() {
 }
 
 export default Root;
+
