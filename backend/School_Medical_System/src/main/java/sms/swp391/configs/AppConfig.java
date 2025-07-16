@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -38,21 +39,25 @@ public class AppConfig {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
+    @Lazy
     RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
 
     @Bean
+    @Lazy
     AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
+    @Lazy
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
+    @Lazy
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(customUserDetailsService);
@@ -60,6 +65,7 @@ public class AppConfig {
         return daoAuthenticationProvider;
     }
     @Bean
+    @Lazy
     JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.gmail.com");
@@ -79,12 +85,14 @@ public class AppConfig {
     }
 
     @Bean
+    @Lazy
     RedisTemplate<String, Object> redisTemplate (RedisConnectionFactory redisConnectionFactory) {
         var template = new RedisTemplate<String, Object>();
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
     @Bean
+    @Lazy
     FirebaseApp firebaseApp() throws IOException {
         Resource resource = new ClassPathResource("school-medical-firebase.json");
 
@@ -98,10 +106,12 @@ public class AppConfig {
         }
     }
     @Bean
+    @Lazy
     FirebaseAuth firebaseAuth() throws IOException {
         return FirebaseAuth.getInstance(firebaseApp());
     }
     @Bean
+    @Lazy
     public Cloudinary getCloudinary(){
         try {
             Map config = new HashMap();
@@ -116,6 +126,7 @@ public class AppConfig {
         }
     }
     @Bean
+    @Lazy
     public Validator validator() {
         return Validation.buildDefaultValidatorFactory().getValidator();
     }

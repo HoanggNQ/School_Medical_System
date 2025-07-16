@@ -23,11 +23,11 @@ import TestSidebar from './components/layout/TestSidebar';
 import StudentHealthProfile from './components/student/StudentHealthProfile';
 import StudentVaccinationHistory from './components/student/StudentVaccinationHistory';
 import StudentAppointments from './components/student/StudentAppointments';
-import StudentProfile from './components/student/StudentProfile';
+// import StudentProfile from './components/student/StudentProfile';
 import ParentChildrenHealth from './components/parent/ParentChildrenHealth';
 import Schedule from './components/parent/Schedule';
 import ParentNotifications from './components/parent/ParentNotifications';
-import ParentProfile from './components/parent/ParentProfile';
+// import ParentProfile from './components/parent/ParentProfile';
 import CampaignManagement from '@/components/admin/CampaignManagement';
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 import ProfileForm from '@/components/auth/ProfileForm';
@@ -261,9 +261,9 @@ function App() {
             <Route path="health-profile" element={<StudentHealthProfile />} />
             <Route path="vaccination-history" element={<StudentVaccinationHistory />} />
             <Route path="appointments" element={<StudentAppointments />} />
-            <Route path="student-profile" element={<StudentProfile />} />
+            <Route path="student-profile" element={<ProfileForm />} />
 
-            <Route path="parent-profile" element={<ParentProfile />} />
+            <Route path="parent-profile" element={<ProfileForm />} />
             <Route path="children-health" element={<ParentChildrenHealth />} />
             <Route path="schedule" element={<Schedule />} />
             <Route path="notifications" element={<ParentNotifications />} />

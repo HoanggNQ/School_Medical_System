@@ -76,7 +76,7 @@ const API_ENDPOINTS = {
     GET_STUDENT_HEALTH_CHECK: (studentId) => `/api/v1/health-check-result/students/${studentId}/results`,
     GET_ALL_MEDICINE: `api/v1/medications`,
     POST_MEDICINE_REQUEST: '/api/v1/medication-requests',
-    GET_STUDENT_VACCINATION: (studentId) => `/api/v1/vaccination/students/${studentId}/vaccinations`,
+    GET_STUDENT_VACCINATION: (studentId) => `/api/vaccination-record/students/${studentId}/records`,
     POST_HEALTH_DECLARATION: `/api/v1/health-declarations`,
     DELETE_HEALTH_DECLARATION: (id) => `/api/v1/health-declarations/${id}`,
     GET_HEALTH_DECLARATION: (studentId) => `/api/v1/health-declarations/student/${studentId}/details`,
@@ -93,6 +93,7 @@ const API_ENDPOINTS = {
     GET_MEDICINE_REQUEST: (studentId) => `/api/v1/medication-requests/by-student/${studentId}`,
     DELETE_MEDICINE_REQUEST: (id) => `/api/v1/medication-requests/${id}/cancel`,
     UPDATE_MEDICINE_REQUEST: (id) => `/api/v1/medication-requests/${id}`,
+    UPDATE_CONSULTATION_STATUS: (id) => `/api/v1/consultation-schedules/${id}/status`,
   },
 
   STUDENT: {
