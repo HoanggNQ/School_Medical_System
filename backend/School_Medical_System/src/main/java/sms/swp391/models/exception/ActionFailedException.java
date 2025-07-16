@@ -11,7 +11,7 @@ public class ActionFailedException extends SchoolMedicalSystemException {
                 .message(message)
                 .data(null)
                 .isSuccess(false)
-                .status(HttpStatus.OK)
+                .status(HttpStatus.BAD_REQUEST)
                 .build();
     }
 
@@ -22,7 +22,7 @@ public class ActionFailedException extends SchoolMedicalSystemException {
                 .data(null)
                 .message(message)
                 .isSuccess(false)
-                .status(HttpStatus.OK)
+                .status(HttpStatus.BAD_REQUEST)
                 .build();
     }
 }

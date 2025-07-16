@@ -219,8 +219,15 @@ const MedicineManagement = () => {
 
       <MedicineStats medicines={medicines} totalElements={totalElements} />
 
-      <Card>
-        <CardHeader>
+      <Card className="rounded-xl shadow-md bg-white border border-blue-100">
+        <CardHeader className="bg-[#E3F2FD] rounded-t-xl border-b border-blue-100">
+          <CardTitle className="text-blue-800 font-bold flex items-center gap-2">
+            {/* Icon y tế */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" /></svg>
+            Quản lý thuốc
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="bg-white">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <CardTitle>Danh sách thuốc</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
@@ -244,8 +251,6 @@ const MedicineManagement = () => {
               </Select>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -271,21 +276,21 @@ const MedicineManagement = () => {
             <>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="bg-blue-50">
                     <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Tên thuốc</TableHead>
-                      <TableHead>Phân loại</TableHead>
-                      <TableHead>Dạng bào chế</TableHead>
-                      <TableHead>Yêu cầu đơn</TableHead>
-                      <TableHead>Nước sản xuất</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">ID</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Tên thuốc</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Phân loại</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Dạng bào chế</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Yêu cầu đơn</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Nước sản xuất</TableHead>
                       {/* <TableHead>Ghi chú</TableHead> */}
                       {/* <TableHead>Thông tin</TableHead> */}
                       {/* <TableHead>Hoạt chất</TableHead> */}
-                      <TableHead>Nhà sản xuất</TableHead>
-                      <TableHead>Số lượng</TableHead> {/* Thêm cột số lượng */}
-                      <TableHead>Ngày hết hạn</TableHead>
-                      <TableHead>Hành động</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Nhà sản xuất</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Số lượng</TableHead> {/* Thêm cột số lượng */}
+                      <TableHead className="text-blue-700 font-semibold">Ngày hết hạn</TableHead>
+                      <TableHead className="text-blue-700 font-semibold">Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

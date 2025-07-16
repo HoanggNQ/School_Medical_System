@@ -14,10 +14,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import sms.swp391.models.dtos.enums.MedicalStatus;
+import sms.swp391.models.dtos.requests.ConfirmScheduleRequestDTO;
 import sms.swp391.models.dtos.requests.HealthConsultationScheduleRequestDTO;
 import sms.swp391.models.dtos.responses.HealthConsultationScheduleResponseDTO;
 import sms.swp391.models.dtos.responses.ResponseObject;
 import sms.swp391.models.entities.UserEntity;
+import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.services.HealthConsultationScheduleService;
 import sms.swp391.utils.PageUtils;
 
@@ -30,6 +32,32 @@ import java.util.List;
 public class HealthConsultationScheduleController {
 
     private final HealthConsultationScheduleService scheduleService;
+    @Operation(summary = "Lấy chi tiết lịch tư vấn", description = "Trả về chi tiết lịch tư vấn theo ID.")
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseObject> getById(@PathVariable Long id) {
+        try {
+            HealthConsultationScheduleResponseDTO dto = scheduleService.getById(id);
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .code("FETCH_SUCCESS")
+                            .message("Lấy chi tiết lịch tư vấn thành công")
+                            .status(HttpStatus.OK)
+                            .isSuccess(true)
+                            .data(dto)
+                            .build()
+            );
+        } catch (NotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .code("NOT_FOUND")
+                            .message(ex.getMessage())
+                            .status(HttpStatus.NOT_FOUND)
+                            .isSuccess(false)
+                            .data(null)
+                            .build()
+            );
+        }
+    }
 
     @Operation(summary = "Tạo lịch tư vấn y tế", description = "Tạo mới một lịch hẹn tư vấn y tế cho học sinh.")
     @PostMapping
@@ -72,6 +100,13 @@ public class HealthConsultationScheduleController {
                         .build()
         );
     }
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmConsultationSchedule(@RequestBody ConfirmScheduleRequestDTO request) {
+        HealthConsultationScheduleResponseDTO response = scheduleService
+                .confirmConsultationSchedule(request.getStudentId(), request.getCampaignId());
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "Lấy lịch tư vấn theo học sinh", description = "Trả về các lịch tư vấn theo studentId.")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<ResponseObject> getByStudent(@PathVariable Long studentId) {

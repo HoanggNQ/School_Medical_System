@@ -11,7 +11,7 @@ public class UserNotFoundException extends SchoolMedicalSystemException {
                 .message(message)
                 .data(null)
                 .isSuccess(false)
-                .status(HttpStatus.OK)
+                .status(HttpStatus.NOT_FOUND)
                 .build();
     }
 }

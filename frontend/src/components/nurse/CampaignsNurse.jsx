@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList, Syringe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,25 +87,28 @@ const CampaignsNurse = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6"
+            className=""
         >
-            <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3 mb-6">
+                <span className="bg-blue-200 p-2 rounded-full">
+                    <Syringe className="h-7 w-7 text-blue-700" />
+                </span>
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý chiến dịch</h1>
-                    <p className="text-gray-600 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
+                    <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Quản lý chiến dịch</h1>
+                    <p className="text-blue-500 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
                 </div>
             </div>
-            <Card>
+            <Card className="bg-white/90 shadow border border-blue-100 rounded-xl">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                         <CardTitle>Danh sách chiến dịch</CardTitle>
                         <div className="relative w-full sm:w-80">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
                             <Input
                                 placeholder="Tìm kiếm chiến dịch..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
+                                className="pl-10 rounded-lg border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                     </div>
@@ -128,7 +131,7 @@ const CampaignsNurse = () => {
                             {filteredCampaigns.map((campaign) => (
                                 <TableRow
                                     key={campaign.id}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer hover:bg-blue-50 transition"
                                     onClick={() => navigate(`/health-check/${campaign.id}`, { state: { campaignStatus: campaign.status } })}
                                 >
                                     <TableCell className="font-medium">{campaign.id}</TableCell>
@@ -136,12 +139,14 @@ const CampaignsNurse = () => {
                                     <TableCell>{campaign.location}</TableCell>
                                     <TableCell>{campaign.targetGrade === 0 ? 'Toàn trường' : `Khối ${campaign.targetGrade}`}</TableCell>
                                     <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                                campaign.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                                                campaign.status === 'DONE' ? 'bg-orange-500 text-white' :
-                                                'bg-gray-100 text-gray-800'
-                                            }`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1
+                                            ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                            campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                            campaign.status === 'DONE' ? 'bg-blue-100 text-blue-800' :
+                                            campaign.status === 'REJECTED' ? 'bg-gray-400 text-white' :
+                                            'bg-gray-100 text-gray-800'}
+                                        `}>
+                                            <BadgeCheck className="h-3 w-3 text-blue-500" />
                                             {campaign.status === 'PENDING' ? 'Chờ duyệt' :
                                                 campaign.status === 'APPROVED' ? 'Đang diễn ra' :
                                                 campaign.status === 'REJECTED' ? 'Từ chối' :

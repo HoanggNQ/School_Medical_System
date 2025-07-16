@@ -3,6 +3,19 @@ import API_ENDPOINTS from '../endpoints';
 import { handleApiError } from '../../utils/api.helper';
 
 export const medicalService = {
+
+  confirmConsultationSchedule: async (studentId, campaignId) => {
+    try {
+      const res = await axiosInstance.post(
+      "http://localhost:8080/api/v1/consultation-schedules/confirm",
+        { studentId, campaignId }
+      );
+      return res.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
   // Create a new medication
   createMedication: async (newMedicineData) => {
     try {
@@ -286,6 +299,15 @@ export const medicalService = {
   getConsultationScheduleById: async (id) => {
     try {
       const response = await axiosInstance.get(`/api/v1/consultation-schedules/${id}`);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  getHealthCheckResult: async (studentId, resultId) => {
+    try {
+      const response = await axiosInstance.get(`http://localhost:8080/api/v1/health-check-result/results/${studentId}/${resultId}`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);

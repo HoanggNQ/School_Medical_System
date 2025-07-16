@@ -143,8 +143,13 @@ public class VaccinationServiceImpl implements VaccinationService {
         return responses;
     }
 
-
-
+@Override
+@Transactional
+public VaccinationRecordResponse getRecordByStudent_IdAndRecordId(Long studentId, Long recordId) {
+        return recordRepository.findByRecordIdAndStudentId(studentId, recordId)
+                .map(VaccinationRecordMapper::toDTO)
+                .orElseThrow(() -> new NotFoundException("Record not found for student ID: " + studentId + " and record ID: " + recordId));
+}
     // Campaign Methods
     @Override
     @Transactional

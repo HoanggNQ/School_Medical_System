@@ -272,6 +272,23 @@ public class HealthCheckResultController {
             );
         }
     }
+    @GetMapping("/results/{studentId}/{resultId}")
+    public ResponseEntity<ResponseObject> getHealthCheckResultByStudentAndId(
+            @PathVariable Long studentId,
+            @PathVariable Long resultId) {
+
+        HealthCheckResultResponse response = healthCheckService.getResultByStudent_IdResutId(resultId, studentId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_RESULT_SUCCESS")
+                        .message("Lấy kết quả khám thành công")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(response)
+                        .build()
+        );
+    }
 
     @Operation(summary = "Lấy danh sách kết quả theo chiến dịch", description = "Trả về danh sách các kết quả khám của một chiến dịch cụ thể.")
 

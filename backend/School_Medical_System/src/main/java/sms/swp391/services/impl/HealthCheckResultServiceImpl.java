@@ -13,18 +13,12 @@ import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.HealthCheckResultService;
 import sms.swp391.services.NotificationService;
-import sms.swp391.services.SendMailService;
 import sms.swp391.utils.HealthCheckResultMapper;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -191,6 +185,15 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
                 .map(HealthCheckResultMapper::toDTO)
                 .orElseThrow(() -> new NotFoundException("Result not found"));
     }
+    @Override
+    public HealthCheckResultResponse getResultByStudent_IdResutId(Long id, Long studentId) {
+        return resultRepository.findByResultIdAndStudentId(id, studentId)
+                .map(HealthCheckResultMapper::toDTO) // dùng lambda thay vì method reference
+                .orElseThrow(() -> new NotFoundException("Result not found with id: " + id + " for studentId: " + studentId));
+    }
+
+
+
 
     @Override
     public List<HealthCheckResultResponse> getResultsByCampaign(Long campaignId) {

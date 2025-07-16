@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList, Bell } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, BadgeCheck, Info, Calendar as CalendarIcon, Package, Layers, User, ClipboardList, Bell, Stethoscope, Syringe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -349,12 +349,17 @@ const CampaignManagement = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6"
+            className="space-y-6 min-h-screen bg-gradient-to-br from-blue-50 to-blue-100"
         >
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý chiến dịch</h1>
-                    <p className="text-gray-600 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                    <span className="bg-blue-200 p-2 rounded-full">
+                        <Syringe className="h-7 w-7 text-blue-700" />
+                    </span>
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Quản lý chiến dịch</h1>
+                        <p className="text-blue-500 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
+                    </div>
                 </div>
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                     <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -372,25 +377,25 @@ const CampaignManagement = () => {
                               errors={errors}
                         />
                       
-                  
+                
                     </DialogContent>
                 </Dialog>
-                <Button className="btn-primary" onClick={() => setIsCreateModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
+                <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md rounded-lg px-4 py-2 transition">
+                    <Plus className="w-5 h-5" />
                     Tạo chiến dịch
                 </Button>
             </div>
-            <Card>
+            <Card className="bg-white/90 shadow border border-blue-100 rounded-xl">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                         <CardTitle>Danh sách chiến dịch</CardTitle>
                         <div className="relative w-full sm:w-80">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
                             <Input
                                 placeholder="Tìm kiếm chiến dịch..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
+                               className="pl-10 rounded-lg border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                     </div>
@@ -415,7 +420,7 @@ const CampaignManagement = () => {
                         </TableHeader>
                         <TableBody>
                             {filteredCampaigns.map((campaign) => (
-                                <TableRow key={campaign.id} className="cursor-pointer" onClick={() => { setSelectedDetail(campaign); setIsDetailModalOpen(true); }}>
+                                <TableRow key={campaign.id} className="cursor-pointer hover:bg-blue-50 transition" onClick={() => { setSelectedDetail(campaign); setIsDetailModalOpen(true); }}>
                                     <TableCell className="font-medium">{campaign.id}</TableCell>
                                     <TableCell className="font-medium">{campaign.name}</TableCell>
                                     {/* <TableCell>{campaign.description}</TableCell> */}
@@ -425,12 +430,14 @@ const CampaignManagement = () => {
                                     {/* <TableCell>{campaign.requiredEquipment}</TableCell> */}
                                     <TableCell>{Array.isArray(campaign.targetGrade) ? (campaign.targetGrade.length === 0 ? 'Toàn trường' : campaign.targetGrade.join(', ')) : (campaign.targetGrade === 0 ? 'Toàn trường' : campaign.targetGrade)}</TableCell>
                                     <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                                    campaign.status === 'DONE' ? 'bg-orange-500 text-white' :
-                                                        campaign.status === 'REJECTED' ? 'bg-gray-400 text-white' :
-                                                            'bg-gray-100 text-gray-800'
-                                            }`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1
+                                            ${campaign.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                            campaign.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                            campaign.status === 'DONE' ? 'bg-blue-100 text-blue-800' :
+                                            campaign.status === 'REJECTED' ? 'bg-gray-400 text-white' :
+                                            'bg-gray-100 text-gray-800'}
+                                        `}>
+                                            <BadgeCheck className="h-3 w-3 text-blue-500" />
                                             {campaign.status === 'PENDING' ? 'Chờ diễn ra' :
                                                 campaign.status === 'APPROVED' ? 'Đang diễn ra' :
                                                     campaign.status === 'DONE' ? 'Đã xong' :
@@ -443,27 +450,27 @@ const CampaignManagement = () => {
                                         <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                                             
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
-                                                <Button size="icon" variant="outline" onClick={() => handleRemindCampaign(campaign.id)} disabled={loading}>
+                                                <Button size="icon" variant="outline" onClick={() => handleRemindCampaign(campaign.id)} disabled={loading} className="border-blue-200 hover:bg-blue-50">
                                                     <Bell className="w-4 h-4 text-blue-500" />
                                                 </Button>
                                             )}
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
-                                                <Button size="icon" variant="outline" onClick={() => openEditModal(campaign)}>
+                                                <Button size="icon" variant="outline" onClick={() => openEditModal(campaign)} className="border-blue-200 hover:bg-blue-50">
                                                     <Edit className="w-4 h-4 text-blue-500" />
                                                 </Button>
                                             )}
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
-                                                <Button size="icon" variant="outline" onClick={() => handleDeleteCampaign(campaign.id)}>
+                                                <Button size="icon" variant="outline" onClick={() => handleDeleteCampaign(campaign.id)} className="border-blue-200 hover:bg-blue-50">
                                                     <Trash2 className="w-4 h-4 text-red-500" />
                                                 </Button>
                                             )}
                                             {(campaign.status === 'PENDING' || campaign.status === 'SCHEDULED') && (
-                                                <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartCampaign(campaign.id)} disabled={loading}>
+                                                <Button size="sm" className="bg-green-500 text-white hover:bg-green-600 rounded-lg" onClick={() => handleStartCampaign(campaign.id)} disabled={loading}>
                                                     Bắt Đầu 
                                                 </Button>
                                             )}
                                             {campaign.status === 'APPROVED' && (
-                                                <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndCampaign(campaign.id)} disabled={loading}>
+                                                <Button size="sm" className="bg-red-500 text-white hover:bg-red-600 rounded-lg" onClick={() => handleEndCampaign(campaign.id)} disabled={loading}>
                                                     Kết Thúc 
                                                 </Button>
                                             )}
@@ -497,57 +504,57 @@ const CampaignManagement = () => {
                 </DialogContent>
             </Dialog>
             <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl">
                     <DialogHeader>
-                        <DialogTitle>Chi tiết chiến dịch</DialogTitle>
+                        <DialogTitle className="text-blue-700 flex items-center gap-2"><Syringe className="h-5 w-5 text-blue-500" />Chi tiết chiến dịch</DialogTitle>
                     </DialogHeader>
                     {selectedDetail && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y- py-4">
                             <div className="flex items-center gap-1">
                                 <Info className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Tên chiến dịch:</span>
+                                <span className="font-semibold text-blue-700">Tên chiến dịch:</span>
                             </div>
                             <div className="truncate">{selectedDetail.name}</div>
 
                             <div className="flex items-center gap-2">
                                 <ClipboardList className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Mô tả:</span>
+                                <span className="font-semibold text-blue-700">Mô tả:</span>
                             </div>
                             <div className="break-words whitespace-pre-line">{selectedDetail.description}</div>
 
                             <div className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Ngày bắt đầu:</span>
+                                <span className="font-semibold text-blue-700">Ngày bắt đầu:</span>
                             </div>
                             <div>{selectedDetail.startDate}</div>
 
                             <div className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Ngày kết thúc:</span>
+                                <span className="font-semibold text-blue-700">Ngày kết thúc:</span>
                             </div>
                             <div>{selectedDetail.endDate}</div>
 
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Địa điểm:</span>
+                                <span className="font-semibold text-blue-700">Địa điểm:</span>
                             </div>
                             <div className="truncate">{selectedDetail.location}</div>
 
                             <div className="flex items-center gap-2">
                                 <Layers className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Khối lớp:</span>
+                                <span className="font-semibold text-blue-700">Khối lớp:</span>
                             </div>
                             <div>{Array.isArray(selectedDetail.targetGrade) ? (selectedDetail.targetGrade.length === 0 ? 'Toàn trường' : selectedDetail.targetGrade.join(', ')) : (selectedDetail.targetGrade === 0 ? 'Toàn trường' : selectedDetail.targetGrade)}</div>
 
                             <div className="flex items-center gap-2">
                                 <BadgeCheck className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Trạng thái:</span>
+                                <span className="font-semibold text-blue-700">Trạng thái:</span>
                             </div>
                             <div>
                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                     selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                     selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                    selectedDetail.status === 'DONE' ? 'bg-orange-500 text-white' :
+                                    selectedDetail.status === 'DONE' ? 'bg-blue-100 text-blue-800' :
                                     selectedDetail.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                                     'bg-gray-100 text-gray-800'
                                 }`}>
@@ -561,21 +568,21 @@ const CampaignManagement = () => {
 
                             <div className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                                <span className="font-semibold text-gray-700">Ngày tạo:</span>
+                                <span className="font-semibold text-blue-700">Ngày tạo:</span>
                             </div>
                             <div>{selectedDetail.createdAt}</div>
 
                             {selectedDetail.createdById && <>
                                 <div className="flex items-center gap-2">
                                     <User className="w-4 h-4 text-blue-500" />
-                                    <span className="font-semibold text-gray-700">Người tạo (ID):</span>
+                                    <span className="font-semibold text-blue-700">Người tạo (ID):</span>
                                 </div>
                                 <div>{selectedDetail.createdById}</div>
                             </>}
                         </div>
                     )}
                     <div className="flex justify-end mt-4">
-                        <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>Đóng</Button>
+                        <Button variant="outline" onClick={() => setIsDetailModalOpen(false)} className="border-blue-200 hover:bg-blue-50">Đóng</Button>
                     </div>
                 </DialogContent>
             </Dialog>

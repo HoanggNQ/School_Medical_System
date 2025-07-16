@@ -3,6 +3,7 @@ package sms.swp391.repositories;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import sms.swp391.models.dtos.responses.VaccinationRecordResponse;
 import sms.swp391.models.entities.VaccinationRecordEntity;
 
 import java.util.List;
@@ -14,5 +15,7 @@ public interface VaccinationRecordRepository extends JpaRepository<VaccinationRe
     List<VaccinationRecordEntity> findByVaccinationCampaign_Id(Long vaccinationCampaignId);
     Optional<VaccinationRecordEntity> findTopByVaccinationCampaignIdAndStudentIdOrderByAdministrationDateDesc(Long campaignId, Long studentId);
 
-  //  Optional<VaccinationRecordEntity> findTopByVaccinationCampaignIdAndStudentIdOrderByAdministration_dateDesc(Long vaccinationCampaignId, Long studentId);
+    Optional<VaccinationRecordEntity>findByIDAndStudentId(Long recordId, Long studentId);
+
+    //  Optional<VaccinationRecordEntity> findTopByVaccinationCampaignIdAndStudentIdOrderByAdministration_dateDesc(Long vaccinationCampaignId, Long studentId);
 }

@@ -64,6 +64,13 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
 
         return resultPage.map(this::toResponse);
     }
+    @Override
+    public HealthConsultationScheduleResponseDTO getById(Long id) {
+        HealthConsultationScheduleEntity entity = scheduleRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch tư vấn với ID: " + id));
+        return toResponse(entity);
+    }
+
 
     @Override
     public HealthConsultationScheduleResponseDTO createSchedule(HealthConsultationScheduleRequestDTO request, Long createdById)
@@ -126,6 +133,29 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         );
 
         return toResponse(saved);
+    }
+    @Override
+    public HealthConsultationScheduleResponseDTO confirmConsultationSchedule(Long studentId, Long campaignId) {
+        // 1. Lấy kết quả khám sức khỏe của học sinh trong chiến dịch này
+        HealthCheckResultEntity result = resultRepo
+                .findTopByStudent_IdAndHealthCheckCampaign_IdOrderByCheckDateDesc(studentId, campaignId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy kết quả khám cho học sinh."));
+
+        // 2. Kiểm tra lịch tư vấn đã tồn tại chưa
+        HealthConsultationScheduleEntity schedule = scheduleRepo
+                .findByStudent_IdAndResult_ResultId(studentId, result.getResultId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch tư vấn cho kết quả khám này."));
+
+        // 3. Kiểm tra trạng thái để tránh xác nhận lại
+        if (schedule.getStatus() == MedicalStatus.APPROVED) {
+            throw new RuntimeException("Lịch tư vấn này đã được xác nhận.");
+        }
+
+        // 4. Cập nhật trạng thái sang APPROVED
+        schedule.setStatus(MedicalStatus.APPROVED);
+        scheduleRepo.save(schedule);
+
+        return toResponse(schedule);
     }
 
     @Override

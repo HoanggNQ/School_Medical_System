@@ -11,7 +11,7 @@ public class ConflictException extends SchoolMedicalSystemException {
                 .message(message)
                 .data(null)
                 .isSuccess(false)
-                .status(HttpStatus.OK)
+                .status(HttpStatus.CONFLICT)
                 .build();
     }
 }

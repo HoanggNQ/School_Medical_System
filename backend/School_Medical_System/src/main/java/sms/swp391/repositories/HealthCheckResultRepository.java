@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface HealthCheckResultRepository extends JpaRepository<HealthCheckResultEntity, Long> {
     List<HealthCheckResultEntity> findByStudentId(Long studentId);
     List<HealthCheckResultEntity> findByHealthCheckCampaign_Id(Long healthCheckCampaignId);
+    Optional<HealthCheckResultEntity> findTopByStudent_IdAndHealthCheckCampaign_IdOrderByCheckDateDesc(Long studentId, Long campaignId);
+
+    Optional<HealthCheckResultEntity> findByResultIdAndStudentId(Long resultId, Long studentId);
 }

@@ -8,6 +8,7 @@ import sms.swp391.models.entities.HealthConsultationScheduleEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface HealthConsultationScheduleRepository extends JpaRepository<HealthConsultationScheduleEntity, Long>,
         JpaSpecificationExecutor<HealthConsultationScheduleEntity> {
@@ -16,6 +17,7 @@ public interface HealthConsultationScheduleRepository extends JpaRepository<Heal
     boolean existsByStudentIdAndScheduleTime(Long studentId, LocalDateTime scheduleTime);
     boolean existsByStudent_IdAndResult_ResultId(Long id, Long resultId);
     boolean existsByStudent_IdAndScheduleTimeAndStatusIn(Long studentId, LocalDateTime scheduleTime, List<MedicalStatus> statuses);
+    Optional<HealthConsultationScheduleEntity> findByStudent_IdAndResult_ResultId(Long studentId, Long resultId);
 
     boolean existsByStudent_IdAndStatus(Long studentId, MedicalStatus status);
 }

@@ -1,24 +1,17 @@
 package sms.swp391.models.exception;
 
-public class BusinessException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import sms.swp391.models.dtos.responses.ResponseObject;
+
+public class BusinessException extends SchoolMedicalSystemException {
     public BusinessException(String message) {
         super(message);
-    }
-
-    public static BusinessExceptionBuilder builder() {
-        return new BusinessExceptionBuilder();
-    }
-
-    public static class BusinessExceptionBuilder {
-        private String message;
-
-        public BusinessExceptionBuilder message(String message) {
-            this.message = message;
-            return this;
-        }
-
-        public BusinessException build() {
-            return new BusinessException(message);
-        }
+        this.errorResponse = ResponseObject.builder()
+                .code("BUSINESS_ERROR")
+                .message(message)
+                .data(null)
+                .isSuccess(false)
+                .status(HttpStatus.BAD_REQUEST)
+                .build();
     }
 }

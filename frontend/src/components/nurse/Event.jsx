@@ -226,9 +226,13 @@ const Event = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 font-sans">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý sự kiện y tế</h1>
+        <h1 className="text-2xl font-bold text-blue-800 flex items-center gap-2">
+          {/* Icon y tế */}
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" /></svg>
+          Quản lý sự kiện y tế
+        </h1>
         <Button
           onClick={() => {
             setShowForm(true);
@@ -245,7 +249,7 @@ const Event = () => {
               followUpNotes: ""
             });
           }}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 rounded-full bg-[#90CAF9] hover:bg-[#64b5f6] text-white font-semibold shadow"
         >
           <Plus className="h-4 w-4" />
           <span>Tạo sự kiện mới</span>
@@ -268,31 +272,17 @@ const Event = () => {
         />
       ) : (
         <>
-          <Card className="p-6 mb-6">
+          <Card className="rounded-xl shadow-md bg-white border border-blue-100 p-6 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-2.5 h-5 w-5 text-blue-400" />
                 <Input
                   placeholder="Tìm kiếm theo loại sự kiện, mô tả hoặc mã học sinh..."
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
-                  className="pl-10"
+                  className="pl-10 rounded-lg border border-blue-100 focus:border-blue-400 font-sans"
                 />
               </div>
-              {/* Ẩn dropdown lọc trạng thái */}
-              {/* <div className="flex items-center space-x-2">
-                <Filter className="h-5 w-5 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
-                  className="rounded-md border border-gray-200 px-3 py-2"
-                >
-                  <option value="all">Tất cả trạng thái</option>
-                  <option value="PENDING">Đang xử lý</option>
-                  <option value="DONE">Hoàn thành</option>
-                  <option value="REJECTED">Từ chối</option>
-                </select>
-              </div> */}
             </div>
           </Card>
 
@@ -302,104 +292,104 @@ const Event = () => {
             </div>
           ) : events.length === 0 ? (
             <div className="text-center py-12">
-              <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">Không tìm thấy sự kiện</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <AlertCircle className="mx-auto h-12 w-12 text-blue-200" />
+              <h3 className="mt-2 text-sm font-medium text-blue-800">Không tìm thấy sự kiện</h3>
+              <p className="mt-1 text-sm text-blue-500">
                 Không có sự kiện nào phù hợp với điều kiện tìm kiếm của bạn.
               </p>
             </div>
           ) : (
             <>
-              {/* Filter events theo statusFilter */}
-              {(() => {
-                const filteredEvents = statusFilter === 'all'
-                  ? events
-                  : events.filter(event => event.status === statusFilter);
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredEvents.map((event) => (
-                      <Card key={event.id} className="p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="font-semibold text-lg">{event.eventType}</h3>
-                            <p className="text-sm text-gray-500">Mã HS: {event.studentId}</p>
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
-                            {event.status}
-                          </span>
-                        </div>
-                        
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{event.description}</p>
-                        
-                        <div className="flex items-center text-sm text-gray-500 mb-4">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {new Date(event.eventDate).toLocaleDateString('vi-VN')}
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                                <Eye className="h-4 w-4" />
-                                <span>Chi tiết</span>
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Chi tiết sự kiện</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label>Loại sự kiện</Label>
-                                  <p className="mt-1">{event.eventType}</p>
-                                </div>
-                                <div>
-                                  <Label>Mô tả</Label>
-                                  <p className="mt-1">{event.description}</p>
-                                </div>
-                                <div>
-                                  <Label>Địa điểm</Label>
-                                  <p className="mt-1">{event.location}</p>
-                                </div>
-                                <div>
-                                  <Label>Thời gian</Label>
-                                  <p className="mt-1">{new Date(event.eventDate).toLocaleString('vi-VN')}</p>
-                                </div>
-                               
-                                  <div>
-                                    <Label>Ghi chú theo dõi</Label>
-                                    <p className="mt-1">{event.followUpNotes}</p>
-                                  </div>
-                                
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events.map((event) => (
+                  <Card key={event.id} className="rounded-xl shadow-md bg-white border border-blue-100 p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg text-blue-900">{event.eventType}</h3>
+                        <p className="text-sm text-blue-500">Mã HS: {event.studentId}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold shadow ${getStatusColor(event.status)}`}>
+                        {event.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-blue-800 mb-4 line-clamp-2">{event.description}</p>
+                    <div className="flex items-center text-sm text-blue-500 mb-4">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {new Date(event.eventDate).toLocaleDateString('vi-VN')}
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="flex items-center space-x-2 rounded-full border-blue-400 text-blue-700 hover:bg-blue-50 font-sans">
+                            <Eye className="h-4 w-4" />
+                            <span>Chi tiết</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl w-full max-h-[80vh] overflow-y-auto bg-blue-50 border border-blue-300 rounded-lg shadow-lg">
+                          <DialogHeader>
+                            <DialogTitle className="text-blue-800">Chi tiết sự kiện</DialogTitle>
+                          </DialogHeader>
+                          <div className="flex flex-col gap-4 py-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800 min-w-[140px]">Loại sự kiện:</span>
+                              <span className="text-blue-900">{event.eventType}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800 min-w-[140px]">Mô tả:</span>
+                              <span className="text-blue-900">{event.description}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800 min-w-[140px]">Địa điểm:</span>
+                              <span className="text-blue-900">{event.location}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800 min-w-[140px]">Thời gian:</span>
+                              <span className="text-blue-900">{new Date(event.eventDate).toLocaleString('vi-VN')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800 min-w-[140px]">Trạng thái:</span>
+                              <span className={`font-semibold px-2 py-1 rounded-full text-xs ${
+                                event.status === 'PENDING' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                                event.status === 'APPROVED' ? 'bg-green-100 text-green-700 border border-green-300' :
+                                event.status === 'REJECTED' ? 'bg-red-100 text-red-700 border border-red-300' :
+                                event.status === 'DONE' ? 'bg-blue-200 text-blue-800 border border-blue-400' :
+                                'bg-gray-100 text-gray-600 border border-gray-300'
+                              }`}>
+                                {event.status}
+                              </span>
+                            </div>
+                            {event.followUpNotes && (
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-blue-800 min-w-[140px]">Ghi chú theo dõi:</span>
+                                <span className="text-blue-900">{event.followUpNotes}</span>
                               </div>
-                            </DialogContent>
-                          </Dialog>
-
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(event)}
-                              className="flex items-center space-x-2"
-                            >
-                              <Edit className="h-4 w-4" />
-                              <span>Sửa</span>
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDelete(event.id)}
-                              className="flex items-center space-x-2"
-                            >
-                              <span>Xoá</span>
-                            </Button>
+                            )}
                           </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                );
-              })()}
+                        </DialogContent>
+                      </Dialog>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(event)}
+                          className="flex items-center space-x-2 rounded-full text-blue-700 hover:bg-blue-50 font-sans"
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span>Sửa</span>
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(event.id)}
+                          className="flex items-center space-x-2 rounded-full font-sans"
+                        >
+                          <span>Xoá</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
               {/* Pagination */}
               <div className="flex justify-center items-center mt-8 gap-2">
                 <Button
@@ -407,10 +397,11 @@ const Event = () => {
                   size="sm"
                   onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                   disabled={page === 0}
+                  className="rounded-full border-blue-400 text-blue-700 hover:bg-blue-50 font-sans"
                 >
                   Trang trước
                 </Button>
-                <span>
+                <span className="text-blue-700 font-semibold font-sans">
                   Trang {page + 1} / {totalPages}
                 </span>
                 <Button
@@ -418,10 +409,11 @@ const Event = () => {
                   size="sm"
                   onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
                   disabled={page >= totalPages - 1}
+                  className="rounded-full border-blue-400 text-blue-700 hover:bg-blue-50 font-sans"
                 >
                   Trang sau
                 </Button>
-                <span className="ml-4 text-sm text-gray-500">Tổng: {totalElements} sự kiện</span>
+                <span className="ml-4 text-sm text-blue-500 font-sans">Tổng: {totalElements} sự kiện</span>
               </div>
             </>
           )}

@@ -11,7 +11,7 @@ public class ValidationFailedException  extends SchoolMedicalSystemException {
                 .message(message)
                 .data(null)
                 .isSuccess(false)
-                .status(HttpStatus.OK)
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .build();
     }
 }

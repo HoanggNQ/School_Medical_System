@@ -120,17 +120,21 @@ const EventListNurse = () => {
           Quay lại
         </Button>
       </div>
-      <Card>
-        <CardHeader>
+      <Card className="rounded-xl shadow-md bg-white border border-blue-100">
+        <CardHeader className="bg-[#E3F2FD] rounded-t-xl border-b border-blue-100">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Danh sách kết quả khám sức khỏe</CardTitle>
+            <CardTitle className="text-blue-800 font-bold flex items-center gap-2">
+              {/* Icon y tế */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" /></svg>
+              Danh sách kết quả khám sức khỏe
+            </CardTitle>
             <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
               <Input
                 placeholder="Tìm kiếm theo tên học sinh..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-lg border border-blue-100 focus:border-blue-400 font-sans"
               />
             </div>
           </div>
@@ -139,42 +143,43 @@ const EventListNurse = () => {
           {loading ? (
             <div className="flex justify-center items-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">Đang tải...</span>
+              <span className="ml-2 text-blue-600 font-sans">Đang tải...</span>
             </div>
           ) : erroror ? (
-            <div className="text-red-500 text-center p-4">{erroror}</div>
+            <div className="text-red-500 text-center p-4 font-sans">{erroror}</div>
           ) : (
-            <Table>
-              <TableHeader>
+            <Table className="border border-blue-100 rounded-xl overflow-hidden font-sans">
+              <TableHeader className="bg-[#E3F2FD]">
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Học sinh</TableHead>
-                  <TableHead>Người khám</TableHead>
-                  <TableHead>Trạng thái sức khỏe</TableHead>
+                  <TableHead className="text-blue-700">ID</TableHead>
+                  <TableHead className="text-blue-700">Học sinh</TableHead>
+                  <TableHead className="text-blue-700">Người khám</TableHead>
+                  <TableHead className="text-blue-700">Trạng thái sức khỏe</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredResults.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">Không có kết quả</TableCell>
+                    <TableCell colSpan={4} className="text-center py-8 text-blue-400">Không có kết quả</TableCell>
                   </TableRow>
                 ) : (
                   filteredResults.map(ev => (
-                    <TableRow key={ev.id} className="cursor-pointer" onClick={() => handleRowClick(ev)}>
-                      <TableCell className="font-medium">{ev.id}</TableCell>
-                      <TableCell>{ev.studentName}</TableCell>
-                      <TableCell>{ev.checkedByName}</TableCell>
+                    <TableRow key={ev.id} className="cursor-pointer hover:bg-[#F5F5F5] transition" onClick={() => handleRowClick(ev)}>
+                      <TableCell className="font-medium text-blue-900">{ev.id}</TableCell>
+                      <TableCell className="text-blue-900">{ev.studentName}</TableCell>
+                      <TableCell className="text-blue-900">{ev.checkedByName}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${ev.healthStatus === 'TỐT' ? 'bg-green-100 text-green-800' : ev.healthStatus === 'XẤU' ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-800'}`}>{ev.healthStatus}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold shadow ${ev.healthStatus === 'TỐT' ? 'bg-[#A5D6A7] text-green-800' : ev.healthStatus === 'XẤU' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-800'}`}>{ev.healthStatus}</span>
                         {ev.healthStatus === 'XẤU' && (
                           <Button
                             size="sm"
-                            className="ml-2 bg-blue-500 hover:bg-blue-600 text-white"
+                            className="ml-2 rounded-full bg-[#90CAF9] hover:bg-[#64b5f6] text-white font-semibold shadow"
                             onClick={e => {
                               e.stopPropagation();
                               handleCreateScheduleClick(ev);
                             }}
                           >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                             Tạo lịch khám
                           </Button>
                         )}
@@ -246,17 +251,28 @@ const EventListNurse = () => {
       <Dialog open={showCreateScheduleModal} onOpenChange={setShowCreateScheduleModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Tạo lịch tư vấn y tế</DialogTitle>
+            <DialogTitle>
+              <span className="flex items-center gap-2 text-blue-700">
+                {/* Medical cross icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" />
+                </svg>
+                Tạo lịch tư vấn y tế
+              </span>
+            </DialogTitle>
           </DialogHeader>
           {selectedScheduleStudent && (
-            <div className="mb-4 flex flex-col gap-1 px-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-800 min-w-[110px]">Student ID:</span>
-                <span className="text-gray-700">{selectedScheduleStudent.studentId}</span>
+            <div className="mb-4 flex flex-col gap-2 px-1">
+              <div className="flex items-center gap-2 bg-white rounded p-3 mb-1 border border-blue-300 shadow-sm">
+                <span className="font-semibold text-blue-800 min-w-[120px]">Tên học sinh:</span>
+                <span className="text-blue-900 font-medium">{selectedScheduleStudent.studentName}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-800 min-w-[110px]">Campaign ID:</span>
-                <span className="text-gray-700">{selectedScheduleStudent.campaignId}</span>
+              <div className="flex items-center gap-2 bg-white rounded p-3 border border-blue-200 shadow-sm">
+                <span className="font-semibold text-blue-800 min-w-[120px]">Tên chiến dịch:</span>
+                <span className="text-blue-900 font-medium">{selectedScheduleStudent.campaignName}</span>
+              </div>
+              <div className="text-xs text-blue-500 mt-2 italic">
+                Vui lòng nhập đầy đủ thông tin để đặt lịch tư vấn y tế cho học sinh.
               </div>
             </div>
           )}
@@ -265,28 +281,28 @@ const EventListNurse = () => {
             className="space-y-4"
           >
             <div>
-              <label className="block font-medium mb-1">Thời gian lịch khám</label>
+              <label className="block font-semibold mb-1 text-blue-700">Thời gian lịch khám</label>
               <input
                 type="datetime-local"
-                className="border rounded px-3 py-2 w-full"
+                className="border border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-blue-50 text-blue-900"
                 value={scheduleForm.scheduleTime}
                 onChange={e => setScheduleForm(f => ({ ...f, scheduleTime: e.target.value }))}
                 required
               />
             </div>
             <div>
-              <label className="block font-medium mb-1">Lý do</label>
+              <label className="block font-semibold mb-1 text-blue-700">Lý do</label>
               <input
                 type="text"
-                className="border rounded px-3 py-2 w-full"
+                className="border border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-blue-50 text-blue-900"
                 value={scheduleForm.reason}
                 onChange={e => setScheduleForm(f => ({ ...f, reason: e.target.value }))}
                 required
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button" onClick={() => setShowCreateScheduleModal(false)}>Đóng</Button>
-              <Button type="submit" disabled={creatingSchedule}>{creatingSchedule ? 'Đang tạo...' : 'Tạo lịch khám'}</Button>
+              <Button variant="outline" type="button" className="border-blue-400 text-blue-700 hover:bg-blue-50" onClick={() => setShowCreateScheduleModal(false)}>Đóng</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={creatingSchedule}>{creatingSchedule ? 'Đang tạo...' : 'Tạo lịch khám'}</Button>
             </div>
           </form>
           

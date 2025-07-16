@@ -146,19 +146,23 @@ const HealthDeclarationSearch = () => {
     >
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý khai báo sức khỏe</h1>
-          <p className="text-gray-600 mt-2">Quản lý và theo dõi các phiếu khai báo sức khỏe của học sinh</p>
+          <h1 className="text-3xl font-bold text-blue-800">Quản lý khai báo sức khỏe</h1>
+          <p className="text-blue-600 mt-2">Quản lý và theo dõi các phiếu khai báo sức khỏe của học sinh</p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="rounded-xl shadow-md bg-white border border-blue-100">
+        <CardHeader className="bg-[#E3F2FD] rounded-t-xl border-b border-blue-100">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Danh sách phiếu khai báo sức khỏe ({data.length} phiếu)</CardTitle>
+            <CardTitle className="text-blue-800 font-bold flex items-center gap-2">
+              {/* Icon y tế */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" /></svg>
+              Danh sách phiếu khai báo sức khỏe ({data.length} phiếu)
+            </CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <Select value={status} onValueChange={(value) => { setStatus(value); setPage(0); }}>
-                <SelectTrigger className="w-48">
-                  <Filter className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-48 border-blue-300 text-blue-800 rounded-lg font-sans">
+                  <Filter className="w-4 h-4 mr-2 text-blue-600" />
                   <SelectValue placeholder="Lọc theo trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
@@ -170,38 +174,43 @@ const HealthDeclarationSearch = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="bg-white">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
+            <Table className="border border-blue-100 rounded-xl overflow-hidden font-sans">
+              <TableHeader className="bg-[#E3F2FD]">
                 <TableRow>
-                  <TableHead className="w-16">ID</TableHead>
-                  <TableHead className="w-24">Mã học sinh</TableHead>
-                  <TableHead className="w-32">Tên học sinh</TableHead>
-                  <TableHead className="w-32">Người khai báo</TableHead>
-                  <TableHead className="w-24">Trạng thái</TableHead>
-                  <TableHead className="w-32">Thao tác</TableHead>
+                  <TableHead className="w-16 text-blue-700">ID</TableHead>
+                  <TableHead className="w-24 text-blue-700">Mã học sinh</TableHead>
+                  <TableHead className="w-32 text-blue-700">Tên học sinh</TableHead>
+                  <TableHead className="w-32 text-blue-700">Người khai báo</TableHead>
+                  <TableHead className="w-24 text-blue-700">Trạng thái</TableHead>
+                  <TableHead className="w-32 text-blue-700">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={6} className="text-center py-8 text-blue-400">
                       <div className="flex flex-col items-center">
-                        <AlertCircle className="w-12 h-12 text-gray-300 mb-2" />
+                        <AlertCircle className="w-12 h-12 text-blue-200 mb-2" />
                         <p>Không có dữ liệu khai báo sức khỏe</p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   data.map(item => (
-                    <TableRow key={item.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">{item.id}</TableCell>
-                      <TableCell>{item.studentId ?? "N/A"}</TableCell>
-                      <TableCell>{item.studentName ?? "N/A"}</TableCell>
-                      <TableCell>{item.declaredByName ?? "N/A"}</TableCell>
+                    <TableRow key={item.id} className="hover:bg-[#F5F5F5] transition">
+                      <TableCell className="font-medium text-blue-900">{item.id}</TableCell>
+                      <TableCell className="text-blue-900">{item.studentId ?? "N/A"}</TableCell>
+                      <TableCell className="text-blue-900">{item.studentName ?? "N/A"}</TableCell>
+                      <TableCell className="text-blue-900">{item.declaredByName ?? "N/A"}</TableCell>
                       <TableCell>
-                        <Badge className={`${getStatusColor(getStatusLabel(item.status))}`}>
+                        <Badge className={`border font-semibold px-2 py-1 rounded-full text-xs shadow ${
+                          item.status === 'PENDING' ? 'bg-blue-100 text-blue-700 border-blue-300' :
+                          item.status === 'APPROVED' ? 'bg-green-100 text-green-700 border-green-300' :
+                          item.status === 'REJECTED' ? 'bg-red-100 text-red-700 border-red-300' :
+                          'bg-gray-100 text-gray-600 border-gray-300'
+                        }`}>
                           {getStatusLabel(item.status)}
                         </Badge>
                       </TableCell>
@@ -213,29 +222,64 @@ const HealthDeclarationSearch = () => {
                                 size="sm" 
                                 variant="outline" 
                                 onClick={() => { setSelectedItem(item); setShowDialog(true); }}
-                                className="flex items-center space-x-1"
+                                className="flex items-center space-x-1 border-blue-400 text-blue-700 hover:bg-blue-50 rounded-full font-sans"
                               >
                                 <Eye className="w-4 h-4" />
                                 <span>Chi tiết</span>
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                            <DialogContent className="max-w-3xl w-full max-h-[80vh] overflow-y-auto bg-blue-50 border border-blue-200 rounded-lg shadow-lg">
                               <DialogHeader>
-                                <DialogTitle>Chi tiết phiếu khai báo sức khỏe</DialogTitle>
+                                <DialogTitle className="text-blue-800">Chi tiết phiếu khai báo sức khỏe</DialogTitle>
                               </DialogHeader>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><b>Tên học sinh:</b> {item.studentName}</div>
-                                <div><b>Tên người khai báo:</b> {item.declaredByName}</div>
-                                <div><b>Mã học sinh:</b> {item.studentId}</div>
-                                <div><b>Mã người khai báo:</b> {item.declaredById}</div>
-                                <div><b>Năm học:</b> {item.academicYear}</div>
-                                <div><b>Ngày khai báo:</b> {item.declarationDate}</div>
-                                <div><b>Trạng thái:</b> {getStatusLabel(item.status)}</div>
-                                <div><b>Chiều cao (cm):</b> {item.height}</div>
-                                <div><b>Cân nặng (kg):</b> {item.weight}</div>
-                                <div><b>Nhóm máu:</b> {item.bloodType}</div>
-                                <div><b>Dị ứng:</b> {item.allergies}</div>
-                                <div><b>Bệnh mãn tính:</b> {item.chronicDiseases}</div>
+                              <div className="flex flex-col gap-4 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Tên học sinh:</span>
+                                  <span className="text-blue-900">{item.studentName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Tên người khai báo:</span>
+                                  <span className="text-blue-900">{item.declaredByName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Năm học:</span>
+                                  <span className="text-blue-900">{item.academicYear}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Ngày khai báo:</span>
+                                  <span className="text-blue-900">{item.declarationDate}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Trạng thái:</span>
+                                  <span className={`font-semibold px-2 py-1 rounded-full text-xs ${
+                                    item.status === 'PENDING' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                                    item.status === 'APPROVED' ? 'bg-green-100 text-green-700 border border-green-300' :
+                                    item.status === 'REJECTED' ? 'bg-red-100 text-red-700 border border-red-300' :
+                                    'bg-gray-100 text-gray-600 border border-gray-300'
+                                  }`}>
+                                    {getStatusLabel(item.status)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Chiều cao (cm):</span>
+                                  <span className="text-blue-900">{item.height}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Cân nặng (kg):</span>
+                                  <span className="text-blue-900">{item.weight}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Nhóm máu:</span>
+                                  <span className="text-blue-900">{item.bloodType}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Dị ứng:</span>
+                                  <span className="text-blue-900">{item.allergies}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-800 min-w-[140px]">Bệnh mãn tính:</span>
+                                  <span className="text-blue-900">{item.chronicDiseases}</span>
+                                </div>
                               </div>
                             </DialogContent>
                           </Dialog>
@@ -255,13 +299,14 @@ const HealthDeclarationSearch = () => {
                               <Button 
                                 size="sm" 
                                 onClick={() => handleUpdateStatus(item.id)}
-                                className="bg-green-600 hover:bg-green-700"
+                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full font-sans"
                               >
                                 Xác nhận
                               </Button>
                               <Button 
                                 size="sm" 
                                 variant="outline" 
+                                className="border-blue-400 text-blue-700 hover:bg-blue-50 rounded-full font-sans"
                                 onClick={() => { setUpdatingId(null); setStatusUpdate(""); }}
                               >
                                 Hủy
@@ -271,6 +316,7 @@ const HealthDeclarationSearch = () => {
                             <Button 
                               size="sm" 
                               variant="secondary" 
+                              className="bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-full font-sans"
                               onClick={() => { setUpdatingId(item.id); setStatusUpdate(""); }}
                             >
                               Cập nhật
@@ -289,7 +335,7 @@ const HealthDeclarationSearch = () => {
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-blue-700 font-semibold">
           Trang {page + 1} / {totalPages} ({data.length} kết quả)
         </span>
         <div className="flex gap-2">
@@ -297,6 +343,7 @@ const HealthDeclarationSearch = () => {
             disabled={page === 0}
             onClick={() => setPage(page - 1)}
             variant="outline"
+            className="border-blue-400 text-blue-700 hover:bg-blue-50 rounded-full font-sans"
           >
             Trang trước
           </Button>
@@ -304,6 +351,7 @@ const HealthDeclarationSearch = () => {
             disabled={page + 1 >= totalPages}
             onClick={() => setPage(page + 1)}
             variant="outline"
+            className="border-blue-400 text-blue-700 hover:bg-blue-50 rounded-full font-sans"
           >
             Trang sau
           </Button>

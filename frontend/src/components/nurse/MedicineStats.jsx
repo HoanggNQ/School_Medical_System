@@ -44,14 +44,15 @@ const MedicineStats = ({ medicines, totalElements }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <Card className="card-hover">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
-            Tổng số thuốc
+      <Card className="rounded-xl shadow-md bg-white border border-blue-100">
+        <CardHeader className="bg-[#E3F2FD] rounded-t-xl border-b border-blue-100">
+          <CardTitle className="text-blue-800 font-bold flex items-center gap-2">
+            {/* Icon y tế */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" /></svg>
+            Thống kê thuốc
           </CardTitle>
-          <Package className="w-4 h-4 text-blue-600" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="bg-white">
           {/* <div className="text-2xl font-bold text-gray-900">{totalMedicines}</div>
           <div className="text-2xl font-bold text-gray-900">{totalQuantity}</div> */}
           <div className="text-2xl font-bold text-gray-900">
