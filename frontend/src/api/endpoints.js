@@ -144,6 +144,13 @@ const API_ENDPOINTS = {
   CONSULTATION_SCHEDULE: {
     CREATE: 'api/v1/consultation-schedules',
   },
+  FILE_SERVICE: {
+    EXPORT_VACCINATION_RECORD: (campaignId) => `/api/vaccination-record/list-results-export?campaignId=${campaignId}`,
+    IMPORT_VACCINATION_RECORD: '/api/vaccination-record/vaccination-records/import',
+
+    EXPORT_HEALTH_CHECK_RESULT: (campaignId) => `/api/v1/health-check-result/list-results-export?campaignId=${campaignId}`,
+    IMPORT_HEALTH_CHECK_RESULT: '/api/v1/health-check-result/import',
+  },
 };
 
 export default API_ENDPOINTS;
