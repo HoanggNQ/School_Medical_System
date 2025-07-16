@@ -3,6 +3,16 @@ import axiosInstance from '../axios.config';
 import API_ENDPOINTS from '../endpoints';
 
 const studentService = {
+    searchStudentsPaged: async (searchKeyword) => {
+        const res = await axiosInstance.get("/api/v1/student/getAll", {
+          params: {
+            search: searchKeyword,
+            page: 0,
+            size: 10,
+          }
+        });
+        return res.data?.data?.students || [];
+      },
     getStudentProfile: async (studentId) => {
         try {
             const response = await axiosInstance.get(API_ENDPOINTS.STUDENT.GET_STUDENT_PROFILE(studentId));
