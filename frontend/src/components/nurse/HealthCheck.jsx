@@ -2,15 +2,14 @@
 import { useEffect, useState } from "react"
 import { medicalService } from "@/api/services/medical.service"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, Stethoscope, Search, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
+import { AlertCircle, Stethoscope, Search, CheckCircle, ChevronLeft, ChevronRight, FileDown, FileUp } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {  useParams, useLocation, useNavigate } from "react-router-dom"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table"
+import fileService from '@/api/services/file.service'
 
 const HealthCheck = () => {
   const { toast } = useToast()
@@ -40,6 +39,8 @@ const HealthCheck = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useState(null);
 
   const { campaignId } = useParams();
   const location = useLocation();
@@ -148,6 +149,43 @@ const HealthCheck = () => {
     }
   }
 
+  // Export handler
+  const handleExport = async () => {
+    try {
+      const blob = await fileService.exportHealthCheckResult(campaignId);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `health_check_results_campaign_${campaignId}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({ title: 'Thành công', description: 'Xuất file thành công.' });
+    } catch (err) {
+      console.log("err", err);
+      let msg = err?.response?.data?.message || err?.message || 'Không thể xuất file.';
+      toast({ title: 'Lỗi', description: msg });
+    }
+  };
+
+  // Import handler
+  const handleImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      await fileService.importHealthCheckResult(file);
+      toast({ title: 'Thành công', description: 'Nhập file thành công.' });
+    } catch (err) {
+      let msg = err?.response?.data?.message || err?.message || 'Không thể nhập file.';
+      toast({ title: 'Lỗi', description: msg });
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
@@ -165,13 +203,43 @@ const HealthCheck = () => {
             <span className="text-red-800">{errorHealth}</span>
           </div>
         </div>
+      ) : studentsHealth.length === 0 ? (
+        <div className="text-center py-6">
+          <Stethoscope className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+          <p className="text-gray-500">Không có học sinh nào chuẩn bị khám sức khỏe.</p>
+        </div>
       ) : (
-        <div>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <CardTitle>Danh sách học sinh chuẩn bị khám sức khỏe ({studentsHealth.length} học sinh)</CardTitle>
-                {campaignId && (
+        <div className="overflow-x-auto">
+          
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-xl font-bold">Chiến dịch {campaignId}</h3>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="default"
+                onClick={handleExport}
+                disabled={!campaignId}
+                className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              >
+                <FileDown className="w-4 h-4" />
+                Export Excel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+                disabled={importing}
+              >
+                <FileUp className="w-4 h-4" />
+                {importing ? 'Đang nhập...' : 'Import Excel'}
+              </Button>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                ref={el => fileInputRef.current = el}
+                style={{ display: 'none' }}
+                onChange={handleImport}
+              />
+               {campaignId && (
                   <Button
                     className="bg-blue-500 hover:bg-blue-600 text-white"
                     onClick={() => navigate(`/consultation-schedules-nurse/${campaignId}`)}
@@ -179,162 +247,162 @@ const HealthCheck = () => {
                     Xem lịch tư vấn
                   </Button>
                 )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Id</TableHead>
-                    <TableHead>Tên học sinh</TableHead>
-                    <TableHead>Lớp</TableHead>
-                    <TableHead>Chiến dịch</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Ghi nhận</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {studentsHealth.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                        Không có học sinh nào chuẩn bị khám sức khỏe.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    studentsHealth.map((consent) => (
-                      <TableRow key={consent.consentId}>
-                        <TableCell>{consent.studentId}</TableCell>
-                        <TableCell>{consent.studentName}</TableCell>
-                        <TableCell>{consent.className}</TableCell>
-                        <TableCell>{consent.campaignId}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            consent.status === 'DONE' ? 'bg-green-100 text-green-800' :
-                            consent.status === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
-                            consent.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                            consent.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {consent.status === 'DONE' ? 'Đã khám' :
-                              consent.status === 'APPROVED' ? 'Đã đồng ý' :
-                              consent.status === 'PENDING' ? 'Chờ xác nhận' :
-                              consent.status === 'REJECTED' ? 'Từ chối' :
-                              consent.status || 'Không rõ'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {campaignStatus === 'APPROVED' && consent.status === 'APPROVED' && (
-                            <Dialog open={showDialog && selectedStudent?.consentId === consent.consentId} onOpenChange={setShowDialog}>
-                              <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="success"
-                                  onClick={() => handleOpenDialog(consent)}
-                                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  Ghi nhận kết quả
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                                <DialogHeader>
-                                  <DialogTitle>Ghi nhận kết quả khám sức khỏe</DialogTitle>
-                                </DialogHeader>
-                                <form className="space-y-3">
-                                  <div>
-                                    <Label>Tên học sinh</Label>
-                                    <div className="font-semibold">{consent.studentName}</div>
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                      <Label htmlFor="heightCm">Chiều cao (cm)</Label>
-                                      <Input id="heightCm" name="heightCm" value={formData.heightCm} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="weightKg">Cân nặng (kg)</Label>
-                                      <Input id="weightKg" name="weightKg" value={formData.weightKg} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="visionLeft">Thị lực trái</Label>
-                                      <Input id="visionLeft" name="visionLeft" value={formData.visionLeft} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="visionRight">Thị lực phải</Label>
-                                      <Input id="visionRight" name="visionRight" value={formData.visionRight} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="hearing">Thính lực</Label>
-                                      <Input id="hearing" name="hearing" value={formData.hearing} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="dentalHealth">Răng miệng</Label>
-                                      <Input id="dentalHealth" name="dentalHealth" value={formData.dentalHealth} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="bloodPressure">Huyết áp</Label>
-                                      <Input id="bloodPressure" name="bloodPressure" value={formData.bloodPressure} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="pulse">Mạch</Label>
-                                      <Input id="pulse" name="pulse" value={formData.pulse} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="temperature">Nhiệt độ</Label>
-                                      <Input id="temperature" name="temperature" value={formData.temperature} onChange={handleInputChange} />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="overallHealthRating">Đánh giá tổng thể</Label>
-                                      <Input id="overallHealthRating" name="overallHealthRating" value={formData.overallHealthRating} onChange={handleInputChange} />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                      <Label htmlFor="otherNotes">Ghi chú khác</Label>
-                                      <Textarea id="otherNotes" name="otherNotes" value={formData.otherNotes} onChange={handleInputChange} />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                      <Label htmlFor="recommendation">Khuyến nghị</Label>
-                                      <Input id="recommendation" name="recommendation" value={formData.recommendation} onChange={handleInputChange} />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                      <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
-                                      <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
-                                    </div>
-                                  </div>
-                                  <div className="flex justify-end gap-2 pt-2">
-                                    <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
-                                    <Button className="" type="button" onClick={handleSubmitResult}>Lưu kết quả</Button>
-                                  </div>
-                                </form>
-                              </DialogContent>
-                            </Dialog>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+          
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Id</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Tên học sinh</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Lớp</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Chiến dịch</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Trạng thái</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Ghi nhận</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {studentsHealth.map((consent) => (
+                <tr key={consent.consentId}>
+                  <td className="px-4 py-2 text-sm">{consent.studentId}</td>
+                  <td className="px-4 py-2 text-sm">{consent.studentName}</td>
+                  <td className="px-4 py-2 text-sm">{consent.className}</td>
+                  <td className="px-4 py-2 text-sm">{consent.campaignId}</td>
+                  <td className="px-4 py-2 text-sm">
+                    {consent.status === 'DONE' ? 'Đã khám' :
+                     consent.status === 'APPROVED' ? 'Đã đồng ý' :
+                     consent.status === 'PENDING' ? 'Chờ xác nhận' :
+                     consent.status === 'REJECTED' ? 'Từ chối' :
+                     consent.status || 'Không rõ'}
+                  </td>
+                  <td className="px-4 py-2 text-sm">
+                    {/* Chỉ hiển thị nút nếu campaignStatus là 'APPROVED' và học sinh có status là 'APPROVED' */}
+                    {campaignStatus === 'APPROVED' && consent.status === 'APPROVED' && (
+                      <Dialog open={showDialog && selectedStudent?.consentId === consent.consentId} onOpenChange={setShowDialog}>
+                        <DialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="success"
+                            onClick={() => handleOpenDialog(consent)}
+                            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Ghi nhận kết quả
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Ghi nhận kết quả khám sức khỏe</DialogTitle>
+                          </DialogHeader>
+                          <form className="space-y-3">
+                            <div>
+                              <Label>Tên học sinh</Label>
+                              <div className="font-semibold">{consent.studentName}</div>
+                            </div>
+                            {/* <div>
+                              <Label>Mã học sinh</Label>
+                              <div className="font-semibold">{item.studentId}</div>
+                            </div>
+                            <div>
+                              <Label>Mã chiến dịch</Label>
+                              <div className="font-semibold">{item.campaignId}</div>
+                            </div> */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="heightCm">Chiều cao (cm)</Label>
+                                <Input id="heightCm" name="heightCm" value={formData.heightCm} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="weightKg">Cân nặng (kg)</Label>
+                                <Input id="weightKg" name="weightKg" value={formData.weightKg} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="visionLeft">Thị lực trái</Label>
+                                <Input id="visionLeft" name="visionLeft" value={formData.visionLeft} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="visionRight">Thị lực phải</Label>
+                                <Input id="visionRight" name="visionRight" value={formData.visionRight} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="hearing">Thính lực</Label>
+                                <Input id="hearing" name="hearing" value={formData.hearing} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="dentalHealth">Răng miệng</Label>
+                                <Input id="dentalHealth" name="dentalHealth" value={formData.dentalHealth} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="bloodPressure">Huyết áp</Label>
+                                <Input id="bloodPressure" name="bloodPressure" value={formData.bloodPressure} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="pulse">Mạch</Label>
+                                <Input id="pulse" name="pulse" value={formData.pulse} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="temperature">Nhiệt độ</Label>
+                                <Input id="temperature" name="temperature" value={formData.temperature} onChange={handleInputChange} />
+                              </div>
+                              <div>
+                                <Label htmlFor="overallHealthRating">Đánh giá tổng thể</Label>
+                                <Input id="overallHealthRating" name="overallHealthRating" value={formData.overallHealthRating} onChange={handleInputChange} />
+                              </div>
+                              <div className="md:col-span-2">
+                                <Label htmlFor="otherNotes">Ghi chú khác</Label>
+                                <Textarea id="otherNotes" name="otherNotes" value={formData.otherNotes} onChange={handleInputChange} />
+                              </div>
+                              <div className="md:col-span-2">
+                                <Label htmlFor="recommendation">Khuyến nghị</Label>
+                                <Input id="recommendation" name="recommendation" value={formData.recommendation} onChange={handleInputChange} />
+                              </div>
+                              {/* <div className="flex items-center gap-2 md:col-span-2">
+                                <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
+                                <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
+                              </div> */}
+                              <div className="md:col-span-2">
+                                <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
+                                <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
+                              </div>
+                              {/* <div className="md:col-span-2">
+                                <Label htmlFor="scheduleTime">Thời gian lịch tái khám</Label>
+                                <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} />
+                              </div> */}
+                            </div>
+                            <div className="flex justify-end gap-2 pt-2">
+                              <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
+                              <Button className="" type="button" onClick={handleSubmitResult}>Lưu kết quả</Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* Pagination controls */}
           <div className="flex justify-between items-center mt-4">
-            <span>
-              Trang {page + 1} / {totalPages} ({studentsHealth.length} học sinh)
-            </span>
+            <div>
+              <span>Trang {page + 1} / {totalPages}</span>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                size="sm"
-                disabled={page === 0}
+                size="icon"
                 onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                disabled={page === 0}
               >
-                Trang trước
+                <ChevronLeft className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
-                size="sm"
-                disabled={page + 1 >= totalPages}
+                size="icon"
                 onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                disabled={page >= totalPages - 1}
               >
-                Trang sau
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
             <div>
