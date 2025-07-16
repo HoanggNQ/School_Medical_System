@@ -35,4 +35,6 @@ public class HealthCheckResultResponse {
     private String overallHealthRating;
     private String academicYear;
     private String healthStatus;
+    private String consentStatus;
+
 }

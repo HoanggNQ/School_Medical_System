@@ -1,5 +1,6 @@
 package sms.swp391.utils;
 
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthCheckResultRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckResultResponse;
 import sms.swp391.models.entities.HealthCheckResultEntity;
@@ -23,6 +24,10 @@ public class HealthCheckResultMapper {
                 profile != null ? profile.getHeight() : null,
                 profile != null ? profile.getWeight() : null
         );
+
+        MedicalStatus  consentStatus = entity.getConsent() != null
+                ? entity.getConsent().getConsentStatus()
+                : null;
 
         return HealthCheckResultResponse.builder()
                 .id(entity.getResultId())
@@ -49,8 +54,7 @@ public class HealthCheckResultMapper {
                 .overallHealthRating(entity.getOverallHealthRating())
                 .academicYear(entity.getAcademicYear())
                 .healthStatus(isAbnormal(entity) ? "XẤU" : "TỐT")
-
-
+                .consentStatus(consentStatus != null ? consentStatus.name() : null)
                 .build();
     }
 
