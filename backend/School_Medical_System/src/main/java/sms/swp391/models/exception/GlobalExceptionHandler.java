@@ -1,44 +1,67 @@
 package sms.swp391.models.exception;
 
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import sms.swp391.models.dtos.responses.ResponseObject;
 
+import java.util.stream.Collectors;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(SchoolMedicalSystemException.class)
-    public ResponseEntity<?> handleSchoolMedicalSystemException(SchoolMedicalSystemException ex) {
-        return ResponseEntity
-                .status(ex.getErrorResponse().getStatus())
-                .body(ex.getErrorResponse());
-    }
+    // ✅ Xử lý lỗi @Valid trong @RequestBody
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ResponseObject> handleValidationException(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage()) // lấy thông báo đã khai báo trong @NotBlank(message = ...)
+                .collect(Collectors.joining(", "));
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<?> handleBusinessException(BusinessException ex) {
-        return ResponseEntity
-                .badRequest()
-                .body(ResponseObject.builder()
-                        .code("BUSINESS_ERROR")
-                        .message(ex.getMessage())
-                        .data(null)
+        return ResponseEntity.badRequest().body(
+                ResponseObject.builder()
+                        .code("VALIDATION_FAILED")
+                        .message(errorMessage)
+                        .status(HttpStatus.BAD_REQUEST)
                         .isSuccess(false)
-                        .status(org.springframework.http.HttpStatus.BAD_REQUEST)
-                        .build());
+                        .data(null)
+                        .build()
+        );
     }
 
+    // ✅ Xử lý lỗi @Valid trong @PathVariable hoặc @RequestParam
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ResponseObject> handleConstraintViolation(ConstraintViolationException ex) {
+        String errorMessage = ex.getConstraintViolations()
+                .stream()
+                .map(cv -> cv.getMessage())
+                .collect(Collectors.joining(", "));
+
+        return ResponseEntity.badRequest().body(
+                ResponseObject.builder()
+                        .code("CONSTRAINT_VIOLATION")
+                        .message(errorMessage)
+                        .status(HttpStatus.BAD_REQUEST)
+                        .isSuccess(false)
+                        .data(null)
+                        .build()
+        );
+    }
+
+    // ✅ Xử lý các lỗi còn lại (fallback)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleUnexpected(Exception ex) {
-        ex.printStackTrace(); // Log lỗi ở backend
-        return ResponseEntity
-                .internalServerError()
-                .body(ResponseObject.builder()
+    public ResponseEntity<ResponseObject> handleGenericException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ResponseObject.builder()
                         .code("INTERNAL_SERVER_ERROR")
                         .message("Lỗi hệ thống: " + ex.getMessage())
-                        .data(null)
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .isSuccess(false)
-                        .status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
-                        .build());
+                        .data(null)
+                        .build()
+        );
     }
 }
