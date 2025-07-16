@@ -41,6 +41,8 @@ const EventListNurse = () => {
       try {
         const res = await medicalService.getHealthCheckResultsByCampaign(campaignId);
         setResults(res.data || []);
+        console.log("res.data", res.data);
+
       } catch (error) {
         setErroror(error?.message || 'Lỗi khi tải danh sách kết quả khám sức khỏe');
         console.log("error.message", error?.message);
