@@ -15,7 +15,7 @@ const HealthCheck = () => {
   const { toast } = useToast()
   const [studentsHealth, setStudentsHealth] = useState([])
   const [loadingHealth, setLoadingHealth] = useState(false)
-  const [errorHealth, setErrorHealth] = useState(null)
+  const [errororHealth, setErrorHealth] = useState(null)
   const [searchCampaignId, setSearchCampaignId] = useState("")
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [showDialog, setShowDialog] = useState(false)
@@ -31,10 +31,10 @@ const HealthCheck = () => {
     temperature: '',
     otherNotes: '',
     recommendation: '',
-    // followUpRequired: false,
+  
     followUpNotes: '',
     overallHealthRating: '',
-    // scheduleTime: '',
+
   })
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -68,7 +68,7 @@ const HealthCheck = () => {
         console.log("res", res);
         setStudentsHealth(res.data?.healthCheckConsents || []);
         setTotalPages(res.data?.totalPages || (res.data?.totalElements ? Math.ceil(res.data.totalElements / size) : 1));
-      } catch (err) {
+      } catch (error) {
         setErrorHealth("Không thể tải danh sách học sinh chuẩn bị khám sức khỏe.")
       } finally {
         setLoadingHealth(false)
@@ -144,8 +144,8 @@ const HealthCheck = () => {
       console.log("response health check", response);
       toast({ title: 'Thành công', description: 'Đã ghi nhận kết quả khám sức khỏe.' });
       setShowDialog(false);
-    } catch (err) {
-      toast({ title: 'Lỗi', description: err?.message || 'Không thể ghi nhận kết quả.' });
+    } catch (error) {
+      toast({ title: 'Lỗi', description: error?.message || 'Không thể ghi nhận kết quả.' });
     }
   }
 
@@ -162,10 +162,20 @@ const HealthCheck = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
       toast({ title: 'Thành công', description: 'Xuất file thành công.' });
-    } catch (err) {
-      console.log("err", err);
-      let msg = err?.response?.data?.message || err?.message || 'Không thể xuất file.';
-      toast({ title: 'Lỗi', description: msg });
+    } catch (error) {
+       const errorMessage = error.customMessage || 
+                           error.response?.data?.message || 
+                           error.message || 
+                           'Đã có lỗi xảy ra.';
+      
+      console.log("Lỗi chi tiết:", error);
+      console.log("customMessage chi tiết  :", error.customMessage);
+
+      toast({
+        title: 'Lỗi',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -177,8 +187,8 @@ const HealthCheck = () => {
     try {
       await fileService.importHealthCheckResult(file);
       toast({ title: 'Thành công', description: 'Nhập file thành công.' });
-    } catch (err) {
-      let msg = err?.response?.data?.message || err?.message || 'Không thể nhập file.';
+    } catch (error) {
+      let msg = error?.response?.data?.message || error?.message || 'Không thể nhập file.';
       toast({ title: 'Lỗi', description: msg });
     } finally {
       setImporting(false);
@@ -196,11 +206,11 @@ const HealthCheck = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <span className="ml-2 text-gray-600">Đang tải...</span>
         </div>
-      ) : errorHealth ? (
+      ) : errororHealth ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center">
             <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-            <span className="text-red-800">{errorHealth}</span>
+            <span className="text-red-800">{errororHealth}</span>
           </div>
         </div>
       ) : studentsHealth.length === 0 ? (
