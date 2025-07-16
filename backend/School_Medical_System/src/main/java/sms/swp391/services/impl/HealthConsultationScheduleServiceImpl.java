@@ -6,15 +6,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.enums.MedicalStatus;
+import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.HealthConsultationScheduleRequestDTO;
 import sms.swp391.models.dtos.responses.HealthConsultationScheduleResponseDTO;
 import sms.swp391.models.entities.*;
+import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.HealthConsultationScheduleService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.criteria.Predicate;
+import sms.swp391.services.NotificationService;
+import sms.swp391.services.SendMailService;
 
 import java.util.stream.Collectors;
 @Transactional
@@ -25,10 +31,15 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
     private final HealthConsultationScheduleRepository scheduleRepo;
     private final StudentRepository studentRepo;
     private final HealthCheckResultRepository resultRepo;
+    private final SendMailService sendMailService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepo;
+
     @Override
-    public HealthConsultationScheduleResponseDTO updateStatus(Long id, MedicalStatus status) {
+    public HealthConsultationScheduleResponseDTO updateStatus(Long id, MedicalStatus status,String note) {
         HealthConsultationScheduleEntity schedule = scheduleRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));
+        schedule.setReason(note);
         schedule.setStatus(status);
         return toResponse(scheduleRepo.save(schedule));
     }
@@ -55,24 +66,74 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
 
         return resultPage.map(this::toResponse);
     }
-
     @Override
-    public HealthConsultationScheduleResponseDTO createSchedule(HealthConsultationScheduleRequestDTO request) {
+    public HealthConsultationScheduleResponseDTO getById(Long id) {
+        HealthConsultationScheduleEntity entity = scheduleRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy lịch tư vấn với id: " + id));
+        return toResponse(entity);
+    }
+    @Override
+    public HealthConsultationScheduleResponseDTO createSchedule(HealthConsultationScheduleRequestDTO request, Long createdById)
+    {
+
         StudentEntity student = studentRepo.findById(request.getStudentId())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy học sinh."));
 
         HealthCheckResultEntity result = resultRepo.findById(request.getResultId())
-                .orElseThrow(() -> new RuntimeException("Result not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy kết quả khám sức khỏe."));
+
+        UserEntity parent = student.getParent();
+        if (parent == null) {
+            throw new RuntimeException("Học sinh chưa được gán phụ huynh.");
+        }
+        UserEntity creator = userRepo.findById(createdById)
+                .orElseThrow(() -> new RuntimeException("Người tạo không tồn tại."));
+
+        if (!RoleEnum.SCHOOL_NURSE.equals(creator.getRoleName())) {
+            throw new RuntimeException("Chỉ nhân viên y tế mới được tạo lịch tư vấn.");
+        }
+
+        if (scheduleRepo.existsByStudent_IdAndResult_ResultId(student.getId(), result.getResultId())) {
+            throw new RuntimeException("Đã có lịch tư vấn cho kết quả khám này.");
+        }
+
+        if (scheduleRepo.existsByStudent_IdAndStatus(student.getId(), MedicalStatus.PENDING)) {
+            throw new RuntimeException("Học sinh này đã có một lịch hẹn đang chờ xử lý.");
+        }
+
+        List<MedicalStatus> statuses = List.of(MedicalStatus.PENDING, MedicalStatus.APPROVED);
+        LocalDateTime scheduleTime = request.getScheduleTime();
+        // Lặp cho đến khi không còn trùng
+        while (scheduleRepo.existsByStudent_IdAndScheduleTimeAndStatusIn(student.getId(), scheduleTime, statuses)) {
+            scheduleTime = scheduleTime.plusMinutes(20);
+        }
+
 
         HealthConsultationScheduleEntity entity = HealthConsultationScheduleEntity.builder()
                 .student(student)
                 .result(result)
+                .parent(parent)
                 .reason(request.getReason())
                 .scheduleTime(request.getScheduleTime())
                 .status(MedicalStatus.PENDING)
                 .build();
 
         HealthConsultationScheduleEntity saved = scheduleRepo.save(entity);
+
+        String formattedTime = request.getScheduleTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+        sendMailService.sendConsultationScheduleEmail(
+                parent.getEmail(),
+                student.getUser().getFullname(),
+                formattedTime,
+                request.getReason()
+        );
+
+        notificationService.push(
+                creator.getUserId(),  // Nếu bạn có thông tin người tạo, truyền ID vào đây
+                parent.getUserId(),
+                "Lịch tư vấn sức khỏe",
+                "Bạn đã đặt lịch tư vấn cho con vào " + formattedTime
+        );
 
         return toResponse(saved);
     }
@@ -97,7 +158,9 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         return HealthConsultationScheduleResponseDTO.builder()
                 .id(entity.getId())
                 .studentName(entity.getStudent().getUser().getFullname())
+                .studentId(entity.getStudent().getId())
                 .parentName(entity.getStudent().getParent().getFullname())
+                .parentId(entity.getStudent().getParent().getUserId())
                 .resultId(entity.getResult().getResultId())
                 .scheduleTime(entity.getScheduleTime())
                 .reason(entity.getReason())

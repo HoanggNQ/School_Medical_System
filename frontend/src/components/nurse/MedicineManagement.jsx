@@ -239,7 +239,7 @@ const MedicineManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="Thông thường">Thông thường</SelectItem>
+                  {/* <SelectItem value="Thông thường">Thông thường</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>

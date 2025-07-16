@@ -13,6 +13,13 @@ import sms.swp391.models.entities.StudentEntity;
 import java.util.List;
 
 public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckConsentEntity, Long> {
+    @Query("""
+                SELECT c FROM HealthCheckConsentEntity c
+                WHERE c.healthCheckCampaign.id = :campaignId
+                  AND c.consentStatus = 'APPROVED'
+                  AND c.healthCheckCampaign.status = 'APPROVED'
+            """)
+    List<HealthCheckConsentEntity> findEligibleStudents(Long campaignId);
 
     // Find consent by campaign ID and student
     HealthCheckConsentEntity findByHealthCheckCampaignIdAndStudent
@@ -41,29 +48,30 @@ public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckC
     Long countByHealthCheckCampaign_Id(Long healthCheckCampaignId);
 
     Long countByHealthCheckCampaign_IdAndConsentStatus(Long healthCheckCampaignId, MedicalStatus consentStatus);
+
     // HealthCheckConsentRepository
     @Query("""
-    SELECT new sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO(
-        COUNT(h),
-        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.APPROVED THEN 1 ELSE 0 END),
-        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.REJECTED THEN 1 ELSE 0 END),
-        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.PENDING  THEN 1 ELSE 0 END),
-        SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.DONE     THEN 1 ELSE 0 END)
-    )
-    FROM HealthCheckConsentEntity h
-""")
+                SELECT new sms.swp391.models.dtos.responses.CampaignConsentStatisticsResponseDTO(
+                    COUNT(h),
+                    SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.APPROVED THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.REJECTED THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.PENDING  THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN h.consentStatus = sms.swp391.models.dtos.enums.MedicalStatus.DONE     THEN 1 ELSE 0 END)
+                )
+                FROM HealthCheckConsentEntity h
+            """)
     CampaignConsentStatisticsResponseDTO fetchOverallHealthConsentStats();
 
     Page<HealthCheckConsentEntity> findByHealthCheckCampaign_Id(Long campaignId, Pageable pageable);
 
-        @Query("""
-    SELECT c
-    FROM   HealthCheckConsentEntity c
-    WHERE  c.healthCheckCampaign.id = :campaignId
-      AND ( LOWER(c.student.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) )
-""")
+    @Query("""
+                SELECT c
+                FROM   HealthCheckConsentEntity c
+                WHERE  c.healthCheckCampaign.id = :campaignId
+                  AND ( LOWER(c.student.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) )
+            """)
     Page<HealthCheckConsentEntity> searchInCampaign(@Param("campaignId") Long campaignId,
-                                                    @Param("keyword")   String keyword,
+                                                    @Param("keyword") String keyword,
                                                     Pageable pageable);
 
     List<HealthCheckConsentEntity> findAllByHealthCheckCampaignId(Long healthCheckCampaignId);

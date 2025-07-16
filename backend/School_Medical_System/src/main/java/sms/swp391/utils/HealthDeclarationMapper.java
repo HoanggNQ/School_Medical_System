@@ -40,6 +40,7 @@ public class HealthDeclarationMapper {
                 .studentId(student.getId())
                 .declaredById(entity.getDeclaredBy().getUserId())
                 .studentName(student.getUser().getFullname())
+                .studentCode(student.getStudentCode())
                 .declaredByName(entity.getDeclaredBy().getFullname())
                 .declarationDate(entity.getDeclarationDate())
                 .status(entity.getStatus())

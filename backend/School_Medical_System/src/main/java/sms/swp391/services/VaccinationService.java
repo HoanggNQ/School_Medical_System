@@ -4,6 +4,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.requests.*;
 import sms.swp391.models.dtos.responses.*;
+import sms.swp391.models.entities.UserEntity;
+
 import java.util.List;
 
 public interface VaccinationService {
@@ -11,8 +13,8 @@ public interface VaccinationService {
     @Transactional
     void remindUnconfirmedParents(Long campaignId);
 
-    List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO req,
-                                                      Long nurseId);
+    @Transactional
+    List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO request, Long nurseId);
 
     // Campaign Management
     void endCampaign(Long campaignId);

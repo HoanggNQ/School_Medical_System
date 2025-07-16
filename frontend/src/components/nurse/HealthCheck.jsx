@@ -30,7 +30,7 @@ const HealthCheck = () => {
     temperature: '',
     otherNotes: '',
     recommendation: '',
-    followUpRequired: false,
+    // followUpRequired: false,
     followUpNotes: '',
     overallHealthRating: '',
     scheduleTime: '',
@@ -101,7 +101,7 @@ const HealthCheck = () => {
       temperature: '',
       otherNotes: '',
       recommendation: '',
-      followUpRequired: false,
+      // followUpRequired: false,
       followUpNotes: '',
       overallHealthRating: '',
       scheduleTime: '',
@@ -130,7 +130,7 @@ const HealthCheck = () => {
         temperature: Number(formData.temperature),
         otherNotes: formData.otherNotes,
         recommendation: formData.recommendation,
-        followUpRequired: !!formData.followUpRequired,
+        // followUpRequired: !!formData.followUpRequired,
         followUpNotes: formData.followUpNotes,
         overallHealthRating: formData.overallHealthRating,
         scheduleTime: formData.scheduleTime ? new Date(formData.scheduleTime).toISOString() : null,
@@ -195,28 +195,28 @@ const HealthCheck = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {studentsHealth.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-2 text-sm">{item.studentId}</td>
-                  <td className="px-4 py-2 text-sm">{item.studentName}</td>
-                  <td className="px-4 py-2 text-sm">{item.className}</td>
-                  <td className="px-4 py-2 text-sm">{item.campaignId}</td>
+              {studentsHealth.map((consent) => (
+                <tr key={consent.consentId}>
+                  <td className="px-4 py-2 text-sm">{consent.studentId}</td>
+                  <td className="px-4 py-2 text-sm">{consent.studentName}</td>
+                  <td className="px-4 py-2 text-sm">{consent.className}</td>
+                  <td className="px-4 py-2 text-sm">{consent.campaignId}</td>
                   <td className="px-4 py-2 text-sm">
-                    {item.status === 'DONE' ? 'Đã khám' :
-                     item.status === 'APPROVED' ? 'Đã đồng ý' :
-                     item.status === 'PENDING' ? 'Chờ xác nhận' :
-                     item.status === 'REJECTED' ? 'Từ chối' :
-                     item.status || 'Không rõ'}
+                    {consent.status === 'DONE' ? 'Đã khám' :
+                     consent.status === 'APPROVED' ? 'Đã đồng ý' :
+                     consent.status === 'PENDING' ? 'Chờ xác nhận' :
+                     consent.status === 'REJECTED' ? 'Từ chối' :
+                     consent.status || 'Không rõ'}
                   </td>
                   <td className="px-4 py-2 text-sm">
                     {/* Chỉ hiển thị nút nếu campaignStatus là 'APPROVED' và học sinh có status là 'APPROVED' */}
-                    {campaignStatus === 'APPROVED' && item.status === 'APPROVED' && (
-                      <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
+                    {campaignStatus === 'APPROVED' && consent.status === 'APPROVED' && (
+                      <Dialog open={showDialog && selectedStudent?.consentId === consent.consentId} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
                             variant="success"
-                            onClick={() => handleOpenDialog(item)}
+                            onClick={() => handleOpenDialog(consent)}
                             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
@@ -230,7 +230,7 @@ const HealthCheck = () => {
                           <form className="space-y-3">
                             <div>
                               <Label>Tên học sinh</Label>
-                              <div className="font-semibold">{item.studentName}</div>
+                              <div className="font-semibold">{consent.studentName}</div>
                             </div>
                             {/* <div>
                               <Label>Mã học sinh</Label>
@@ -289,16 +289,16 @@ const HealthCheck = () => {
                                 <Label htmlFor="recommendation">Khuyến nghị</Label>
                                 <Input id="recommendation" name="recommendation" value={formData.recommendation} onChange={handleInputChange} />
                               </div>
-                              <div className="flex items-center gap-2 md:col-span-2">
+                              {/* <div className="flex items-center gap-2 md:col-span-2">
                                 <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
                                 <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
-                              </div>
+                              </div> */}
                               <div className="md:col-span-2">
                                 <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
                                 <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
                               </div>
                               <div className="md:col-span-2">
-                                <Label htmlFor="scheduleTime">Thời gian lịch khám</Label>
+                                <Label htmlFor="scheduleTime">Thời gian lịch tái khám</Label>
                                 <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} />
                               </div>
                             </div>

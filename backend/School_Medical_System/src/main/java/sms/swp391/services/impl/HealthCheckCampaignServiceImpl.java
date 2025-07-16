@@ -1,9 +1,12 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthCheckCampaignRequestDTO;
 import sms.swp391.models.dtos.responses.ApprovedEventResponse;
@@ -88,14 +91,43 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     }
 
 
-
     @Override
+    @Transactional
     public void endCampaign(Long campaignId) {
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
+        if (campaign.getEndDate().isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Chiến dịch chưa tới ngày kết thúc. Ngày kết thúc là: " + campaign.getEndDate());
+        }
+
         campaign.setStatus(MedicalStatus.DONE);
         campaignRepository.save(campaign);
+
+        List<HealthCheckConsentEntity> consents = healthCheckConsentRepository.findByHealthCheckCampaignId(campaignId);
+
+        List<HealthCheckConsentEntity> toUpdate = new ArrayList<>();
+        for (HealthCheckConsentEntity consent : consents) {
+            if (MedicalStatus.PENDING.equals(consent.getConsentStatus())) {
+                consent.setConsentStatus(MedicalStatus.REJECTED);
+                consent.setResponseDate(LocalDate.now());
+                toUpdate.add(consent);
+
+                notificationService.push(
+                        campaign.getCreatedBy().getUserId(),
+                        consent.getParent().getUserId(),
+                        "Chiến dịch kiểm tra sức khỏe đã kết thúc",
+                        "Bạn chưa phản hồi đồng ý cho con tham gia chiến dịch \"" + campaign.getName() + "\". "
+                                + "Chiến dịch hiện đã kết thúc."
+                );
+            }
+        }
+
+        // 4. Lưu các consent bị cập nhật
+        if (!toUpdate.isEmpty()) {
+            healthCheckConsentRepository.saveAll(toUpdate);
+        }
     }
+
     private String getCurrentAcademicYear() {
         int y = LocalDate.now().getYear();
         return y + "-" + (y + 1);   // ví dụ 2025-2026
@@ -278,6 +310,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     public void startCampaign(Long campaignId) {
         HealthCheckCampaignEntity c = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
+
         c.setStatus(MedicalStatus.APPROVED);
         campaignRepository.save(c);
     }

@@ -30,6 +30,8 @@ import sms.swp391.utils.ExcelExporter;
 import sms.swp391.utils.StudentMapper;
 import sms.swp391.utils.UserMapper;
 
+import java.security.SecureRandom;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -47,6 +49,7 @@ public class StudentServiceImpl implements StudentService {
     private final HealthCheckCampaignRepository   hcRepo;
     private final VaccinationCampaignRepository   vacRepo;
     private final StudentHealthEventMapper        mapper;
+    private static final SecureRandom random = new SecureRandom();
 
     @Override
     @Transactional
@@ -231,13 +234,16 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+
     private String generateStudentCode() {
-        String SC;
+        String prefix = "SMS" + String.valueOf(Year.now().getValue()).substring(2); // SMS25
+        String studentCode;
         do {
-            SC = "SMS25" + RandomStringUtils.randomNumeric(4);
-        } while (studentRepository.existsByStudentCode(SC));
-        return SC;
+            studentCode = prefix + String.format("%04d", random.nextInt(10000)); // random 4 digits
+        } while (studentRepository.existsByStudentCode(studentCode));
+        return studentCode;
     }
+
 
     @Override
     public List<StudentResponse> findStudentByParent(Long parentId) {
