@@ -24,7 +24,7 @@ const EventListNurse = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [erroror, setErroror] = useState(null);
+  const [error, setErroror] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -141,8 +141,8 @@ const EventListNurse = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <span className="ml-2 text-gray-600">Đang tải...</span>
             </div>
-          ) : erroror ? (
-            <div className="text-red-500 text-center p-4">{erroror}</div>
+          ) : error ? (
+            <div className="text-red-500 text-center p-4">{error}</div>
           ) : (
             <Table>
               <TableHeader>

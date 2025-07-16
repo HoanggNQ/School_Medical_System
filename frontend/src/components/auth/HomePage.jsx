@@ -41,7 +41,7 @@ const HomePage = () => (
       <Card className="flex-1 flex flex-col justify-center items-center bg-white/90 shadow-xl">
         <CardHeader className="flex flex-col items-center">
           <School className="w-12 h-12 text-orange-500 mb-2" />
-          <CardTitle className="text-3xl md:text-4xl font-bold text-orange-700 text-center">Trường THPT FPT</CardTitle>
+          <CardTitle className="text-3xl md:text-4xl font-bold text-orange-700 text-center">Trường Tiểu Học</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center">
           <img
@@ -90,7 +90,7 @@ const HomePage = () => (
       </Card>
     </div>
     <div className="mt-10 text-center text-gray-400 text-sm">
-      © {new Date().getFullYear()} Trường THPT FPT. Hệ thống Quản lý Y tế Học đường.
+      © {new Date().getFullYear()} Trường Tiểu Học. Hệ thống Quản lý Y tế Học đường.
     </div>
   </motion.div>
 );
