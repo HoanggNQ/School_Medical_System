@@ -201,7 +201,6 @@ const StudentHealthProfile = ({ selectedStudent }) => {
               </div>
             </div>
           </div>
-       com
         </CardContent>
       </Card>
 
