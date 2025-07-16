@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useParams, useLocation } from "react-router-dom";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table"
 
 const ManagementVaccine = () => {
   const { toast } = useToast()
@@ -148,39 +150,55 @@ const ManagementVaccine = () => {
             <span className="text-red-800">{errorVaccine}</span>
           </div>
         </div>
-      ) : studentsVaccine.length === 0 ? (
-        <div className="text-center py-6">
-          <Syringe className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-          <p className="text-gray-500">Không có học sinh nào chuẩn bị tiêm chủng.</p>
-        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <h3 className="text-xl font-bold mb-2">Chiến dịch {campaignId}</h3>
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">ID</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">TÊN HỌC SINH</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">CHIẾN DỊCH</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">TRẠNG THÁI</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">GHI NHẬN</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedStudents.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-2 text-sm">{item.studentId}</td>
-                  <td className="px-4 py-2 text-sm">{item.studentName}</td>
-                  <td className="px-4 py-2 text-sm">{item.campaignId}</td>
-                  <td className="px-4 py-2 text-sm">
+        <div>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <CardTitle>Danh sách học sinh chuẩn bị tiêm chủng ({totalElements} học sinh)</CardTitle>
+                {/* Nếu cần search/filter, thêm vào đây */}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Tên học sinh</TableHead>
+                    <TableHead>Chiến dịch</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Ghi nhận</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedStudents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                        Không có học sinh nào chuẩn bị tiêm chủng.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedStudents.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.studentId}</TableCell>
+                        <TableCell>{item.studentName}</TableCell>
+                        <TableCell>{item.campaignId}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            item.consentStatus === 'DONE' ? 'bg-green-100 text-green-800' :
+                            item.consentStatus === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
+                            item.consentStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            item.consentStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
                     {item.consentStatus === 'DONE' ? 'Đã tiêm chủng' :
                      item.consentStatus === 'APPROVED' ? 'Đã đồng ý' :
                      item.consentStatus === 'PENDING' ? 'Chờ xác nhận' :
                      item.consentStatus === 'REJECTED' ? 'Từ chối' :
                      item.consentStatus || 'Không rõ'}
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và vaccinationStatus là 'ACTIVE' */}
+                          </span>
+                        </TableCell>
+                        <TableCell>
                     {item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
@@ -197,34 +215,14 @@ const ManagementVaccine = () => {
                               <Label>Tên học sinh</Label>
                               <div className="font-semibold">{item.studentName}</div>
                             </div>
-                            {/* <div className="flex items-center gap-2">
-                              <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
-                              <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
-                            </div> */}
-                            {/* <div>
-                              <Label htmlFor="nextDoseDate">Ngày tiêm liều tiếp theo</Label>
-                              <Input id="nextDoseDate" name="nextDoseDate" type="date" value={formData.nextDoseDate} onChange={handleInputChange} className="w-full" />
-                            </div> */}
-                            {/* <div>
-                              <Label htmlFor="expirationDate">Ngày hết hạn</Label>
-                              <Input id="expirationDate" name="expirationDate" type="date" value={formData.expirationDate} onChange={handleInputChange} className="w-full" />
-                            </div> */}
                             <div>
                               <Label htmlFor="injectionSite">Vị trí tiêm</Label>
                               <Input id="injectionSite" name="injectionSite" value={formData.injectionSite} onChange={handleInputChange} className="w-full" />
                             </div>
-                            {/* <div>
-                              <Label htmlFor="lotNumber">Số lô</Label>
-                              <Input id="lotNumber" name="lotNumber" value={formData.lotNumber} onChange={handleInputChange} className="w-full" />
-                            </div> */}
                             <div>
                               <Label htmlFor="vaccineName">Tên vaccine</Label>
                               <Input id="vaccineName" name="vaccineName" value={formData.vaccineName} onChange={handleInputChange} className="w-full" />
                             </div>
-                            {/* <div>
-                              <Label htmlFor="vaccineBatch">Số lô vaccine (vaccineBatch)</Label>
-                              <Input id="vaccineBatch" name="vaccineBatch" value={formData.vaccineBatch} onChange={handleInputChange} className="w-full" />
-                            </div> */}
                             <div>
                               <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
                               <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} className="w-full" />
@@ -245,33 +243,36 @@ const ManagementVaccine = () => {
                         </DialogContent>
                       </Dialog>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {/* Pagination UI dưới bảng */}
-          <div className="flex justify-center items-center mt-8 gap-2">
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+          <div className="flex justify-between items-center mt-4">
+            <span>
+              Trang {page + 1} / {totalPages} ({totalElements} học sinh)
+            </span>
+            <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
+                disabled={page === 0}
               onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-              disabled={page === 0}
             >
               Trang trước
             </Button>
-            <span>
-              Trang {page + 1} / {totalPages}
-            </span>
             <Button
               variant="outline"
               size="sm"
+                disabled={page + 1 >= totalPages}
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-              disabled={page >= totalPages - 1}
             >
               Trang sau
             </Button>
-            <span className="ml-4 text-sm text-gray-500">Tổng: {totalElements} học sinh</span>
+            </div>
           </div>
         </div>
       )}

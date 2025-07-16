@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { medicalService } from '../../api/services/medical.service';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const statusMap = {
   PENDING: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800' },
@@ -19,12 +19,12 @@ const statusMap = {
 };
 
 const EventListNurse = () => {
-  // ===== LOGIC & STATE =====
+  const { toast  } = useToast();
   const { campaignId } = useParams();
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [erroror, setErroror] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -37,12 +37,13 @@ const EventListNurse = () => {
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
-      setError(null);
+      setErroror(null);
       try {
         const res = await medicalService.getHealthCheckResultsByCampaign(campaignId);
         setResults(res.data || []);
-      } catch (err) {
-        setError('Lỗi khi tải danh sách kết quả khám sức khỏe');
+      } catch (error) {
+        setErroror(error?.message || 'Lỗi khi tải danh sách kết quả khám sức khỏe');
+        console.log("error.message", error?.message);
       } finally {
         setLoading(false);
       }
@@ -72,7 +73,7 @@ const EventListNurse = () => {
     }
     setCreatingSchedule(true);
     try {
-      await medicalService.createConsultationSchedule({
+      const res = await medicalService.createConsultationSchedule({
         studentId: selectedScheduleStudent.studentId,
         resultId: selectedScheduleStudent.id,
         scheduleTime: scheduleForm.scheduleTime,
@@ -81,8 +82,21 @@ const EventListNurse = () => {
       toast({ title: 'Thành công', description: 'Đã tạo lịch tư vấn y tế.' });
       setShowCreateScheduleModal(false);
       setScheduleForm({ scheduleTime: '', reason: '' });
-    } catch (err) {
-      toast({ title: 'Lỗi', description: err?.message || 'Không thể tạo lịch tư vấn.' });
+    } catch (error) {
+      const errorMessage = error.customMessage || 
+                           error.response?.data?.message || 
+                           error.message || 
+                           'Đã có lỗi xảy ra.';
+      
+      console.log("Lỗi chi tiết:", error);
+      console.log("customMessage chi tiết  :", error.customMessage);
+
+      toast({
+        title: 'Lỗi',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    
     } finally {
       setCreatingSchedule(false);
     }
@@ -125,8 +139,8 @@ const EventListNurse = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <span className="ml-2 text-gray-600">Đang tải...</span>
             </div>
-          ) : error ? (
-            <div className="text-red-500 text-center p-4">{error}</div>
+          ) : erroror ? (
+            <div className="text-red-500 text-center p-4">{erroror}</div>
           ) : (
             <Table>
               <TableHeader>
@@ -273,7 +287,9 @@ const EventListNurse = () => {
               <Button type="submit" disabled={creatingSchedule}>{creatingSchedule ? 'Đang tạo...' : 'Tạo lịch khám'}</Button>
             </div>
           </form>
+          
         </DialogContent>
+      
       </Dialog>
     </motion.div>
   );
