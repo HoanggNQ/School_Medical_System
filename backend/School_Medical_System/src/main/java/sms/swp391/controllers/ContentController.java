@@ -3,8 +3,10 @@ package sms.swp391.controllers;
     import io.swagger.v3.oas.annotations.Operation;
     import lombok.AllArgsConstructor;
     import org.springframework.http.HttpStatus;
+    import org.springframework.http.MediaType;
     import org.springframework.http.ResponseEntity;
     import org.springframework.web.bind.annotation.*;
+    import org.springframework.web.multipart.MultipartFile;
     import sms.swp391.models.dtos.requests.ContentRequest;
     import sms.swp391.models.dtos.responses.ContentResponse;
     import sms.swp391.models.dtos.responses.ResponseObject;
@@ -25,34 +27,40 @@ package sms.swp391.controllers;
         private final ContentService contentService;
 
         @Operation(summary = "Tạo bài báo", description = "Khởi tạo một bài báo mới với mục có sẵn")
-        @PostMapping("/create")
-        public ResponseEntity<ResponseObject> create(@RequestBody ContentRequest request) {
-            ContentResponse content = contentService.createContent(request);
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("CREATE_SUCCESS")
-                            .message("Content created successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(content)
-                            .build()
-            );
+        @PostMapping(path = "/createWithImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public ResponseEntity<ResponseObject> createWithImage(
+                @RequestPart("content") ContentRequest request,
+                @RequestPart(value = "image", required = false) MultipartFile image) {
+
+            ContentResponse content = contentService.createContent(request, image);
+
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("CREATE_SUCCESS")
+                    .message("Created successfully with image")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(content)
+                    .build());
         }
 
         @Operation(summary = "Cập nhật bài báo", description = "Chỉnh sửa thông tin bài báo theo id")
-        @PutMapping("/update/{id}")
-        public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody ContentRequest request) {
-            ContentResponse content = contentService.updateContent(id, request);
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .code("UPDATE_SUCCESS")
-                            .message("Content updated successfully")
-                            .status(HttpStatus.OK)
-                            .isSuccess(true)
-                            .data(content)
-                            .build()
-            );
+        @PutMapping(path = "/updateWithImage/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public ResponseEntity<ResponseObject> updateWithImage(
+                @PathVariable Long id,
+                @RequestPart("content") ContentRequest request,
+                @RequestPart(value = "image", required = false) MultipartFile image) {
+
+            ContentResponse content = contentService.updateContent(id, request, image);
+
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .code("UPDATE_SUCCESS")
+                    .message("Updated successfully with image")
+                    .status(HttpStatus.OK)
+                    .isSuccess(true)
+                    .data(content)
+                    .build());
         }
+
 
         @Operation(summary = "Xóa bài báo", description = "Xóa bài báo theo ID.")
         @DeleteMapping("/delete/{id}")

@@ -13,6 +13,7 @@ public class ContentMapper {
                 .bodyContent(entity.getBodyContent())
                 .contentCategoryId(entity.getContentCategoryEntity().getId())
                 .contentCategoryName(entity.getContentCategoryEntity().getContentcategoryName())
+                .imageUrl(entity.getImageUrl())
                 .authorName(entity.getCreatedBy().getFullname())
                 .authorAvatarUrl(entity.getCreatedBy().getAvatarurl()) // đảm bảo UserEntity có trường này
                 .createdAt(entity.getCreatedAt())
