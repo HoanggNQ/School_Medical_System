@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const baseURL = 'https://school-medical-system.onrender.com';
+const baseURL = 'http://localhost:8080/';
 
 
 const axiosInstance = axios.create({

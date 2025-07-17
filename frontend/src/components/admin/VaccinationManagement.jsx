@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, Info, Calendar as CalendarIcon, Layers, ClipboardList, BadgeCheck, Bell } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Clock, MapPin, Info, Calendar as CalendarIcon, Layers, ClipboardList, BadgeCheck, Bell, Stethoscope, Syringe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -312,21 +312,20 @@ const validate = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6"
+      className="space-y-6 min-h-screen"
     >
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch tiêm chủng</h1>
-          <p className="text-gray-600 mt-2">Lập lịch và quản lý các đợt tiêm chủng</p>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <span className="bg-blue-200 p-2 rounded-full">
+            <Syringe className="h-7 w-7 text-blue-700" />
+          </span>
+          <div>
+            <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Quản lý lịch tiêm chủng</h1>
+            <p className="text-blue-500 mt-2">Lập lịch và quản lý các đợt tiêm chủng</p>
+          </div>
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="btn-primary">
-              <Plus className="w-4 h-4 mr-2" />
-              Tạo lịch tiêm
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Tạo lịch tiêm chủng mới</DialogTitle>
             </DialogHeader>
@@ -339,22 +338,25 @@ const validate = () => {
               loading={loading}
               errors={errors}
             />
-          
           </DialogContent>
         </Dialog>
+        <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md rounded-lg px-4 py-2 transition">
+          <Plus className="w-5 h-5" />
+          Tạo lịch tiêm
+        </Button>
       </div>
 
-      <Card>
+      <Card className="bg-white/90 shadow border border-blue-100 rounded-xl">
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <CardTitle>Danh sách lịch tiêm chủng</CardTitle>
             <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
               <Input
                 placeholder="Tìm kiếm lịch tiêm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-lg border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -379,7 +381,7 @@ const validate = () => {
               {filteredVaccinations.map((vaccination) => (
                 <TableRow
                   key={vaccination.id}
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:bg-blue-50 transition"
                   onClick={() => { setSelectedDetail(vaccination); setIsDetailModalOpen(true); }}
                 >
                   <TableCell className="font-medium">{vaccination.id}</TableCell>
@@ -390,13 +392,14 @@ const validate = () => {
                   <TableCell>{vaccination.endDate}</TableCell>
                   <TableCell>{Array.isArray(vaccination.targetGrade) ? (vaccination.targetGrade.length === 0 ? 'Toàn trường' : vaccination.targetGrade.join(', ')) : (vaccination.targetGrade === 0 ? 'Toàn trường' : vaccination.targetGrade)}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      vaccination.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                      vaccination.status === 'DONE' ? 'bg-orange-500 text-white' :
-                      vaccination.status === 'REJECTED' ? 'bg-gray-400 text-white' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1
+                      ${vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        vaccination.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                        vaccination.status === 'DONE' ? 'bg-blue-100 text-blue-800' :
+                        vaccination.status === 'REJECTED' ? 'bg-gray-400 text-white' :
+                        'bg-gray-100 text-gray-800'}
+                    `}>
+                      <BadgeCheck className="h-3 w-3 text-blue-500" />
                       {vaccination.status === 'PENDING' ? 'Chờ diễn ra' :
                         vaccination.status === 'APPROVED' ? 'Đang diễn ra' :
                         vaccination.status === 'DONE' ? 'Đã xong' :
@@ -407,30 +410,29 @@ const validate = () => {
                   <TableCell>{vaccination.createdAt}</TableCell>
                   <TableCell>
                     <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                    {(vaccination.status === 'PENDING' || vaccination.status === 'SCHEDULED') && (
-                        <Button size="icon" variant="outline" onClick={() => handleRemindVaccination(vaccination.id)} disabled={loading}>
+                      {(vaccination.status === 'PENDING' || vaccination.status === 'SCHEDULED') && (
+                        <Button size="icon" variant="outline" onClick={() => handleRemindVaccination(vaccination.id)} disabled={loading} className="border-blue-200 hover:bg-blue-50">
                           <Bell className="w-4 h-4 text-blue-500" />
                         </Button>
                       )}
                       {vaccination.status === 'PENDING' && (
-                        <Button size="icon" variant="outline" onClick={() => openEditModal(vaccination)}>
+                        <Button size="icon" variant="outline" onClick={() => openEditModal(vaccination)} className="border-blue-200 hover:bg-blue-50">
                           <Edit className="w-4 h-4 text-blue-500" />
                         </Button>
                       )}
-                      <Button size="icon" variant="outline" onClick={() => handleDeleteVaccination(vaccination.id)}>
+                      <Button size="icon" variant="outline" onClick={() => handleDeleteVaccination(vaccination.id)} className="border-blue-200 hover:bg-blue-50">
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
                       {vaccination.status === 'PENDING' && (
-                        <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartVaccination(vaccination.id)} disabled={loading}>
+                        <Button size="sm" className="bg-green-500 text-white hover:bg-green-600 rounded-lg" onClick={() => handleStartVaccination(vaccination.id)} disabled={loading}>
                           Bắt đầu 
                         </Button>
                       )}
                       {vaccination.status === 'APPROVED' && (
-                        <Button size="sm" className="bg-red-500 text-white hover:bg-red-600" onClick={() => handleEndVaccination(vaccination.id)} disabled={loading}>
+                        <Button size="sm" className="bg-red-500 text-white hover:bg-red-600 rounded-lg" onClick={() => handleEndVaccination(vaccination.id)} disabled={loading}>
                           Kết thúc 
                         </Button>
                       )}
-                     
                     </div>
                   </TableCell>
                 </TableRow>
@@ -441,7 +443,7 @@ const validate = () => {
       </Card>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Chỉnh sửa lịch tiêm chủng</DialogTitle>
           </DialogHeader>
@@ -454,82 +456,75 @@ const validate = () => {
             loading={loading}
             errors={errors}
           />
-         
-          {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
-          {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
-          {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
-          {errors.notes && <div className="text-red-500 text-sm">{errors.notes}</div>}
-          {errors.vaccineType && <div className="text-red-500 text-sm">{errors.vaccineType}</div>}
-          {errors.startDate && <div className="text-red-500 text-sm">{errors.startDate}</div>}
-          {errors.endDate && <div className="text-red-500 text-sm">{errors.endDate}</div>}
-          {errors.manufacturer && <div className="text-red-500 text-sm">{errors.manufacturer}</div>}
         </DialogContent>
       </Dialog>
 
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl">
           <DialogHeader>
-            <DialogTitle>Chi tiết lịch tiêm chủng</DialogTitle>
+            <DialogTitle className="text-blue-700 flex items-center gap-2">
+              <Syringe className="h-5 w-5 text-blue-500" />Chi tiết lịch tiêm chủng
+            </DialogTitle>
           </DialogHeader>
           {selectedDetail && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 py-4">
               <div className="flex items-center gap-1">
                 <Info className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Tên chiến dịch:</span>
+                <span className="font-semibold text-blue-700">Tên chiến dịch:</span>
               </div>
               <div className="truncate">{selectedDetail.name}</div>
 
               <div className="flex items-center gap-2">
                 <ClipboardList className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Loại vắc xin:</span>
+                <span className="font-semibold text-blue-700">Loại vắc xin:</span>
               </div>
               <div className="truncate">{selectedDetail.vaccineType}</div>
 
               <div className="flex items-center gap-2">
                 <ClipboardList className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Nhà sản xuất:</span>
+                <span className="font-semibold text-blue-700">Nhà sản xuất:</span>
               </div>
               <div className="truncate">{selectedDetail.manufacturer}</div>
 
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Ngày bắt đầu:</span>
+                <span className="font-semibold text-blue-700">Ngày bắt đầu:</span>
               </div>
               <div>{selectedDetail.startDate}</div>
 
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Ngày kết thúc:</span>
+                <span className="font-semibold text-blue-700">Ngày kết thúc:</span>
               </div>
               <div>{selectedDetail.endDate}</div>
 
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Khối lớp:</span>
+                <span className="font-semibold text-blue-700">Khối lớp:</span>
               </div>
               <div>{Array.isArray(selectedDetail.targetGrade) ? (selectedDetail.targetGrade.length === 0 ? 'Toàn trường' : selectedDetail.targetGrade.join(', ')) : (selectedDetail.targetGrade === 0 ? 'Toàn trường' : selectedDetail.targetGrade)}</div>
 
               <div className="flex items-center gap-2">
                 <ClipboardList className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Ghi chú:</span>
+                <span className="font-semibold text-blue-700">Ghi chú:</span>
               </div>
               <div className="whitespace-pre-line">{selectedDetail.notes}</div>
 
               <div className="flex items-center gap-2">
                 <ClipboardList className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Mô tả:</span>
+                <span className="font-semibold text-blue-700">Mô tả:</span>
               </div>
               <div className="whitespace-pre-line">{selectedDetail.description}</div>
 
               <div className="flex items-center gap-2">
                 <BadgeCheck className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Trạng thái:</span>
+                <span className="font-semibold text-blue-700">Trạng thái:</span>
               </div>
               <div>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                   selectedDetail.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                   selectedDetail.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                  selectedDetail.status === 'DONE' ? 'bg-orange-500 text-white' :
+                  selectedDetail.status === 'DONE' ? 'bg-blue-100 text-blue-800' :
                   selectedDetail.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                   'bg-gray-100 text-gray-800'
                 }`}>
@@ -542,13 +537,13 @@ const validate = () => {
               </div>
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">Ngày tạo:</span>
+                <span className="font-semibold text-blue-700">Ngày tạo:</span>
               </div>
               <div>{selectedDetail.createdAt}</div>
             </div>
           )}
           <div className="flex justify-end mt-4">
-            <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>Đóng</Button>
+            <Button variant="outline" onClick={() => setIsDetailModalOpen(false)} className="border-blue-200 hover:bg-blue-50">Đóng</Button>
           </div>
         </DialogContent>
       </Dialog>

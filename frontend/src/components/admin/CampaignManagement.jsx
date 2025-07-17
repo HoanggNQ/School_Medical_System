@@ -349,12 +349,12 @@ const CampaignManagement = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6 min-h-screen bg-gradient-to-br from-blue-50 to-blue-100"
+            className="space-y-6 min-h-screen"
         >
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
                     <span className="bg-blue-200 p-2 rounded-full">
-                        <Syringe className="h-7 w-7 text-blue-700" />
+                        <Stethoscope className="h-7 w-7 text-blue-700" />
                     </span>
                     <div>
                         <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Quản lý chiến dịch</h1>
@@ -506,7 +506,9 @@ const CampaignManagement = () => {
             <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
                 <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl">
                     <DialogHeader>
-                        <DialogTitle className="text-blue-700 flex items-center gap-2"><Syringe className="h-5 w-5 text-blue-500" />Chi tiết chiến dịch</DialogTitle>
+                        <DialogTitle className="text-blue-700 flex items-center gap-2">
+                            <Stethoscope className="h-5 w-5 text-blue-500" />Chi tiết chiến dịch
+                        </DialogTitle>
                     </DialogHeader>
                     {selectedDetail && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y- py-4">
