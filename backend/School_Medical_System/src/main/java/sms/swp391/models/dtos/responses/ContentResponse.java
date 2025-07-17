@@ -19,4 +19,5 @@ public class ContentResponse {
     private String authorName;
     private String authorAvatarUrl;
     private LocalDateTime createdAt;
+    private String imageUrl;
 }
