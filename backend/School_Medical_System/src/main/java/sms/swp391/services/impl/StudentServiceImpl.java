@@ -283,12 +283,32 @@ public class StudentServiceImpl implements StudentService {
     @Mapper(componentModel = "spring")
     public interface StudentHealthEventMapper {
 
-        @Mapping(expression = "java(p.getConsentId() == null ? \"Chiến dịch chưa bắt đầu\" : \"Đã có consent\")",
-                target = "consentStatusText")
-        @Mapping(expression = "java(p.getResultStatus() == null ? \"Chưa ghi nhập kết quả\" : p.getResultStatus())",
-                target = "resultStatus")
+        @Mapping(expression = """
+        java(
+            switch (p.getConsentStatus()) {
+                case "APPROVED" -> "Phụ huynh đã đồng ý";
+                case "REJECTED" -> "Phụ huynh đã từ chối";
+                case "PENDING" -> "Đang chờ phản hồi";
+                default -> "Không rõ trạng thái";
+            }
+        )
+    """, target = "consentStatusText")
+
+        @Mapping(expression = """
+        java(
+            switch (p.getResultStatus()) {
+                case "COMPLETED" -> "Đã hoàn thành";
+                case "APPROVED" -> "Phụ huynh đồng ý";
+                case "REJECTED" -> "Đã bị từ chối";
+                case "PENDING" -> "Đang chờ xử lý";
+                default -> "Chưa rõ kết quả";
+            }
+        )
+    """, target = "resultStatus")
+
         StudentHealthEventResponseDTO toDto(StudentHealthEventProjection p);
     }
+
     @Override
     public ResponseEntity<ResponseObject> importStudentsFromExcel(MultipartFile file) {
         try {
