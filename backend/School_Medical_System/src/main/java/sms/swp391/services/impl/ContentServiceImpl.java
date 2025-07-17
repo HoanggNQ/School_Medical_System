@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.requests.ContentRequest;
 import sms.swp391.models.dtos.responses.ContentResponse;
 import sms.swp391.models.dtos.responses.PaginatedContentResponse;
@@ -15,6 +16,7 @@ import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.ContentCategoryRepository;
 import sms.swp391.repositories.ContentRepository;
 import sms.swp391.services.ContentService;
+import sms.swp391.services.FileDatabaseService;
 import sms.swp391.utils.ContentMapper;
 
 import org.springframework.data.domain.*;
@@ -29,38 +31,48 @@ public class ContentServiceImpl implements ContentService {
 
     private final ContentRepository contentRepository;
     private final ContentCategoryRepository contentCategoryRepository;
+    private final FileDatabaseService fileDatabaseService;
 
     @Override
-    public ContentResponse createContent(ContentRequest request) {
-
-        ContentCategoryEntity category = contentCategoryRepository.findById(request.getContentCategoryId())
+    public ContentResponse createContent(ContentRequest request, MultipartFile image) {
+        var category = contentCategoryRepository.findById(request.getContentCategoryId())
                 .orElseThrow(() -> new NotFoundException("Category not found"));
 
-        ContentEntity entity = new ContentEntity();
-        entity.setTitle(request.getTitle());
-        entity.setBodyContent(request.getBodyContent());
-        entity.setContentCategoryEntity(category);
-        entity.setCreatedAt(LocalDateTime.now());
+        var content = new ContentEntity();
+        content.setTitle(request.getTitle());
+        content.setBodyContent(request.getBodyContent());
+        content.setContentCategoryEntity(category);
+        content.setCreatedAt(LocalDateTime.now());
+        content.setCreatedBy(getCurrentUserId());
 
-        entity.setCreatedBy(getCurrentUserId());
+        if (image != null && !image.isEmpty()) {
+            var uploaded = fileDatabaseService.uploadFile(image);
+            content.setImageUrl(uploaded.getUrl());
+        }
 
-        return ContentMapper.toResponse(contentRepository.save(entity));
+        var saved = contentRepository.save(content);
+        return ContentMapper.toResponse(saved);
     }
 
     @Override
-    public ContentResponse updateContent(Long id, ContentRequest request) {
-
-        ContentEntity entity = contentRepository.findById(id)
+    public ContentResponse updateContent(Long id, ContentRequest request, MultipartFile image) {
+        var content = contentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Content not found"));
 
-        ContentCategoryEntity category = contentCategoryRepository.findById(request.getContentCategoryId())
+        var category = contentCategoryRepository.findById(request.getContentCategoryId())
                 .orElseThrow(() -> new NotFoundException("Category not found"));
 
-        entity.setTitle(request.getTitle());
-        entity.setBodyContent(request.getBodyContent());
-        entity.setContentCategoryEntity(category);
+        content.setTitle(request.getTitle());
+        content.setBodyContent(request.getBodyContent());
+        content.setContentCategoryEntity(category);
 
-        return ContentMapper.toResponse(contentRepository.save(entity));
+        if (image != null && !image.isEmpty()) {
+            var uploaded = fileDatabaseService.uploadFile(image);
+            content.setImageUrl(uploaded.getUrl());
+        }
+
+        var saved = contentRepository.save(content);
+        return ContentMapper.toResponse(saved);
     }
 
     @Override
