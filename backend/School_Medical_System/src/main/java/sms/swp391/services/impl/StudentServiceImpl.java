@@ -1,9 +1,7 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +40,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
 
+
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final ClassRepository classRepository;
     private final PasswordEncoder passwordEncoder;
     private final HealthCheckCampaignRepository   hcRepo;
     private final VaccinationCampaignRepository   vacRepo;
-    private final StudentHealthEventMapper        mapper;
     private static final SecureRandom random = new SecureRandom();
 
     @Override
@@ -273,41 +271,18 @@ public class StudentServiceImpl implements StudentService {
             return Page.empty(pageable);
         }
 
-        List<StudentHealthEventResponseDTO> dtoPage = merged.subList(start, end).stream()
-                .map(mapper::toDto)
-                .toList();
+        List<StudentHealthEventProjection> pageContent = merged.subList(start, end);
 
-        return new PageImpl<>(dtoPage, pageable, merged.size());
+        List<StudentHealthEventResponseDTO> dtos = pageContent.stream()
+                .map(StudentMapper::toHealthEventDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, merged.size());
     }
 
-    @Mapper(componentModel = "spring")
-    public interface StudentHealthEventMapper {
 
-        @Mapping(expression = """
-        java(
-            switch (p.getConsentStatus()) {
-                case "APPROVED" -> "Phụ huynh đã đồng ý";
-                case "REJECTED" -> "Phụ huynh đã từ chối";
-                case "PENDING" -> "Đang chờ phản hồi";
-                default -> "Không rõ trạng thái";
-            }
-        )
-    """, target = "consentStatusText")
 
-        @Mapping(expression = """
-        java(
-            switch (p.getResultStatus()) {
-                case "COMPLETED" -> "Đã hoàn thành";
-                case "APPROVED" -> "Phụ huynh đồng ý";
-                case "REJECTED" -> "Đã bị từ chối";
-                case "PENDING" -> "Đang chờ xử lý";
-                default -> "Chưa rõ kết quả";
-            }
-        )
-    """, target = "resultStatus")
 
-        StudentHealthEventResponseDTO toDto(StudentHealthEventProjection p);
-    }
 
     @Override
     public ResponseEntity<ResponseObject> importStudentsFromExcel(MultipartFile file) {
