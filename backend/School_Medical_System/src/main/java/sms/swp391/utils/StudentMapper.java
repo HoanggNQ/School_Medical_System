@@ -29,9 +29,10 @@ public class StudentMapper {
     private static String mapConsentStatusText(String status) {
         if (status == null) return "Không rõ";
         return switch (status) {
-            case "PENDING" -> "Chưa phản hồi";
-            case "APPROVED" -> "Đồng ý";
-            case "REJECTED" -> "Từ chối";
+            case "DONE" -> "DONE";
+            case "PENDING" -> "PENDING";
+            case "APPROVED" -> "APPROVED";
+            case "REJECTED" -> "REJECTED";
             default -> "Không rõ";
         };
     }
@@ -39,9 +40,10 @@ public class StudentMapper {
     private static String mapResultStatusText(String status) {
         if (status == null) return "Chưa có kết quả";
         return switch (status) {
-            case "PENDING" -> "Chưa phản hồi";
-            case "APPROVED" -> "Đồng ý";
-            case "REJECTED" -> "Từ chối";
+            case "DONE" -> "DONE";
+            case "PENDING" -> "PENDING";
+            case "APPROVED" -> "APPROVED";
+            case "REJECTED" -> "REJECTED";
             default -> "Chưa có kết quả";
         };
     }
@@ -49,8 +51,8 @@ public class StudentMapper {
     private static String mapType(String type) {
         if (type == null) return "Khác";
         return switch (type) {
-            case "HEALTH_CHECK" -> "Khám sức khỏe";
-            case "VACCINATION" -> "Tiêm chủng";
+            case "HEALTH_CHECK" -> "HEALTH_CHECK";
+            case "VACCINATION" -> "VACCINATION";
             default -> "Khác";
         };
     }
