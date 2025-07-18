@@ -112,6 +112,15 @@ export const medicalService = {
     }
   },
 
+  getMedicationRequestById: async (requestId) => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.MEDICATION_REQUEST.GET_BY_ID(requestId));
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 
   // Medical Event APIs
   createMedicalEvent: async (eventData) => {
@@ -238,6 +247,45 @@ export const medicalService = {
         API_ENDPOINTS.Health_Declaration.GET_ALL_DECLARATIONS, // phải trỏ tới /api/v1/health-declarations/search
         { params }
       );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Nurse Consultation Schedules
+  getNurseConsultationSchedules: async () => {
+    try {
+      const params = { page: 0, size: 10, sort: 'scheduleTime,DESC' };
+      const response = await axiosInstance.get('/api/v1/consultation-schedules/search', { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  createConsultationSchedule: async (data) => {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CONSULTATION_SCHEDULE.CREATE, data);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  getConsultationSchedules: async (page = 0, size = 10) => {
+    try {
+      const params = { page, size, sort: 'scheduleTime,DESC' };
+      const response = await axiosInstance.get('/api/v1/consultation-schedules/search', { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  getConsultationScheduleById: async (id) => {
+    try {
+      const response = await axiosInstance.get(`/api/v1/consultation-schedules/${id}`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);

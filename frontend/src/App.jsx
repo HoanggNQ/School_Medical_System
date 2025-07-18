@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
@@ -11,6 +11,8 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 // import PublicHeader from '@/components/layout/PublicHeader';
 import Dashboard from '@/components/dashboard/Dashboard';
+import DashboardNurse1 from '@/components/dashboard/DashboardNurse1';
+import DashboardNurse from '@/components/nurse/DashboardNurse';
 import UserManagement from '@/components/admin/UserManagement';
 import StudentManagement from './components/admin/StudentManagement';
 import VaccinationManagement from '@/components/admin/VaccinationManagement';
@@ -33,6 +35,7 @@ import ManagementVaccine from './components/nurse/ManagementVaccine';
 import HealthCheck from './components/nurse/HealthCheck';
 import Event from './components/nurse/Event';
 import PlaceholderPage from './components/nurse/PlaceholderPage';
+import MedicationRequestDetail from './components/nurse/MedicationRequestDetail';
 import CampaignsNurse from './components/nurse/CampaignsNurse';
 import HomePage from './components/auth/HomePage';
 import ShowListCampaign from './components/admin/ShowLIstCampaign';
@@ -46,6 +49,9 @@ import HeathResult from './components/nurse/HeathResult';
 import VaccineResult from './components/nurse/VaccineResult';
 import HealthDeclaration from './components/parent/health-declaration';
 import HealthDeclarationSearch from './components/nurse/HealthDeclarationSearch';
+import EventListNurse from './components/nurse/EventListNurse';
+import ConsultationScheduleList from './components/nurse/ConsultationScheduleList';
+import ConsultationScheduleDetail from './components/nurse/ConsultationScheduleDetail';
 
 const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login');
@@ -140,7 +146,7 @@ const AppLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* <TestSidebar activeTab={activeTab} setActiveTab={setActiveTab} /> */}
+     
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* <Header /> */}
@@ -187,9 +193,10 @@ const NotFoundPage = () => (
 // Hàm xác định route mặc định cho từng role
 const getDefaultRoute = (role) => {
   switch (role) {
-    
     case 'ADMIN':
       return '/dashboard';
+    case 'SCHOOL_NURSE':
+      return '/dashboard-nurse';
     case 'STUDENT':
     case 'PARENT':
     default:
@@ -214,10 +221,12 @@ function App() {
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/auth" element={user ? <Navigate to={getDefaultRoute(user.role)} /> : <AuthPage />} />
         <Route path="/blog" element={<BlogListPage />} />
+    
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<AppLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard-nurse" element={<DashboardNurse />} />
             <Route path="profile" element={<ProfileForm />} />
             <Route path="change-password" element={<ChangePasswordForm />} />
 
@@ -235,8 +244,12 @@ function App() {
             
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="health-records" element={<PlaceholderPage />} />
+            <Route path="medication-requests/:eventId" element={<MedicationRequestDetail />} />
+
             <Route path="management-vaccine/:campaignId" element={<ManagementVaccine />} />
             <Route path="health-check/:campaignId" element={<HealthCheck />} />
+
+
             <Route path="event" element={<Event />} />
             <Route path="watch-vaccination" element={<WatchVaccination />} />
             <Route path="heath-result" element={<HeathResult />} />
@@ -244,6 +257,7 @@ function App() {
             <Route path="HealthDeclarationSearch" element={<HealthDeclarationSearch />} />
 
             <Route path="campaigns-nurse" element={<CampaignsNurse />} />
+            <Route path="consultation-schedules-nurse/:campaignId" element={<EventListNurse />} />
 
             <Route path="reports" element={<PlaceholderPage title="Trang báo cáo" />} />
 
@@ -261,6 +275,8 @@ function App() {
             <Route path="student-health-profile/:studentId" element={<StudentHealthProfile />} />
 
             <Route path="campaigns" element={<CampaignManagement />} />
+            <Route path="consultation-schedules" element={<ConsultationScheduleList />} />
+            <Route path="consultation-schedules/:id" element={<ConsultationScheduleDetail />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
@@ -281,3 +297,4 @@ function Root() {
 }
 
 export default Root;
+

@@ -16,7 +16,7 @@ const ShowListVaccination = () => {
     const navigate = useNavigate();
 
     const statusOrder = {
-        'ACTIVE': 0, // Đang diễn ra
+        'APPROVED': 0, // Đang diễn ra
         'PENDING': 1, // Chờ duyệt
         'DONE': 2    // Đã xong
     };
@@ -116,13 +116,13 @@ const ShowListVaccination = () => {
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                             vaccination.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                            vaccination.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                                            vaccination.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                                             vaccination.status === 'DONE' ? 'bg-orange-500 text-white' :
                                             vaccination.status === 'REJECTED' ? 'bg-gray-400 text-white' :
                                             'bg-red-100 text-red-800'
                                         }`}>
                                             {vaccination.status === 'PENDING' ? 'Chờ diễn ra' :
-                                                vaccination.status === 'ACTIVE' ? 'Đang diễn ra' :
+                                                vaccination.status === 'APPROVED' ? 'Đang diễn ra' :
                                                 vaccination.status === 'DONE' ? 'Đã xong' :
                                                 vaccination.status === 'REJECTED' ? 'Đã xóa' :
                                                 vaccination.status}

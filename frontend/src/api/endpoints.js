@@ -34,6 +34,7 @@ const API_ENDPOINTS = {
   },
   MEDICATION_REQUEST: {
     GET_ALL: 'api/v1/medication-requests/pending',
+    GET_BY_ID: (id) => `api/v1/medication-requests/${id}`,
     REQUEST_MEDICATION: (id) => `api/v1/medication-requests/${id}/reject`,
     APPROVE_REQUEST: (id) => `api/v1/medication-requests/${id}/approve`,
     GET_ALL_APPROVED: 'api/v1/medication-requests/approve',
@@ -139,6 +140,17 @@ const API_ENDPOINTS = {
   },
   DASHBOARD: {
     OVERVIEW: 'api/v1/dashboard/overview',
+    NURSE: 'api/v1/dashboard/calendar-events',
+  },
+  CONSULTATION_SCHEDULE: {
+    CREATE: 'api/v1/consultation-schedules',
+  },
+  FILE_SERVICE: {
+    EXPORT_VACCINATION_RECORD: (campaignId) => `/api/vaccination-record/list-results-export?campaignId=${campaignId}`,
+    IMPORT_VACCINATION_RECORD: '/api/vaccination-record/vaccination-records/import',
+
+    EXPORT_HEALTH_CHECK_RESULT: (campaignId) => `/api/v1/health-check-result/list-results-export?campaignId=${campaignId}`,
+    IMPORT_HEALTH_CHECK_RESULT: '/api/v1/health-check-result/import',
   },
 };
 
