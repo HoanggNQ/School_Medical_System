@@ -9,7 +9,8 @@ import org.springframework.data.domain.Pageable;
 import sms.swp391.models.entities.StudentEntity;
 
 import java.util.Collection;
-
+import org.springframework.stereotype.Repository;
+@Repository
 public interface MedicalEventRepository extends JpaRepository<MedicalEventEntity, Long> {
     @Query("SELECT m FROM MedicalEventEntity m WHERE LOWER(m.eventType) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<MedicalEventEntity> searchMedicalEvents(@Param("keyword") String keyword, Pageable pageable);
