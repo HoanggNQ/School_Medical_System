@@ -8,7 +8,8 @@ import sms.swp391.models.entities.HealthConsultationScheduleEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+import org.springframework.stereotype.Repository;
+@Repository
 public interface HealthConsultationScheduleRepository extends JpaRepository<HealthConsultationScheduleEntity, Long>,
         JpaSpecificationExecutor<HealthConsultationScheduleEntity> {
     List<HealthConsultationScheduleEntity> findByStudent_Id(Long studentId);
