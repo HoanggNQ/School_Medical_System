@@ -11,7 +11,8 @@ import sms.swp391.models.entities.HealthCheckConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 
 import java.util.List;
-
+import org.springframework.stereotype.Repository;
+@Repository
 public interface HealthCheckConsentRepository extends JpaRepository<HealthCheckConsentEntity, Long> {
     @Query("""
                 SELECT c FROM HealthCheckConsentEntity c

@@ -2,9 +2,7 @@ package sms.swp391.models.dtos.requests;
 
 import lombok.*;
 import jakarta.validation.constraints.*;
-import sms.swp391.models.dtos.enums.MedicalStatus;
 
-import java.math.BigDecimal;
 
 
 @Data
@@ -18,8 +16,8 @@ public class HealthDeclarationCreateDTO {
     private Long declaredById;
     @NotNull
     private String academicYear;
-    private BigDecimal height;
-    private BigDecimal weight;
+    private Double height;
+    private Double weight;
     private String bloodType;
     private String allergies;
     private String chronicDiseases;
