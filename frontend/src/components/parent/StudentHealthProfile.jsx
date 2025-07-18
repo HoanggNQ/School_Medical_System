@@ -59,7 +59,7 @@ const StudentHealthProfile = ({ selectedStudent }) => {
 
   const formatValue = (value) => {
     if (value === null || value === undefined || value === "" || String(value).trim() === "null") {
-      return "N/A"
+      return "Không"
     }
     return String(value)
   }
@@ -201,7 +201,6 @@ const StudentHealthProfile = ({ selectedStudent }) => {
               </div>
             </div>
           </div>
-
         </CardContent>
       </Card>
 
