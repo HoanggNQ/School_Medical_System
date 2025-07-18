@@ -110,7 +110,7 @@ const BlogManagement = () => {
       const response = await BlogService.createBlog(formData);
       console.log(response);
 
-      if (response.data?.isSuccess) {
+      if (response.data?.message) {
         toast({
           title: "Thành công!",
           description: "Bài viết đã được tạo thành công.",

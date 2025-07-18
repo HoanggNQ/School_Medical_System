@@ -11,7 +11,7 @@ const AuthService = {
                 if (response.data.data.user) {
                     localStorage.setItem('user', JSON.stringify(response.data.data.user));
                 }
-                // Lưu trữ thông tin isFirstLogin nếu có
+             
                 if (response.data.data.isFirstLogin !== undefined) {
                     localStorage.setItem('isFirstLogin', JSON.stringify(response.data.data.isFirstLogin));
                 }
@@ -49,7 +49,7 @@ const AuthService = {
         try {
             const formData = new FormData();
             
-            // Append user data as a single field named 'user'
+        
             formData.append('user', JSON.stringify(userData));
 
             const response = await axiosInstance.post(API_ENDPOINTS.AUTH.REGISTER, formData, {
@@ -113,6 +113,15 @@ const AuthService = {
             throw handleApiError(error);
         }
     },
+    getDashboardNurse: async () => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD.NURSE);
+            return response;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
 };
 
 export default AuthService; 

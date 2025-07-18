@@ -1,6 +1,8 @@
 import axios from 'axios';
 
+
 const baseURL = 'https://school-medical-system.onrender.com';
+
 
 const axiosInstance = axios.create({
   baseURL,
@@ -9,6 +11,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
 
 // Request interceptor
 axiosInstance.interceptors.request.use(
@@ -23,18 +26,31 @@ axiosInstance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+   
 
-// Response interceptor
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response?.status === 401) {
-//       // Handle unauthorized access
-//       localStorage.removeItem('token');
-//       window.location.href = '/login';
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+   
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+
+    const customMessage = error.response?.data?.message;
+    console.log('==> customMessage', customMessage);
+    
+    if (customMessage) {
+      error.message = customMessage;
+      error.customMessage = customMessage; // Thêm property riêng
+    }
+
+
+    return Promise.reject(error); // Trả lỗi xuống cho `catch()` sử dụng
+  }
+);
+
+
 
 export default axiosInstance; 

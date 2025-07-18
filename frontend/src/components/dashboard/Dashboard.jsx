@@ -15,13 +15,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchOverview();
-}, []);
+  }, []);
 
   const fetchOverview = async () => {
     try {
       setLoadingOverview(true);
       const response = await AuthService.getDashboardOverview();
-      console.log("response",response);
+      console.log("response", response);
       setOverview(response.data);
       setErrorOverview(null);
     } catch (err) {
@@ -40,43 +40,124 @@ const Dashboard = () => {
     return `${greeting}, ${user?.username || ''}!`;
   };
 
-  // Dữ liệu cho biểu đồ tròn
-  const userStatsData = overview ? [
-    { name: 'Học sinh', value: overview.userStats?.totalStudents || 0, color: '#3B82F6' },
-    { name: 'Phụ huynh', value: overview.userStats?.totalParents || 0, color: '#10B981' },
-    { name: 'Y tế', value: overview.userStats?.totalNurses || 0, color: '#F59E0B' },
-    { name: 'Admin', value: overview.userStats?.totalAdmins || 0, color: '#EF4444' },
-  ] : [];
+  // Tạo dữ liệu cho biểu đồ từ API response
+  const getUserStatsData = () => {
+    if (!overview?.userStats) return [];
+    
+    const { totalStudents, totalParents, totalNurses, totalAdmins } = overview.userStats;
+    
+    return [
+      { name: 'Học sinh', value: totalStudents || 0, color: '#3B82F6' },
+      { name: 'Phụ huynh', value: totalParents || 0, color: '#10B981' },
+      { name: 'Y tế', value: totalNurses || 0, color: '#F59E0B' },
+      { name: 'Admin', value: totalAdmins || 0, color: '#EF4444' },
+    ].filter(item => item.value > 0);
+  };
 
-  const healthCampaignData = overview ? [
-    { name: 'Đã đồng ý', value: overview.healthCampaignStats?.totalAgreed || 0, color: '#10B981' },
-    { name: 'Đã từ chối', value: overview.healthCampaignStats?.totalRejected || 0, color: '#EF4444' },
-    { name: 'Chờ phản hồi', value: overview.healthCampaignStats?.totalPending || 0, color: '#F59E0B' },
-    { name: 'Đã hoàn thành', value: overview.healthCampaignStats?.totalDone || 0, color: '#8B5CF6' },
-  ] : [];
+  const getHealthCampaignData = () => {
+    if (!overview?.healthCampaignStats) return [];
+    
+    const { totalAgreed, totalRejected, totalPending, totalDone } = overview.healthCampaignStats;
+    
+    return [
+      { name: 'Đã đồng ý', value: totalAgreed || 0, color: '#10B981' },
+      { name: 'Đã từ chối', value: totalRejected || 0, color: '#EF4444' },
+      { name: 'Chờ phản hồi', value: totalPending || 0, color: '#F59E0B' },
+      { name: 'Đã hoàn thành', value: totalDone || 0, color: '#8B5CF6' },
+    ].filter(item => item.value > 0);
+  };
 
-  const vaccinationCampaignData = overview ? [
-    { name: 'Đã đồng ý', value: overview.vaccinationCampaignStats?.totalAgreed || 0, color: '#10B981' },
-    { name: 'Đã từ chối', value: overview.vaccinationCampaignStats?.totalRejected || 0, color: '#EF4444' },
-    { name: 'Chờ phản hồi', value: overview.vaccinationCampaignStats?.totalPending || 0, color: '#F59E0B' },
-    { name: 'Đã hoàn thành', value: overview.vaccinationCampaignStats?.totalDone || 0, color: '#8B5CF6' },
-  ] : [];
+  const getVaccinationCampaignData = () => {
+    if (!overview?.vaccinationCampaignStats) return [];
+    
+    const { totalAgreed, totalRejected, totalPending, totalDone } = overview.vaccinationCampaignStats;
+    
+    return [
+      { name: 'Đã đồng ý', value: totalAgreed || 0, color: '#10B981' },
+      { name: 'Đã từ chối', value: totalRejected || 0, color: '#EF4444' },
+      { name: 'Chờ phản hồi', value: totalPending || 0, color: '#F59E0B' },
+      { name: 'Đã hoàn thành', value: totalDone || 0, color: '#8B5CF6' },
+    ].filter(item => item.value > 0);
+  };
 
-  const healthCampaignStatusData = overview ? [
-    { name: 'Chờ duyệt', value: overview.healthCampaignStatusStats?.pending || 0, color: '#F59E0B' },
-    { name: 'Đã duyệt', value: overview.healthCampaignStatusStats?.approved || 0, color: '#10B981' },
-    { name: 'Đang diễn ra', value: overview.healthCampaignStatusStats?.active || 0, color: '#3B82F6' },
-    { name: 'Đã xong', value: overview.healthCampaignStatusStats?.done || 0, color: '#8B5CF6' },
-    { name: 'Đã từ chối', value: overview.healthCampaignStatusStats?.rejected || 0, color: '#EF4444' },
-  ] : [];
+  const getHealthCampaignStatusData = () => {
+    if (!overview?.healthCampaignStatusStats) return [];
+    
+    const { pending, approved, active, done, rejected } = overview.healthCampaignStatusStats;
+    
+    return [
+      { name: 'Chờ duyệt', value: pending || 0, color: '#F59E0B' },
+      { name: 'Đã duyệt', value: approved || 0, color: '#10B981' },
+      { name: 'Đang diễn ra', value: active || 0, color: '#3B82F6' },
+      { name: 'Đã xong', value: done || 0, color: '#8B5CF6' },
+      { name: 'Đã từ chối', value: rejected || 0, color: '#EF4444' },
+    ].filter(item => item.value > 0);
+  };
 
-  const vaccinationCampaignStatusData = overview ? [
-    { name: 'Chờ duyệt', value: overview.vaccinationCampaignStatusStats?.pending || 0, color: '#F59E0B' },
-    { name: 'Đã duyệt', value: overview.vaccinationCampaignStatusStats?.approved || 0, color: '#10B981' },
-    { name: 'Đang diễn ra', value: overview.vaccinationCampaignStatusStats?.active || 0, color: '#3B82F6' },
-    { name: 'Đã xong', value: overview.vaccinationCampaignStatusStats?.done || 0, color: '#8B5CF6' },
-    { name: 'Đã từ chối', value: overview.vaccinationCampaignStatusStats?.rejected || 0, color: '#EF4444' },
-  ] : [];
+  const getVaccinationCampaignStatusData = () => {
+    if (!overview?.vaccinationCampaignStatusStats) return [];
+    
+    const { pending, approved, active, done, rejected } = overview.vaccinationCampaignStatusStats;
+    
+    return [
+      { name: 'Chờ duyệt', value: pending || 0, color: '#F59E0B' },
+      { name: 'Đã duyệt', value: approved || 0, color: '#10B981' },
+      { name: 'Đang diễn ra', value: active || 0, color: '#3B82F6' },
+      { name: 'Đã xong', value: done || 0, color: '#8B5CF6' },
+      { name: 'Đã từ chối', value: rejected || 0, color: '#EF4444' },
+    ].filter(item => item.value > 0);
+  };
+
+  const renderPieChart = (data, title, icon) => {
+    if (!data || data.length === 0) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              {icon}
+              <span>{title}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              Không có dữ liệu
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            {icon}
+            <span>{title}</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <motion.div
@@ -123,164 +204,54 @@ const Dashboard = () => {
       </div>
 
       {/* Hiển thị loading hoặc lỗi tổng quan dashboard */}
-      {loadingOverview && <div>Đang tải dữ liệu tổng quan...</div>}
-      {errorOverview && <div className="text-red-500">{errorOverview}</div>}
+      {loadingOverview && (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Đang tải dữ liệu tổng quan...</div>
+        </div>
+      )}
+      
+      {errorOverview && (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">{errorOverview}</div>
+        </div>
+      )}
+      
       {overview && (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {/* Biểu đồ phân bố người dùng */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <span>Phân bố người dùng</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={userStatsData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    // label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {userStatsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {renderPieChart(
+            getUserStatsData(), 
+            'Phân bố người dùng',
+            <Users className="w-5 h-5 text-blue-600" />
+          )}
 
           {/* Biểu đồ chiến dịch sức khỏe */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Activity className="w-5 h-5 text-green-600" />
-                <span>Chiến dịch sức khỏe</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={healthCampaignData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    // label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {healthCampaignData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {renderPieChart(
+            getHealthCampaignData(), 
+            'Chiến dịch sức khỏe',
+            <Activity className="w-5 h-5 text-green-600" />
+          )}
 
           {/* Biểu đồ chiến dịch tiêm chủng */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Syringe className="w-5 h-5 text-purple-600" />
-                <span>Chiến dịch tiêm chủng</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={vaccinationCampaignData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    // label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {vaccinationCampaignData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {renderPieChart(
+            getVaccinationCampaignData(), 
+            'Chiến dịch tiêm chủng',
+            <Syringe className="w-5 h-5 text-purple-600" />
+          )}
 
           {/* Biểu đồ trạng thái chiến dịch sức khỏe */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <ListChecks className="w-5 h-5 text-yellow-600" />
-                <span>Trạng thái chiến dịch sức khỏe</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={healthCampaignStatusData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    // label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {healthCampaignStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {renderPieChart(
+            getHealthCampaignStatusData(), 
+            'Trạng thái chiến dịch sức khỏe',
+            <ListChecks className="w-5 h-5 text-yellow-600" />
+          )}
 
           {/* Biểu đồ trạng thái chiến dịch tiêm chủng */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <ListChecks className="w-5 h-5 text-pink-600" />
-                <span>Trạng thái chiến dịch tiêm chủng</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={vaccinationCampaignStatusData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    // label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {vaccinationCampaignStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {renderPieChart(
+            getVaccinationCampaignStatusData(), 
+            'Trạng thái chiến dịch tiêm chủng',
+            <ListChecks className="w-5 h-5 text-pink-600" />
+          )}
         </div>
       )}
     </motion.div>
