@@ -2,10 +2,7 @@ package sms.swp391.models.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -23,14 +20,14 @@ public class StudentHealthProfileEntity {
     @JoinColumn(name = "student_id")
     private StudentEntity student;
 
-    @Column(name = "height_cm", precision = 5, scale = 2)
-    private BigDecimal height;
+    @Column(name = "height_cm")
+    private Double height;
 
-    @Column(name = "weight_kg", precision = 5, scale = 2)
-    private BigDecimal weight;
+    @Column(name = "weight_kg")
+    private Double weight;
 
-    @Column(name = "bmi", precision = 5, scale = 2)
-    private BigDecimal bmi;
+    @Column(name = "bmi")
+    private Double bmi;
 
     @Column(name = "vision_left", length = 10)
     private String visionLeft;
@@ -50,8 +47,8 @@ public class StudentHealthProfileEntity {
     @Column(name = "pulse")
     private Integer pulse;
 
-    @Column(name = "temperature", precision = 4, scale = 1)
-    private BigDecimal temperature;
+    @Column(name = "temperature")
+    private Double temperature;
 
     @Column(name = "blood_type", length = 10)
     private String bloodType;
