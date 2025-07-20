@@ -20,9 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,130 +36,47 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
     private final HealthCheckConsentRepository consentRepository;
     private final NotificationService notificationService;
 
-    @Transactional
-    @Override
-    public List<HealthCheckResultResponse> createBulkResults(CreateHealthCheckResultListRequestDTO req,
-                                                             Long checkedById) {
-
-        HealthCheckCampaignEntity campaign = campaignRepository.findById(req.getCampaignId())
-                .orElseThrow(() -> new NotFoundException("Campaign not found"));
-
-        UserEntity checker = userRepository.findById(checkedById)
-                .orElseThrow(() -> new NotFoundException("Checker not found"));
-
-        List<HealthCheckResultEntity> resultsToSave = new ArrayList<>();
-        List<HealthCheckResultResponse> responses   = new ArrayList<>();
-
-        for (HealthCheckResultRequestDTO dto : req.getResults()) {
-
-            if (dto.getStudentId() == null) continue;
-
-            StudentEntity student = studentRepository.findById(dto.getStudentId())
-                    .orElseThrow(() -> new NotFoundException("Student not found: " + dto.getStudentId()));
-
-            // 4. Kiểm tra consent APPROVED
-            HealthCheckConsentEntity consent = consentRepository
-                    .findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
-
-            if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
-                // Có thể skip hoặc throw exception – ở đây skip
-                continue;
-            }
-
-            // 5. Cập nhật hồ sơ sức khỏe
-            StudentHealthProfileEntity profile = Optional
-                    .ofNullable(student.getHealthProfile())
-                    .orElseGet(() -> {
-                        StudentHealthProfileEntity p = new StudentHealthProfileEntity();
-                        p.setStudent(student);
-                        student.setHealthProfile(p);
-                        return p;
-                    });
-
-            profile.setHeight(dto.getHeightCm());
-            profile.setWeight(dto.getWeightKg());
-            profile.setVisionLeft(dto.getVisionLeft());
-            profile.setVisionRight(dto.getVisionRight());
-            profile.setHearing(dto.getHearing());
-            profile.setDentalHealth(dto.getDentalHealth());
-            profile.setBloodPressure(dto.getBloodPressure());
-            profile.setPulse(dto.getPulse());
-            profile.setTemperature(dto.getTemperature());
-
-            // 6. Tạo entity kết quả
-            HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(dto);
-            result.setHealthCheckCampaign(campaign);
-            result.setStudent(student);
-            result.setCheckDate(LocalDate.now());
-            result.setCheckedBy(checker);
-            result.setAcademicYear(getCurrentAcademicYear());
-            result.setConsent(consent);
-
-            // 7. Đánh dấu consent DONE
-            consent.setConsentStatus(MedicalStatus.DONE);
-
-            resultsToSave.add(result);
+    private HealthCheckResultEntity handleSingleStudentResult(
+            HealthCheckResultRequestDTO dto,
+            HealthCheckCampaignEntity campaign,
+            UserEntity checker
+    ) {
+        if (dto.getStudentId() == null) {
+            throw new BusinessException("Student ID is required");
         }
 
-        // 8. Lưu batch
-        resultRepository.saveAll(resultsToSave);
-        consentRepository.saveAll(
-                resultsToSave.stream().map(HealthCheckResultEntity::getConsent).toList()
-        );
-        studentRepository.saveAll(
-                resultsToSave.stream().map(HealthCheckResultEntity::getStudent).toList()
-        );
+        StudentEntity student = studentRepository.findById(dto.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Student not found: " + dto.getStudentId()));
 
-        // 9. Trả response
-        for (HealthCheckResultEntity e : resultsToSave) {
-            responses.add(HealthCheckResultMapper.toDTO(e));
-        }
-        return responses;
-    }
+        HealthCheckConsentEntity consent = consentRepository
+                .findByHealthCheckCampaignIdAndStudent(campaign.getId(), student);
 
-
-    @Override
-    public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
-        HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
-                .orElseThrow(() -> new NotFoundException("Campaign not found"));
-
-        StudentEntity student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new NotFoundException("Student not found"));
-
-        UserEntity checker = userRepository.findById(checkedById)
-                .orElseThrow(() -> new NotFoundException("Checker not found"));
-
-        HealthCheckConsentEntity consent = consentRepository.findByHealthCheckCampaignIdAndStudent(
-                campaign.getId(), student);
         if (consent == null || !MedicalStatus.APPROVED.equals(consent.getConsentStatus())) {
-            throw new BusinessException("Parent consent not approved for this examination");
+            throw new BusinessException("Consent not approved for student " + dto.getStudentId());
         }
 
-        StudentHealthProfileEntity profile = Optional.ofNullable(student.getHealthProfile())
-                .orElseGet(() -> {
-                    StudentHealthProfileEntity p = new StudentHealthProfileEntity();
-                    p.setStudent(student);
-                    p.setStudentId(student.getId());
-                    student.setHealthProfile(p);
-                    return p;
-                });
-
-        profile.setHeight(request.getHeightCm());
-        profile.setWeight(request.getWeightKg());
-        profile.setVisionLeft(request.getVisionLeft());
-        profile.setVisionRight(request.getVisionRight());
-        profile.setHearing(request.getHearing());
-        profile.setDentalHealth(request.getDentalHealth());
-        profile.setBloodPressure(request.getBloodPressure());
-        profile.setPulse(request.getPulse());
-        profile.setTemperature(request.getTemperature());
-
-        if (request.getHeightCm() != null && request.getWeightKg() != null) {
-            profile.setBmi(HealthCheckResultMapper.calculateBMI(
-                    request.getHeightCm(), request.getWeightKg()));
+        StudentHealthProfileEntity profile = student.getHealthProfile();
+        if (profile == null) {
+            profile = new StudentHealthProfileEntity();
+            profile.setStudent(student);
+            student.setHealthProfile(profile);
         }
 
-        HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(request);
+        profile.setHeight(dto.getHeightCm());
+        profile.setWeight(dto.getWeightKg());
+        profile.setVisionLeft(dto.getVisionLeft());
+        profile.setVisionRight(dto.getVisionRight());
+        profile.setHearing(dto.getHearing());
+        profile.setDentalHealth(dto.getDentalHealth());
+        profile.setBloodPressure(dto.getBloodPressure());
+        profile.setPulse(dto.getPulse());
+        profile.setTemperature(dto.getTemperature());
+
+        if (dto.getHeightCm() != null && dto.getWeightKg() != null) {
+            profile.setBmi(HealthCheckResultMapper.calculateBMI(dto.getHeightCm(), dto.getWeightKg()));
+        }
+
+        HealthCheckResultEntity result = HealthCheckResultMapper.fromRequestDTO(dto);
         result.setHealthCheckCampaign(campaign);
         result.setStudent(student);
         result.setCheckedBy(checker);
@@ -169,18 +84,73 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         result.setAcademicYear(getCurrentAcademicYear());
         result.setConsent(consent);
 
+        consent.setConsentStatus(MedicalStatus.DONE);
+        notificationService.push(
+                checker.getUserId(),
+                result.getStudent().getParent().getUserId(),
+                "Kết quả kiểm tra sức khỏe",
+                "Kết quả kiểm tra của " + result.getStudent().getUser().getFullname() + " đã sẵn sàng."
+        );
+        return result;
+    }
+
+    @Transactional
+    @Override
+    public List<HealthCheckResultResponse> createBulkResults(CreateHealthCheckResultListRequestDTO req, Long checkedById) {
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(req.getCampaignId())
+                .orElseThrow(() -> new NotFoundException("Campaign not found"));
+
+        UserEntity checker = userRepository.findById(checkedById)
+                .orElseThrow(() -> new NotFoundException("Checker not found"));
+
+        List<HealthCheckResultEntity> resultsToSave = new ArrayList<>();
+        Set<HealthCheckConsentEntity> consentsToSave = new HashSet<>();
+        Set<StudentEntity> studentsToSave = new HashSet<>();
+        List<HealthCheckResultResponse> responses = new ArrayList<>();
+
+        for (HealthCheckResultRequestDTO dto : req.getResults()) {
+
+            HealthCheckResultEntity result = handleSingleStudentResult(dto, campaign, checker);
+            resultsToSave.add(result);
+            consentsToSave.add(result.getConsent());
+            studentsToSave.add(result.getStudent());
+
+        }
+
+        resultRepository.saveAll(resultsToSave);
+        consentRepository.saveAll(new ArrayList<>(consentsToSave));
+        studentRepository.saveAll(new ArrayList<>(studentsToSave));
+
+        for (HealthCheckResultEntity result : resultsToSave) {
+            responses.add(HealthCheckResultMapper.toDTO(result));
+        }
+
+        return responses;
+    }
+
+
+    @Transactional
+    @Override
+    public HealthCheckResultResponse saveResult(HealthCheckResultRequestDTO request, Long checkedById) {
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
+                .orElseThrow(() -> new NotFoundException("Campaign not found"));
+
+        UserEntity checker = userRepository.findById(checkedById)
+                .orElseThrow(() -> new NotFoundException("Checker not found"));
+
+        HealthCheckResultEntity result = handleSingleStudentResult(request, campaign, checker);
         HealthCheckResultEntity savedResult = resultRepository.saveAndFlush(result);
 
-        consent.setConsentStatus(MedicalStatus.DONE);
-        consentRepository.save(consent);
-        studentRepository.save(student);
+        consentRepository.save(result.getConsent());
+        studentRepository.save(result.getStudent());
 
         notificationService.push(
                 checkedById,
-                student.getParent().getUserId(),
+                result.getStudent().getParent().getUserId(),
                 "Kết quả kiểm tra sức khỏe",
-                "Kết quả kiểm tra của " + student.getUser().getFullname() + " đã sẵn sàng."
+                "Kết quả kiểm tra của " + result.getStudent().getUser().getFullname() + " đã sẵn sàng."
         );
+
         return HealthCheckResultMapper.toDTO(savedResult);
     }
 

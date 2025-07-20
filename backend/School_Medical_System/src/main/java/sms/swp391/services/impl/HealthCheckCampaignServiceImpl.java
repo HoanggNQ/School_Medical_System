@@ -1,7 +1,6 @@
 package sms.swp391.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,7 +97,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
         HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found with id: " + campaignId));
         if (campaign.getEndDate().isAfter(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Chiến dịch chưa tới ngày kết thúc. Ngày kết thúc là: " + campaign.getEndDate());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày kết thúc. Ngày kết thúc là: " + campaign.getEndDate());
         }
 
         campaign.setStatus(MedicalStatus.DONE);
@@ -148,7 +148,6 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
 
         campaign = campaignRepository.save(campaign);
 
-        // Lưu consent cho từng học sinh, KHÔNG gửi mail
         List<StudentEntity> students =
                 studentRepository.findByGradesWithUserAndParent(req.getTargetGrade());
 
@@ -165,53 +164,54 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
 
         return HealthCheckCampaignMapper.toDTO(campaign);
     }
-    @Override
-    public void sendConsentEmails(Long campaignId, Long triggeredByUserId) {
 
-        HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
-                .orElseThrow(() -> new NotFoundException("Campaign not found: " + campaignId));
-
-        UserEntity triggerUser = userRepository.findById(triggeredByUserId)
-                .orElseThrow(() -> new NotFoundException("User not found: " + triggeredByUserId));
-
-        List<HealthCheckConsentEntity> consents =
-                healthCheckConsentRepository.findAllByHealthCheckCampaignId(campaignId);
-
-        Map<Long, HealthCheckConsentEntity> firstConsentPerParent = new HashMap<>();
-        for (HealthCheckConsentEntity c : consents) {
-            firstConsentPerParent.putIfAbsent(c.getParent().getUserId(), c);
-        }
-
-        ExecutorService pool = Executors.newFixedThreadPool(10);
-
-        firstConsentPerParent.values().forEach(consent -> {
-            pool.submit(() -> {
-
-                UserEntity parent = consent.getParent();
-                StudentEntity student = consent.getStudent();
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-                sendMailService.sendConsentRequestEmail(
-                        parent.getEmail(),
-                        parent.getFullname(),
-                        student.getUser().getFullname(),
-                        campaign.getName(),
-                        campaign.getStartDate().format(fmt),
-                        campaign.getEndDate().format(fmt),
-                        campaign.getLocation()
-                );
-
-                notificationService.push(
-                        triggerUser.getUserId(),
-                        parent.getUserId(),
-                        "Yêu cầu đồng ý khám sức khỏe",
-                        "Vui lòng xác nhận chiến dịch " + campaign.getName()
-                );
-            });
-        });
-
-        pool.shutdown();
-    }
+//    @Override
+//    public void sendConsentEmails(Long campaignId, Long triggeredByUserId) {
+//
+//        HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
+//                .orElseThrow(() -> new NotFoundException("Campaign not found: " + campaignId));
+//
+//        UserEntity triggerUser = userRepository.findById(triggeredByUserId)
+//                .orElseThrow(() -> new NotFoundException("User not found: " + triggeredByUserId));
+//
+//        List<HealthCheckConsentEntity> consents =
+//                healthCheckConsentRepository.findAllByHealthCheckCampaignId(campaignId);
+//
+//        Map<Long, HealthCheckConsentEntity> firstConsentPerParent = new HashMap<>();
+//        for (HealthCheckConsentEntity c : consents) {
+//            firstConsentPerParent.putIfAbsent(c.getParent().getUserId(), c);
+//        }
+//
+//        ExecutorService pool = Executors.newFixedThreadPool(10);
+//
+//        firstConsentPerParent.values().forEach(consent -> {
+//            pool.submit(() -> {
+//
+//                UserEntity parent = consent.getParent();
+//                StudentEntity student = consent.getStudent();
+//                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//
+//                sendMailService.sendConsentRequestEmail(
+//                        parent.getEmail(),
+//                        parent.getFullname(),
+//                        student.getUser().getFullname(),
+//                        campaign.getName(),
+//                        campaign.getStartDate().format(fmt),
+//                        campaign.getEndDate().format(fmt),
+//                        campaign.getLocation()
+//                );
+//
+//                notificationService.push(
+//                        triggerUser.getUserId(),
+//                        parent.getUserId(),
+//                        "Yêu cầu đồng ý khám sức khỏe",
+//                        "Vui lòng xác nhận chiến dịch " + campaign.getName()
+//                );
+//            });
+//        });
+//
+//        pool.shutdown();
+//    }
 
     @Override
     @Transactional
@@ -244,16 +244,15 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
 
         Set<Long> notifiedParents = new HashSet<>();
 
-        // 4. Đánh dấu DELETED hoặc xóa những học sinh không còn thuộc khối mới
         for (HealthCheckConsentEntity oldConsent : oldConsents) {
             Long studentId = oldConsent.getStudent().getId();
             if (!newStudentIds.contains(studentId)) {
-                if (oldConsent.getConsentStatus() == MedicalStatus.PENDING) {
-                    healthCheckConsentRepository.delete(oldConsent); // xóa nếu chưa đồng ý
-                } else {
-                    oldConsent.setConsentStatus(MedicalStatus.DELETED); // đánh dấu nếu đã tương tác
-                    healthCheckConsentRepository.save(oldConsent);
-                }
+                //if (oldConsent.getConsentStatus() == MedicalStatus.PENDING) {
+                healthCheckConsentRepository.delete(oldConsent); // xóa nếu chưa đồng ý
+//                } else {
+//                    oldConsent.setConsentStatus(MedicalStatus.DELETED); // đánh dấu nếu đã tương tác
+//                    healthCheckConsentRepository.save(oldConsent);
+//                }
 
                 Long parentId = oldConsent.getParent().getUserId();
                 if (notifiedParents.add(parentId)) {
@@ -283,7 +282,8 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
                 if (notifiedParents.add(parentId)) {
                     // Gửi thông báo
                     notificationService.push(
-                            getCurrentUserId(), parentId,
+                            getCurrentUserId(),
+                            parentId,
                             "Yêu cầu đồng ý khám sức khỏe",
                             "Vui lòng xác nhận chiến dịch \"" + campaign.getName()
                                     + "\" dành cho học sinh " + student.getUser().getFullname()
@@ -310,11 +310,12 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
     public void startCampaign(Long campaignId) {
         HealthCheckCampaignEntity c = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
-
+        if (c.getStartDate().isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + c.getStartDate());
+        }
         c.setStatus(MedicalStatus.APPROVED);
         campaignRepository.save(c);
     }
-
 
 
     @Override
@@ -353,6 +354,7 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
         healthCheckConsentRepository.saveAll(consents);
         campaignRepository.save(campaign);
     }
+
     @Override
     @Transactional
     public void remindUnconfirmedParents(Long campaignId) {
@@ -362,26 +364,42 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
         List<HealthCheckConsentEntity> pendingConsents =
                 healthCheckConsentRepository.findByHealthCheckCampaign_IdAndConsentStatus(campaignId, MedicalStatus.PENDING);
 
+        ExecutorService pool = Executors.newFixedThreadPool(30);
+
         for (var consent : pendingConsents) {
-            var parent = consent.getParent();
-            var student = consent.getStudent().getUser();
+            final var currentConsent = consent;
+            pool.submit(() -> {
 
-            sendMailService.sendReminderEmail(
-                    parent.getEmail(),
-                    parent.getFullname(),
-                    student.getFullname(),
-                    campaign.getName(),
-                    campaign.getStartDate().toString(),
-                    campaign.getEndDate().toString(),
-                    campaign.getLocation()
-            );
+                var parent = currentConsent.getParent();
+                var student = currentConsent.getStudent().getUser();
 
-            notificationService.push(
-                    getCurrentUserId(),
-                    parent.getUserId(),
-                    "Nhắc nhở xác nhận khám sức khỏe",
-                    "Bạn chưa xác nhận chiến dịch " + campaign.getName() + " của học sinh " + student.getFullname()
-            );
+                sendMailService.sendReminderEmail(
+                        parent.getEmail(),
+                        parent.getFullname(),
+                        student.getFullname(),
+                        campaign.getName(),
+                        campaign.getStartDate().toString(),
+                        campaign.getEndDate().toString(),
+                        campaign.getLocation()
+                );
+
+                notificationService.push(
+                        getCurrentUserId(),
+                        parent.getUserId(),
+                        "Nhắc nhở xác nhận khám sức khỏe",
+                        "Bạn chưa xác nhận chiến dịch " + campaign.getName() + " của học sinh " + student.getFullname()
+                );
+            });
+        }
+
+        pool.shutdown();
+        try {
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            pool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 

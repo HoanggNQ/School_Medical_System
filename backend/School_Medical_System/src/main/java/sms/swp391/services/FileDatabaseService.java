@@ -9,10 +9,4 @@ import java.util.List;
 public interface FileDatabaseService {
     FileObjectResponse uploadFile (MultipartFile file);
 
-
-    List<FileObjectResponse> upMultipleFile(List<MultipartFile> files);
-
-    FileObjectResponse uploadFilev(FileObject file);
-
-    FileObjectResponse downloadFile(FileObject file);
 }
