@@ -46,6 +46,51 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final NotificationService notificationService;
     private final VaccinationConsentRepository vaccinationConsentRepository;
 
+    private VaccinationRecordEntity handleSingleVaccinationRecord(
+            VaccinationRecordRequestDTO dto,
+            UserEntity nurse
+    ) {
+        Long campaignId = dto.getCampaignId();
+        Long studentId = dto.getStudentId();
+
+        VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new NotFoundException("Campaign not found: " + campaignId));
+
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
+
+        VaccinationConsentEntity consent = consentRepository
+                .findByVaccinationCampaignIdAndStudent(campaignId, student);
+
+        if (consent == null || consent.getConsentStatus() != MedicalStatus.APPROVED) {
+            throw new BusinessException("Không có sự chấp thuận từ phụ huynh cho học sinh ID " + studentId);
+        }
+
+        VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(dto);
+        record.setVaccinationCampaign(campaign);
+        record.setStudent(student);
+        record.setAdministeredBy(nurse);
+        record.setAcademicYear(getCurrentAcademicYear());
+        record.setAdministrationDate(LocalDate.now());
+        record.setConsent(consent);
+
+
+        consent.setConsentStatus(MedicalStatus.DONE);
+
+
+        notificationService.push(
+                nurse.getUserId(),
+                student.getParent().getUserId(),
+                "Kết quả tiêm chủng",
+                "Con bạn (" + student.getUser().getFullname() + ") đã được tiêm vắc-xin " +
+                        record.getVaccineName() + " ngày " +
+                        LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        );
+
+        return record;
+    }
+
+
     private Long getCurrentUserId() {
         var principal = (UserEntity) org.springframework.security.core.context.SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -85,64 +130,28 @@ public class VaccinationServiceImpl implements VaccinationService {
     }
 
 
-
     @Transactional
     @Override
     public List<VaccinationRecordResponse> createBulkRecords(CreateVaccinationRecordListRequestDTO request, Long nurseId) {
-        List<VaccinationRecordRequestDTO> records = request.getRecords();
-
         UserEntity nurse = userRepository.findById(nurseId)
                 .orElseThrow(() -> new NotFoundException("Nurse not found"));
 
+        List<VaccinationRecordEntity> recordsToSave = new ArrayList<>();
+        List<VaccinationConsentEntity> consentsToSave = new ArrayList<>();
         List<VaccinationRecordResponse> responses = new ArrayList<>();
 
-        for (VaccinationRecordRequestDTO recordRequest : records) {
-            Long campaignId = recordRequest.getCampaignId();
-            Long studentId = recordRequest.getStudentId();
+        for (VaccinationRecordRequestDTO dto : request.getRecords()) {
+            VaccinationRecordEntity record = handleSingleVaccinationRecord(dto, nurse);
+            recordsToSave.add(record);
+            consentsToSave.add(record.getConsent());
+            responses.add(VaccinationRecordMapper.toDTO(record));
 
-            VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
-                    .orElseThrow(() -> new NotFoundException("Campaign not found: " + campaignId));
-
-            StudentEntity student = studentRepository.findById(studentId)
-                    .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
-
-            VaccinationConsentEntity consent = consentRepository
-                    .findByVaccinationCampaignIdAndStudent(campaignId, student);
-
-            if (consent == null || consent.getConsentStatus() != MedicalStatus.APPROVED) {
-                throw new BusinessException("Không có sự chấp thuận từ phụ huynh cho học sinh ID " + studentId);
-            }
-
-            VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(recordRequest);
-            record.setVaccinationCampaign(campaign);
-            record.setStudent(student);
-            record.setAdministeredBy(nurse);
-            record.setAcademicYear(getCurrentAcademicYear());
-            record.setAdministrationDate(LocalDate.now());
-            record.setConsent(consent);
-
-            VaccinationRecordEntity saved = recordRepository.save(record);
-
-            // Cập nhật trạng thái consent
-            consent.setConsentStatus(MedicalStatus.DONE);
-            consentRepository.save(consent);
-
-            // Gửi thông báo cho phụ huynh
-            notificationService.push(
-                    nurseId,
-                    student.getParent().getUserId(),
-                    "Kết quả tiêm chủng",
-                    "Con bạn (" + student.getUser().getFullname() + ") đã được tiêm vắc-xin " +
-                            record.getVaccineName() + " ngày " +
-                            LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-            );
-
-            responses.add(VaccinationRecordMapper.toDTO(saved));
         }
+        recordRepository.saveAll(recordsToSave);
+        consentRepository.saveAll(consentsToSave);
 
         return responses;
     }
-
 
 
     // Campaign Methods
@@ -410,64 +419,21 @@ public class VaccinationServiceImpl implements VaccinationService {
     }
 
     // ------------ SAVE RECORD (STAFF) -------------
-    @Transactional
-    public int importVaccinationResults(List<VaccinationRecordRequestDTO> records, Long nurseId) {
-        int successCount = 0;
-
-        for (VaccinationRecordRequestDTO dto : records) {
-            try {
-                saveRecord(dto, nurseId);
-                successCount++;
-            } catch (Exception ex) {
-                throw new RuntimeException("Lỗi khi lưu kết quả tiêm cho studentId=" + dto.getStudentId() + ": " + ex.getMessage());
-            }
-        }
-
-        return successCount;
-    }
 
     @Override
     @Transactional
-    public VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request,
-                                                Long nurseId) {
-
-        VaccinationCampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
-                .orElseThrow(() -> new NotFoundException("Campaign not found"));
-        StudentEntity student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new NotFoundException("Student not found"));
+    public VaccinationRecordResponse saveRecord(VaccinationRecordRequestDTO request, Long nurseId) {
         UserEntity nurse = userRepository.findById(nurseId)
                 .orElseThrow(() -> new NotFoundException("Nurse not found"));
 
-        VaccinationConsentEntity consent =
-                consentRepository.findByVaccinationCampaignIdAndStudent(campaign.getId(), student);
+        VaccinationRecordEntity record = handleSingleVaccinationRecord(request, nurse);
 
-        if (consent == null || consent.getConsentStatus() != MedicalStatus.APPROVED) {
-            throw new BusinessException("Parent consent not approved for this vaccination");
-        }
+        recordRepository.save(record);
+        consentRepository.save(record.getConsent());
 
-        VaccinationRecordEntity record = VaccinationRecordMapper.fromRequestDTO(request);
-        record.setVaccinationCampaign(campaign);
-        record.setStudent(student);
-        record.setAdministeredBy(nurse);
-        record.setAdministrationDate(LocalDate.now());
-        record.setAcademicYear(getCurrentAcademicYear());
-        record.setConsent(consent);
-
-        VaccinationRecordEntity saved = recordRepository.save(record);
-        consent.setConsentStatus(MedicalStatus.DONE);
-        consentRepository.save(consent);
-
-        notificationService.push(
-                nurseId,
-                student.getParent().getUserId(),
-                "Kết quả tiêm chủng",
-                "Con bạn (" + student.getUser().getFullname() + ") đã được tiêm vắc‑xin "
-                        + record.getVaccineName() + " ngày "
-                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-        );
-
-        return VaccinationRecordMapper.toDTO(saved);
+        return VaccinationRecordMapper.toDTO(record);
     }
+
 
     @Override
     public List<VaccinationConsentResponse> getConsentsByCampaign(Long campaignId) {
