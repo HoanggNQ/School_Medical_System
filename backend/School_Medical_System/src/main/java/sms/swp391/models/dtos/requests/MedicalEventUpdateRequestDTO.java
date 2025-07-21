@@ -8,6 +8,5 @@ import java.time.LocalDateTime;
 @Data
 public class MedicalEventUpdateRequestDTO {
     private Long studentId;
-    private MedicalStatus status;
     private String followUpNotes;
 }
