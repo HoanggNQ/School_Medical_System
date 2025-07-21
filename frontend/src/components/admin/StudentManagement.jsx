@@ -324,13 +324,13 @@ const StudentManagement = () => {
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="studentId.asc">Mặc định (ID học sinh)</SelectItem>
-                  <SelectItem value="fullName.asc">Tên học sinh (A-Z)</SelectItem>
-                  <SelectItem value="fullName.desc">Tên học sinh (Z-A)</SelectItem>
-                  <SelectItem value="className.asc">Lớp (A-Z)</SelectItem>
-                  <SelectItem value="className.desc">Lớp (Z-A)</SelectItem>
-                  <SelectItem value="studentCode.asc">Mã học sinh (A-Z)</SelectItem>
-                  <SelectItem value="studentCode.desc">Mã học sinh (Z-A)</SelectItem>
+                <SelectItem value="studentId,asc">Mặc định (ID học sinh)</SelectItem>
+    <SelectItem value="user.fullname,asc">Tên học sinh (A-Z)</SelectItem>
+    <SelectItem value="user.fullname,desc">Tên học sinh (Z-A)</SelectItem>
+    <SelectItem value="classEntity.className,asc">Lớp (A-Z)</SelectItem>
+    <SelectItem value="classEntity.className,desc">Lớp (Z-A)</SelectItem>
+    <SelectItem value="studentCode,asc">Mã học sinh (A-Z)</SelectItem>
+    <SelectItem value="studentCode,desc">Mã học sinh (Z-A)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
