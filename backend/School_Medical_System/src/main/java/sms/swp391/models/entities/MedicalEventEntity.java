@@ -13,6 +13,8 @@ import lombok.Builder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -53,4 +55,7 @@ public class MedicalEventEntity {
 
     @Column(name = "follow_up_notes", length = Integer.MAX_VALUE)
     private String followUpNotes;
+
+    @OneToMany(mappedBy = "medicalEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MedicalEventMedicationEntity> medications = new LinkedHashSet<>();
 }
