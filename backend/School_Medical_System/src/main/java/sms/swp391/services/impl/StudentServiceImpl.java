@@ -1,5 +1,6 @@
 package sms.swp391.services.impl;
 
+import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -45,8 +46,8 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final ClassRepository classRepository;
     private final PasswordEncoder passwordEncoder;
-    private final HealthCheckCampaignRepository   hcRepo;
-    private final VaccinationCampaignRepository   vacRepo;
+    private final HealthCheckCampaignRepository hcRepo;
+    private final VaccinationCampaignRepository vacRepo;
     private static final SecureRandom random = new SecureRandom();
 
     @Override
@@ -89,7 +90,6 @@ public class StudentServiceImpl implements StudentService {
                 .build();
 
 
-
         studentRepository.saveAndFlush(student);
         recalculateTotalStudent(classEntity);
         if (classEntity != null) {
@@ -99,6 +99,7 @@ public class StudentServiceImpl implements StudentService {
         }
         return StudentMapper.toDTO(student);
     }
+
     @Override
     @Transactional
     public StudentResponse updateStudent(Long id, StudentUpdateRequest request) {
@@ -147,54 +148,26 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public PaginatedStudentResponse getAllStudents(String search, Pageable pageable) {
-        Sort validatedSort = pageable.getSort().stream()
-                .filter(order -> {
-                    String property = order.getProperty();
-                    return property.equals("studentCode") ||
-                            "createdAt".equals(property) ||
-                            "classEntity.id".equals(property) ||
-                            property.equals("id") ||
-                            "updatedAt".equals(property) ||
-                            "user.userId".equals(property) ||
-                            property.equals("bloodType") ||
-                            property.equals("geneticDiseases") ||
-                            property.equals("allergies") ||
-                            property.equals("chronicDiseases") ||
-                            "height".equals(property) ||
-                            "weight".equals(property) ||
-                            property.equals("user.fullname") ||
-                            property.equals("user.gender") ||
-                            property.equals("user.dob") ||
-                            property.equals("user.username") ||
-                            property.equals("classEntity.className");
-                })
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        Sort::by
-                ));
+        Page<StudentEntity> page;
 
-        Pageable validatedPageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                validatedSort
-        );
-
-        Page<StudentEntity> studentPage;
-        if (search != null && !search.isEmpty()) {
-            studentPage = studentRepository.searchStudents(search, validatedPageable);
+        if (search != null && !search.trim().isEmpty()) {
+            page = studentRepository.searchStudents(search.trim(), pageable);
         } else {
-            studentPage = studentRepository.findAllActive(validatedPageable);
+            page = studentRepository.findAll((root, query, cb) -> {
+                Join<StudentEntity, UserEntity> userJoin = root.join("user");
+                return cb.equal(userJoin.get("status"), StatusEnum.ACTIVE);
+            }, pageable);
         }
 
-        List<StudentGetResponse> studentDTOs = studentPage.stream()
+        List<StudentGetResponse> studentDTOs = page.stream()
                 .map(StudentMapper::toStudentGetResponse)
                 .toList();
 
         return PaginatedStudentResponse.builder()
                 .students(studentDTOs)
-                .totalElements(studentPage.getTotalElements())
-                .totalPages(studentPage.getTotalPages())
-                .currentPage(studentPage.getNumber())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .currentPage(page.getNumber())
                 .build();
     }
 
@@ -266,7 +239,7 @@ public class StudentServiceImpl implements StudentService {
         merged.sort(comparator);
 
         int start = (int) pageable.getOffset();
-        int end   = Math.min(start + pageable.getPageSize(), merged.size());
+        int end = Math.min(start + pageable.getPageSize(), merged.size());
         if (start > end) {   // yêu cầu trang vượt quá tổng trang
             return Page.empty(pageable);
         }
@@ -279,9 +252,6 @@ public class StudentServiceImpl implements StudentService {
 
         return new PageImpl<>(dtos, pageable, merged.size());
     }
-
-
-
 
 
     @Override
@@ -325,6 +295,7 @@ public class StudentServiceImpl implements StudentService {
         clazz.setTotalstudent(count);
         classRepository.save(clazz);
     }
+
     private StudentRequest convertToStudentRequest(StudentImportDTO dto) {
         UserRegisterDTO user = UserRegisterDTO.builder()
                 .email(dto.getEmail())
