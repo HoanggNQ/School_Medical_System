@@ -48,11 +48,11 @@ const StudentManagement = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [isCreateClassModalOpen, setIsCreateClassModalOpen] = useState(false);
-  const [sort, setSort] = useState('studentId.asc');
+  const [sort, setSort] = useState('Id,asc');
 
   useEffect(() => {
     fetchUsers(currentPage);
-    console.log("Users",users);
+    console.log("Users", users);
   }, [currentPage, searchTerm, sort]);
 
   const fetchUsers = async (page = 0) => {
@@ -64,7 +64,7 @@ const StudentManagement = () => {
       setTotalElements(response.data.totalElements || 0);
       setCurrentPage(response.data.currentPage || 0);
       setError(null);
-      console.log("healthCheckConsents",response);
+      console.log("healthCheckConsents", response);
     } catch (err) {
       setError('Failed to fetch health check consents. Please try again later.');
       console.error('Error fetching health check consents:', err);
@@ -135,12 +135,12 @@ const StudentManagement = () => {
         emergencyContactPhone: formData.emergencyContactPhone
       };
       console.log("data gưi điđi:", data);
-  
+
       const response = await UserService.registerstudent(data);
-      
 
 
-      
+
+
       console.log(response);
 
       toast({
@@ -165,7 +165,7 @@ const StudentManagement = () => {
         emergencyContactPhone: '',
         parentId: 0
       });
-      fetchUsers(); 
+      fetchUsers();
     } catch (error) {
       console.error(error);
       toast({
@@ -204,7 +204,7 @@ const StudentManagement = () => {
 
   const handleDeleteUser = async (studentId) => {
     try {
-      const response = await UserService.deleteUser({studentId});
+      const response = await UserService.deleteUser({ studentId });
       console.log(response);
       if (response.data.isSuccess == true) {
         toast({
@@ -240,7 +240,7 @@ const StudentManagement = () => {
     setIsEditModalOpen(true);
   };
 
-  const userStatus={
+  const userStatus = {
     ACTIVE: 'Hoạt động',
     VERIFY: 'Chưa xác thực',
     DELETED: 'Đã xóa'
@@ -324,13 +324,13 @@ const StudentManagement = () => {
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>
                 <SelectContent>
-                <SelectItem value="studentId,asc">Mặc định (ID học sinh)</SelectItem>
-    <SelectItem value="user.fullname,asc">Tên học sinh (A-Z)</SelectItem>
-    <SelectItem value="user.fullname,desc">Tên học sinh (Z-A)</SelectItem>
-    <SelectItem value="classEntity.className,asc">Lớp (A-Z)</SelectItem>
-    <SelectItem value="classEntity.className,desc">Lớp (Z-A)</SelectItem>
-    <SelectItem value="studentCode,asc">Mã học sinh (A-Z)</SelectItem>
-    <SelectItem value="studentCode,desc">Mã học sinh (Z-A)</SelectItem>
+                  <SelectItem value="Id,asc">Mặc định</SelectItem>
+                  <SelectItem value="user.fullname,asc">Tên học sinh (A-Z)</SelectItem>
+                  <SelectItem value="user.fullname,desc">Tên học sinh (Z-A)</SelectItem>
+                  <SelectItem value="classEntity.className,asc">Lớp (A-Z)</SelectItem>
+                  <SelectItem value="classEntity.className,desc">Lớp (Z-A)</SelectItem>
+                  <SelectItem value="studentCode,asc">Mã học sinh (A-Z)</SelectItem>
+                  <SelectItem value="studentCode,desc">Mã học sinh (Z-A)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
