@@ -33,7 +33,7 @@ const UserManagement = () => {
     username: '',
     password: '',
     confirmPassword: ''
-
+    
   });
 
   const [users, setUsers] = useState([]);
@@ -43,7 +43,7 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [sort, setSort] = useState('userId.asc');
+  const [sort, setSort] = useState('userId,asc');
 
   useEffect(() => {
     fetchUsers(currentPage);
@@ -127,9 +127,9 @@ const UserManagement = () => {
       }
 
       const response = await UserService.createNurse(registrationData);
-
+      
       console.log(response);
-      console.log("registrationData", registrationData);
+      console.log("registrationData",registrationData);
 
 
       toast({
@@ -150,7 +150,7 @@ const UserManagement = () => {
         password: '',
         confirmPassword: ''
       });
-      fetchUsers();
+      fetchUsers(); 
     } catch (error) {
       console.error(error);
       toast({
@@ -189,7 +189,7 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      const response = await UserService.deleteUser({ userId });
+      const response = await UserService.deleteUser({userId});
       console.log(response);
       if (response.data.isSuccess == true) {
         toast({
@@ -225,7 +225,7 @@ const UserManagement = () => {
     setIsEditModalOpen(true);
   };
 
-  const userStatus = {
+  const userStatus={
     ACTIVE: 'Hoạt động',
     VERIFY: 'Chưa xác thực',
     DELETED: 'Đã xóa'
@@ -298,7 +298,6 @@ const UserManagement = () => {
                   <SelectItem value="email,desc">Email (Z-A)</SelectItem>
                   <SelectItem value="roleName,asc">Vai trò (A-Z)</SelectItem>
                   <SelectItem value="roleName,desc">Vai trò (Z-A)</SelectItem>
-
                 </SelectContent>
               </Select>
             </div>
