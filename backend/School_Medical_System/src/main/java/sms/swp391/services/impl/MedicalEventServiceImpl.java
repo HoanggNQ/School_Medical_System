@@ -96,8 +96,7 @@ public class MedicalEventServiceImpl implements MedicalEventService {
         MedicalEventEntity entity = medicalEventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Medical event not found"));
 
-        if (request.getStatus() != null) {
-        }
+
         entity.setFollowUpNotes(request.getFollowUpNotes());
 
         if (request.getStudentId() != null) {
