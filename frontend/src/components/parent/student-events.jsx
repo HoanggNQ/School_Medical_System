@@ -17,15 +17,17 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  ThumbsUp,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ParentService from "../../api/services/parent.service"
-import { Toaster} from "@/components/ui/toaster" // Changed import from { toast } to { Toast }
+import { useToast } from "@/components/ui/use-toast" // Corrected import for toast notifications
 
 const StudentEvents = ({ selectedStudent }) => {
+  const { toast } = useToast() // Initialize toast hook
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedEvent, setSelectedEvent] = useState(null)
@@ -106,7 +108,7 @@ const StudentEvents = ({ selectedStudent }) => {
         return "bg-red-100 text-red-800 border-red-200"
       case "PENDING":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
-      case "DONE": // New status
+      case "DONE":
         return "bg-blue-100 text-blue-800 border-blue-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
@@ -122,8 +124,8 @@ const StudentEvents = ({ selectedStudent }) => {
       case "REJECTED":
         return <XCircle className="w-4 h-4" />
       case "PENDING":
-        return <AlertCircle className="w-4 h-4" />
-      case "DONE": // New status
+        return <Clock className="w-4 h-4" /> // Reverted to Clock for PENDING
+      case "DONE":
         return <CheckCircle className="w-4 h-4" />
       default:
         return <AlertCircle className="w-4 h-4" />
@@ -140,7 +142,7 @@ const StudentEvents = ({ selectedStudent }) => {
         return "Đã từ chối"
       case "PENDING":
         return "Đang chờ phản hồi"
-      case "DONE": // New status
+      case "DONE":
         return "Đã hoàn thành consent"
       default:
         return "Chưa phản hồi"
@@ -150,48 +152,75 @@ const StudentEvents = ({ selectedStudent }) => {
   // Updated result status handling based on new API structure
   const getResultStatusInfo = (resultStatus) => {
     switch (resultStatus?.toUpperCase()) {
-      case "PENDING": // chưa ghi nhận kết quả
+      case "DONE":
         return {
-          label: "Chưa ghi nhận kết quả",
-          color: "bg-yellow-100 text-yellow-800",
-          icon: <Clock className="w-4 h-4" />,
-          description: "Kết quả sự kiện chưa được ghi nhận.",
-        }
-      case "COMPLETED": // đã ghi nhận kết quả
-        return {
-          label: "Đã ghi nhận kết quả",
+          label: "Đã hoàn thành",
           color: "bg-green-100 text-green-800",
           icon: <CheckCircle className="w-4 h-4" />,
-          description: "Kết quả sự kiện đã được ghi nhận.",
+          description: "Kết quả sự kiện đã được ghi nhận và hoàn thành.",
+          shouldDisplay: true,
         }
-      case "NO_CONSENT": // chưa có consent
+      case "PENDING":
         return {
-          label: "Chưa có consent",
+          label: "Đang chờ xử lý",
+          color: "bg-yellow-100 text-yellow-800",
+          icon: <Clock className="w-4 h-4" />,
+          description: "Sự kiện đang chờ xử lý hoặc cập nhật kết quả.",
+          shouldDisplay: true,
+        }
+      case "APPROVED":
+        return {
+          label: "Đã chấp thuận",
+          color: "bg-blue-100 text-blue-800",
+          icon: <ThumbsUp className="w-4 h-4" />,
+          description: "Sự kiện đã được chấp thuận và đang chờ kết quả.",
+          shouldDisplay: true,
+        }
+      case "REJECTED":
+        return {
+          label: "Đã từ chối",
           color: "bg-red-100 text-red-800",
           icon: <XCircle className="w-4 h-4" />,
-          description: "Học sinh chưa có sự đồng ý tham gia.",
+          description: "Sự kiện đã bị từ chối hoặc không có sự đồng ý.",
+          shouldDisplay: true,
         }
-      default:
+      case "NULL": // Specific case to hide this status
+        return {
+          label: "Chưa có kết quả",
+          color: "bg-gray-100 text-gray-800",
+          icon: <AlertCircle className="w-4 h-4" />,
+          description: "Kết quả sự kiện chưa được ghi nhận.",
+          shouldDisplay: false, // Do not display this status
+        }
+      default: // Handles "null" or any other unexpected status
         return {
           label: "Chưa xác định",
           color: "bg-gray-100 text-gray-800",
           icon: <AlertCircle className="w-4 h-4" />,
           description: "Trạng thái kết quả không xác định.",
+          shouldDisplay: true,
         }
     }
   }
 
-  // Filter events based on search term, status, and type
-  const filteredEvents = Array.isArray(events)
-    ? events.filter((event) => {
-        const matchesSearch = event.campaignName?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter events based on null statuses first, then apply search/type filters
+  const rawEvents = Array.isArray(events) ? events : []
 
-        const matchesStatus = filterStatus === "all" || event.resultStatus?.toUpperCase() === filterStatus.toUpperCase()
-        const matchesType = filterType === "all" || event.type?.toUpperCase() === filterType.toUpperCase()
+  const preFilteredEvents = rawEvents.filter((event) => {
+    // An event is considered "displayable" if its consentStatus is not null
+    // AND its resultStatus is not null AND not "Chưa có kết quả"
+    const hasConsentStatus = event.consentStatus !== null
+    const hasValidResultStatus = event.resultStatus !== null && event.resultStatus !== "Chưa có kết quả"
 
-        return matchesSearch && matchesStatus && matchesType
-      })
-    : []
+    return hasConsentStatus && hasValidResultStatus
+  })
+
+  const filteredEvents = preFilteredEvents.filter((event) => {
+    const matchesSearch = event.campaignName?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = filterStatus === "all" || event.resultStatus?.toUpperCase() === filterStatus.toUpperCase()
+    const matchesType = filterType === "all" || event.type?.toUpperCase() === filterType.toUpperCase()
+    return matchesSearch && matchesStatus && matchesType
+  })
 
   // Fetch events with pagination
   const fetchEvents = async (page = 0) => {
@@ -271,16 +300,14 @@ const StudentEvents = ({ selectedStudent }) => {
       // Refresh the current page to get updated data
       await fetchEvents(currentPage)
 
-      Toaster({
-        // Changed toast to Toast
+      toast({
         title: "Cập nhật thành công",
         description: `Đã ${response === "approved" ? "chấp nhận" : "từ chối"} tham gia sự kiện!`,
         variant: "success",
       })
     } catch (error) {
       console.error("Error updating consent:", error)
-      Toaster({
-        // Changed toast to Toast
+      toast({
         title: "Lỗi cập nhật",
         description: "Có lỗi xảy ra khi cập nhật phản hồi: " + error.message,
         variant: "destructive",
@@ -337,10 +364,10 @@ const StudentEvents = ({ selectedStudent }) => {
         case "PENDING":
           counts.resultPending++
           break
-        case "COMPLETED":
+        case "DONE":
           counts.resultCompleted++
           break
-        case "NO_CONSENT":
+        case "REJECTED":
           counts.resultNoConsent++
           break
       }
@@ -366,7 +393,7 @@ const StudentEvents = ({ selectedStudent }) => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      {/* <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
+      <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -381,7 +408,7 @@ const StudentEvents = ({ selectedStudent }) => {
             </div>
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
       {/* Search and Filter Section */}
       <Card>
@@ -406,9 +433,10 @@ const StudentEvents = ({ selectedStudent }) => {
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="all">Tất cả trạng thái kết quả</option>
-                <option value="pending">Chưa ghi nhận kết quả</option>
-                <option value="completed">Đã ghi nhận kết quả</option>
-                <option value="no_consent">Chưa có consent</option>
+                <option value="DONE">Đã hoàn thành</option>
+                <option value="PENDING">Đang chờ xử lý</option>
+                <option value="APPROVED">Đã chấp thuận</option>
+                <option value="REJECTED">Đã từ chối</option>
               </select>
 
               <select
@@ -503,7 +531,7 @@ const StudentEvents = ({ selectedStudent }) => {
                               {getEventTypeLabel(event.type)}
                             </Badge>
                             <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-600">Ngày: {formatDate(event.checkDate)}</span>
+                            <span className="text-sm text-gray-600">Ngày: {formatDate(event.startDate)}</span>
                             {event.consentStatus && (
                               <>
                                 <span className="text-sm text-gray-500">•</span>
@@ -518,71 +546,62 @@ const StudentEvents = ({ selectedStudent }) => {
                           </div>
                         </div>
                       </div>
-                      <Badge className={resultStatusInfo.color}>
-                        <div className="flex items-center space-x-1">
-                          {resultStatusInfo.icon}
-                          <span>{resultStatusInfo.label}</span>
-                        </div>
-                      </Badge>
+                      {resultStatusInfo.shouldDisplay && (
+                        <Badge className={resultStatusInfo.color}>
+                          <div className="flex items-center space-x-1">
+                            {resultStatusInfo.icon}
+                            <span>{resultStatusInfo.label}</span>
+                          </div>
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Event Details Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      {/* Ngày khám */}
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <Calendar className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div className="min-w-0">
+                        <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày bắt đầu</p>
-                          <p className="font-medium text-gray-900 truncate">{formatDate(event.startDate)}</p>
+                          <p className="font-medium text-gray-900">{formatDate(event.startDate)}</p>
                         </div>
                       </div>
 
-                      {/* Ngày khám */}
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <Calendar className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div className="min-w-0">
+                        <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Ngày kết thúc</p>
-                          <p className="font-medium text-gray-900 truncate">{formatDate(event.endDate)}</p>
+                          <p className="font-medium text-gray-900">{formatDate(event.endDate)}</p>
                         </div>
                       </div>
-                      {/* Địa điểm */}
+
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <MapPin className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div className="min-w-0">
+                        <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Địa điểm</p>
-                          <p
-                            className="font-medium text-gray-900 truncate"
-                            title={formatValue(event.location)}
-                          >
+                          <p className="font-medium text-gray-900 truncate" title={formatValue(event.location)}>
                             {formatValue(event.location)}
                           </p>
                         </div>
                       </div>
 
-                      {/* Học sinh */}
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                           <User className="w-4 h-4 text-gray-500" />
                         </div>
-                        <div className="min-w-0">
+                        <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Học sinh</p>
-                          <p
-                            className="font-medium text-gray-900 truncate"
-                            title={formatValue(event.studentName)}
-                          >
+                          <p className="font-medium text-gray-900 truncate" title={formatValue(event.studentName)}>
                             {formatValue(event.studentName)}
                           </p>
                         </div>
                       </div>
                     </div>
-                    
-
 
                     {/* Description Preview */}
                     {event.description && (
@@ -596,27 +615,28 @@ const StudentEvents = ({ selectedStudent }) => {
                     )}
 
                     {/* Status Information */}
-                    <div
-                      className={`p-3 rounded-lg mb-4 ${resultStatusInfo.color.replace("text-", "text-opacity-80 bg-opacity-50 ")}`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        {resultStatusInfo.icon}
-                        <span className="text-sm font-medium">{resultStatusInfo.description}</span>
+                    {/* {resultStatusInfo.shouldDisplay && (
+                      <div
+                        className={`p-3 rounded-lg mb-4 ${resultStatusInfo.color.replace("text-", "text-opacity-80 bg-opacity-50 ")}`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          {resultStatusInfo.icon}
+                          <span className="text-sm font-medium">{resultStatusInfo.description}</span>
+                        </div>
                       </div>
-                    </div>
+                    )} */}
 
                     {/* Consent Status Text */}
-                    {event.consentStatusText && (
+                    {/* {event.consentStatusText && (
                       <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4">
                         <p className="text-sm text-blue-800 font-medium">{event.consentStatusText}</p>
                       </div>
-                    )}
+                    )} */}
 
                     {/* Action Buttons */}
                     <div className="flex justify-between items-center pt-4 border-t border-white border-opacity-50">
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        {/* <Clock className="w-4 h-4" />
-                        <span>Hoàn thành: {event.completed ? "Có" : "Không"}</span> */}
+                        {/* Removed commented-out "Hoàn thành" status display */}
                       </div>
 
                       <div className="flex space-x-2">
@@ -772,17 +792,19 @@ const StudentEvents = ({ selectedStudent }) => {
 
             <div className="p-6">
               {/* Status Banner */}
-              <div className={`p-4 rounded-lg mb-6 ${getResultStatusInfo(selectedEvent.resultStatus).color}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    {getResultStatusInfo(selectedEvent.resultStatus).icon}
-                    <span className="font-medium">
-                      Trạng thái: {getResultStatusInfo(selectedEvent.resultStatus).label}
-                    </span>
+              {getResultStatusInfo(selectedEvent.resultStatus).shouldDisplay && (
+                <div className={`p-4 rounded-lg mb-6 ${getResultStatusInfo(selectedEvent.resultStatus).color}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {getResultStatusInfo(selectedEvent.resultStatus).icon}
+                      <span className="font-medium">
+                        Trạng thái: {getResultStatusInfo(selectedEvent.resultStatus).label}
+                      </span>
+                    </div>
+                    <span className="text-sm">{getResultStatusInfo(selectedEvent.resultStatus).description}</span>
                   </div>
-                  <span className="text-sm">{getResultStatusInfo(selectedEvent.resultStatus).description}</span>
                 </div>
-              </div>
+              )}
 
               {/* Event Details */}
               <div className="space-y-6">
@@ -816,10 +838,10 @@ const StudentEvents = ({ selectedStudent }) => {
                         <p className="text-sm text-gray-500">Học sinh</p>
                         <p className="font-medium">{selectedEvent.studentName}</p>
                       </div>
-                      <div>
+                      {/* <div>
                         <p className="text-sm text-gray-500">Thiết bị yêu cầu</p>
                         <p className="font-medium">{formatValue(selectedEvent.requirementEquipment)}</p>
-                      </div>
+                      </div> */}
                       <div>
                         <p className="text-sm text-gray-500">Trạng thái hoàn thành</p>
                         <p className="font-medium">{selectedEvent.completed ? "Đã hoàn thành" : "Chưa hoàn thành"}</p>
