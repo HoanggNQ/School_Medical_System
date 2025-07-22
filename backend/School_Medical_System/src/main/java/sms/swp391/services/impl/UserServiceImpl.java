@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                Sort.unsorted()
+                pageable.getSort()
         );
 
         Page<UserEntity> userPage = (search != null && !search.isBlank())

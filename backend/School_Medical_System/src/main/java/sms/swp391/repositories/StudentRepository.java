@@ -2,6 +2,7 @@ package sms.swp391.repositories;
 
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import sms.swp391.models.entities.StudentEntity;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
+public interface StudentRepository extends JpaRepository<StudentEntity, Long> , JpaSpecificationExecutor<StudentEntity> {
 
     Optional<StudentEntity> findById(Long id);
 
@@ -24,21 +25,21 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
     List<StudentEntity> findByParent_UserId(Long parentId);
 
     @Query("""
-    SELECT COUNT(s)
-    FROM StudentEntity s
-    JOIN s.user u
-    WHERE s.classEntity.id = :classId
-      AND u.status = sms.swp391.models.dtos.enums.StatusEnum.ACTIVE
-""")
+                SELECT COUNT(s)
+                FROM StudentEntity s
+                JOIN s.user u
+                WHERE s.classEntity.id = :classId
+                  AND u.status = 'ACTIVE'
+            """)
     int countActiveStudentsByClassId(@Param("classId") Long classId);
-
-    @Query("SELECT s FROM StudentEntity s WHERE " +
-           "LOWER(s.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "AND s.user.status = 'ACTIVE'")
-    Page<StudentEntity> searchStudents(@Param("keyword") String keyword, Pageable pageable);
-
-    @Query("SELECT s FROM StudentEntity s WHERE s.user.status = 'ACTIVE'")
-    Page<StudentEntity> findAllActive(Pageable pageable);
+//
+//    @Query("SELECT s FROM StudentEntity s WHERE " +
+//            "LOWER(s.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+//            "AND s.user.status = 'ACTIVE'")
+//    Page<StudentEntity> searchStudents(@Param("keyword") String keyword, Pageable pageable);
+//
+//    @Query("SELECT s FROM StudentEntity s WHERE s.user.status = 'ACTIVE'")
+//    Page<StudentEntity> findAllActive(Pageable pageable);
 
     @Query("""
                SELECT s FROM StudentEntity s
@@ -48,5 +49,19 @@ public interface StudentRepository extends JpaRepository<StudentEntity,Long> {
             """)
     List<StudentEntity> findByGradesWithUserAndParent(@Param("grades") List<String> grades);
 
-    List<StudentEntity> findAllByParent(UserEntity parent);
+    @Query("""
+        SELECT s FROM StudentEntity s
+        JOIN s.user u
+        LEFT JOIN s.parent p
+        LEFT JOIN s.classEntity c
+        WHERE u.status = 'ACTIVE'
+        AND (
+            :keyword IS NULL OR :keyword = '' OR 
+            LOWER(u.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(s.studentCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        )
+    """)
+    Page<StudentEntity> searchStudents(@Param("keyword") String keyword, Pageable pageable);
+
+
 }

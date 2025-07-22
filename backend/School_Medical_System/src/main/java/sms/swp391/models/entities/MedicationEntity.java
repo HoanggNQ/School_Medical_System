@@ -77,4 +77,6 @@ public class MedicationEntity {
     @OneToMany(mappedBy = "medication")
     private Set<MedicationRequestDetailEntity> medicationRequestDetails = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "medication", cascade = CascadeType.ALL)
+    private Set<MedicalEventMedicationEntity> usedInMedicalEvents = new LinkedHashSet<>();
 }

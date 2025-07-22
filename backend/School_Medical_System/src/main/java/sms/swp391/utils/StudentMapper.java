@@ -1,10 +1,61 @@
 package sms.swp391.utils;
 
+import org.springframework.stereotype.Component;
 import sms.swp391.models.dtos.responses.StudentGetResponse;
+import sms.swp391.models.dtos.responses.StudentHealthEventResponseDTO;
 import sms.swp391.models.dtos.responses.StudentResponse;
 import sms.swp391.models.entities.*;
-
+import sms.swp391.repositories.StudentHealthEventProjection;
+@Component
 public class StudentMapper {
+    public static StudentHealthEventResponseDTO toHealthEventDTO(StudentHealthEventProjection p) {
+        if (p == null) return null;
+
+        return StudentHealthEventResponseDTO.builder()
+                .type(mapType(p.getType()))
+                .campaignId(p.getCampaignId())
+                .campaignName(p.getCampaignName())
+                .consentId(p.getConsentId())
+                .consentStatus(p.getConsentStatus())
+                .consentStatusText(mapConsentStatusText(p.getConsentStatus()))
+                .startDate(p.getStartDate())
+                .endDate(p.getEndDate())
+                .studentName(p.getStudentName())
+                .location(p.getLocation())
+                .resultStatus(mapResultStatusText(p.getResultStatus()))
+                .build();
+    }
+
+    private static String mapConsentStatusText(String status) {
+        if (status == null) return "null";
+        return switch (status) {
+            case "DONE" -> "DONE";
+            case "PENDING" -> "PENDING";
+            case "APPROVED" -> "APPROVED";
+            case "REJECTED" -> "REJECTED";
+            default -> "null";
+        };
+    }
+
+    private static String mapResultStatusText(String status) {
+        if (status == null) return "null";
+        return switch (status) {
+            case "DONE" -> "DONE";
+            case "PENDING" -> "PENDING";
+            case "APPROVED" -> "APPROVED";
+            case "REJECTED" -> "REJECTED";
+            default -> "null";
+        };
+    }
+
+    private static String mapType(String type) {
+        if (type == null) return "null";
+        return switch (type) {
+            case "HEALTH_CHECK" -> "HEALTH_CHECK";
+            case "VACCINATION" -> "VACCINATION";
+            default -> "null";
+        };
+    }
 
     public static StudentResponse toDTO(StudentEntity entity) {
         if (entity == null) return null;

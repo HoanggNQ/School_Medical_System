@@ -2,7 +2,6 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.*;
 
-import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -11,16 +10,16 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class StudentHealthProfileResponseDTO {
     private Long studentId;
-    private BigDecimal heightCm;
-    private BigDecimal weightKg;
-    private BigDecimal bmi;
+    private Double heightCm;
+    private Double weightKg;
+    private Double bmi;
     private String visionLeft;
     private String visionRight;
     private String hearing;
     private String dentalHealth;
     private String bloodPressure;
     private Integer pulse;
-    private BigDecimal temperature;
+    private Double temperature;
     private String bloodType;
     private String geneticDiseases;
     private String allergies;

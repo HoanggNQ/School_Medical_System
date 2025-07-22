@@ -11,7 +11,8 @@ import sms.swp391.models.entities.VaccinationConsentEntity;
 import sms.swp391.models.entities.StudentEntity;
 
 import java.util.List;
-
+import org.springframework.stereotype.Repository;
+@Repository
 public interface VaccinationConsentRepository extends JpaRepository<VaccinationConsentEntity, Long> {
 
     // Find consent by campaign ID and student
