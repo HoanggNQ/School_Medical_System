@@ -28,6 +28,7 @@
     "react": "^18.2.0",
     "react-big-calendar": "^1.19.4",
     "react-dom": "^18.2.0",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^6.16.0",
     "recharts": "^3.0.2",
     "tailwind-merge": "^1.14.0",
