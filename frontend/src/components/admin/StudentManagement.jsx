@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Eye, Filter, UserCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Filter, UserCircle, FileDown, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/ui/use-toast';
 import UserService from '../../api/services/user.service';
 import StudentForm from './StudentForm';
-
+import fileService from '../../api/services/file.service';
 
 
 const StudentManagement = () => {
@@ -49,6 +49,8 @@ const StudentManagement = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [isCreateClassModalOpen, setIsCreateClassModalOpen] = useState(false);
   const [sort, setSort] = useState('Id,asc');
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useState(null);
 
   useEffect(() => {
     fetchUsers(currentPage);
@@ -246,6 +248,54 @@ const StudentManagement = () => {
     DELETED: 'Đã xóa'
   }
 
+  // Export handler
+  const handleExport = async () => {
+    try {
+      const blob = await fileService.exportStudents();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `students_export.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({ title: 'Thành công', description: 'Xuất file thành công.' });
+    } catch (error) {
+      const errorMessage = error.customMessage ||
+        error.response?.data?.message ||
+        error.message ||
+        'Đã có lỗi xảy ra.';
+
+      console.log("Lỗi chi tiết:", error);
+      console.log("customMessage chi tiết:", error.customMessage);
+
+      toast({
+        title: 'Lỗi',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Import handler
+  const handleImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      await fileService.importStudents(file);
+      toast({ title: 'Thành công', description: 'Nhập file thành công.' });
+      fetchUsers(); // Refresh the student list
+    } catch (error) {
+      let msg = error?.response?.data?.message || error?.message || 'Không thể nhập file.';
+      toast({ title: 'Lỗi', description: msg, variant: 'destructive' });
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -291,6 +341,30 @@ const StudentManagement = () => {
               />
             </DialogContent>
           </Dialog>
+          {/* <Button
+            variant="default"
+            onClick={handleExport}
+            className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+          >
+            <FileDown className="w-4 h-4" />
+            Export Excel
+          </Button> */}
+          <Button
+            variant="default"
+            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+            className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+            disabled={importing}
+          >
+            <FileUp className="w-4 h-4" />
+            {importing ? 'Đang nhập...' : 'Import Excel'}
+          </Button>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            ref={el => fileInputRef.current = el}
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
           <Button className="btn-primary" onClick={() => setIsCreateModalOpen(true)} disabled={loadingCreate}>
             <Plus className="w-4 h-4 mr-2" />
             Thêm Học Sinh
