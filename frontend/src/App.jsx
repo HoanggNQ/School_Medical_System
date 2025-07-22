@@ -44,6 +44,7 @@ import StaticCampaign from './components/admin/StaticCampaign';
 import StaticVaccination from './components/admin/StacticVaccination';
 import BlogManagement from './components/admin/BlogManagement';
 import BlogListPage from './components/admin/BlogListPage';
+import BlogDetail from './components/admin/BlogDetail';
 import WatchVaccination from './components/nurse/WatchVaccination';
 import HeathResult from './components/nurse/HeathResult';
 import VaccineResult from './components/nurse/VaccineResult';
@@ -221,6 +222,7 @@ function App() {
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/auth" element={user ? <Navigate to={getDefaultRoute(user.role)} /> : <AuthPage />} />
         <Route path="/blog" element={<BlogListPage />} />
+        <Route path="blog/:blogId" element={<BlogDetail />} />
     
 
         <Route element={<ProtectedRoute />}>
@@ -233,6 +235,7 @@ function App() {
             <Route path="users" element={<UserManagement />} />
             <Route path="students" element={<StudentManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
+         
 
             <Route path="show-campaigns" element={<ShowListCampaign />} />
             <Route path="static-campaigns/:campaignId" element={<StaticCampaign />} />

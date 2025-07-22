@@ -132,8 +132,10 @@ const API_ENDPOINTS = {
   BLOG: {
     GET_ALL: 'api/contents/getAll',
     CREATE: 'api/contents/create',
+    CREATE_WITH_IMAGE: 'api/contents/createWithImage',
     GET_BY_ID: (id) => `api/contents/getById/${id}`,
     UPDATE: (id) => `api/contents/update/${id}`,
+    UPDATE_WITH_IMAGE: (id) => `api/contents/updateWithImage/${id}`,
     DELETE: (id) => `api/contents/delete/${id}`,
     GET_ALL_CATEGORIES: 'api/v1/content-category',
     GET_BY_CATEGORY: (categoryId) => `api/contents/findContentByCategory/${categoryId}`,
@@ -151,6 +153,12 @@ const API_ENDPOINTS = {
 
     EXPORT_HEALTH_CHECK_RESULT: (campaignId) => `/api/v1/health-check-result/list-results-export?campaignId=${campaignId}`,
     IMPORT_HEALTH_CHECK_RESULT: '/api/v1/health-check-result/import',
+
+    EXPORT_USERS: '/api/v1/user/export/excel',
+    IMPORT_USERS: '/api/v1/user/import/excel',
+
+    EXPORT_STUDENTS: '/api/v1/student/export/excel',
+    IMPORT_STUDENTS: '/api/v1/student/import',
   },
 };
 
