@@ -2,9 +2,9 @@ package sms.swp391.models.dtos.responses;
 
 import lombok.Builder;
 import lombok.Data;
-import sms.swp391.models.dtos.enums.MedicalStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -17,4 +17,5 @@ public class MedicalEventResponse {
     private Long studentId;
     private LocalDateTime eventDate;
     private String followUpNotes;
+    private List<MedicalEventMedicationResponse> medications; // 👈 đổi kiểu ở đây
 }

@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 @Builder
 public class HealthConsultationScheduleResponseDTO {
     private Long id;
+    private Long studentId;
     private String studentName;
+    private Long parentId;
     private String parentName;
     private Long resultId;
     private LocalDateTime scheduleTime;

@@ -8,22 +8,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sms.swp391.models.dtos.requests.MedicalEventCreateRequestDTO;
+import sms.swp391.models.dtos.requests.MedicalEventMedicationDTO;
 import sms.swp391.models.dtos.requests.MedicalEventUpdateRequestDTO;
+import sms.swp391.models.dtos.responses.MedicalEventMedicationResponse;
 import sms.swp391.models.dtos.responses.MedicalEventResponse;
 import sms.swp391.models.dtos.responses.PagedResponse;
-import sms.swp391.models.entities.MedicalEventEntity;
-import sms.swp391.models.entities.StudentEntity;
-import sms.swp391.models.entities.UserEntity;
+import sms.swp391.models.entities.*;
 import sms.swp391.models.exception.NotFoundException;
-import sms.swp391.repositories.MedicalEventRepository;
-import sms.swp391.repositories.StudentRepository;
-import sms.swp391.repositories.UserRepository;
+import sms.swp391.repositories.*;
 import sms.swp391.services.MedicalEventService;
 import sms.swp391.services.NotificationService;
 import sms.swp391.utils.MedicalEventMapper;
 import sms.swp391.models.dtos.responses.PaginatedMedicalEventResponse;
 import sms.swp391.utils.PageUtils;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,46 +35,68 @@ public class MedicalEventServiceImpl implements MedicalEventService {
     private final MedicalEventRepository medicalEventRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
-
     private final NotificationService notificationService;
+    private final MedicalEventMedicationRepository medicalEventMedicationRepository;
+    private final MedicationRepository medicationRepository;
 
     @Override
+    @Transactional
     public MedicalEventResponse create(Long reportedById, MedicalEventCreateRequestDTO request) {
-        StudentEntity student = null;
-        if (request.getStudentId() != null) {
-            student = studentRepository.findById(request.getStudentId())
-                    .orElseThrow(() -> new NotFoundException("Student not found: " + request.getStudentId()));
-        }
+        UserEntity reportedBy = userRepository.findById(reportedById)
+                .orElseThrow(() -> new RuntimeException("Người tạo không tồn tại"));
+        StudentEntity student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new RuntimeException("Học sinh không tồn tại"));
 
-        UserEntity reporter = null;
-        if (reportedById != null) {
-            reporter = userRepository.findById(reportedById)
-                    .orElseThrow(() -> new NotFoundException("User not found: " + reportedById));
-        }
+        MedicalEventEntity event = MedicalEventMapper.toEntity(request, student, reportedBy);
+        medicalEventRepository.save(event);
 
-        MedicalEventEntity entity = MedicalEventMapper.toEntity(request, student, reporter);
-        MedicalEventEntity saved = medicalEventRepository.save(entity);
+        List<MedicalEventMedicationDTO> medications = request.getMedications();
+        if(medications != null && !medications.isEmpty()) {
+            List<MedicalEventMedicationEntity> usedMedications = new ArrayList<>();
+
+            for (MedicalEventMedicationDTO dto : medications) {
+                MedicationEntity medication = medicationRepository.findById(dto.getMedicationId())
+                        .orElseThrow(() -> new RuntimeException("Thuốc không tồn tại với ID: " + dto.getMedicationId()));
+
+                if (medication.getQuantity() < dto.getQuantity()) {
+                    throw new RuntimeException("Không đủ số lượng thuốc: " + medication.getMedicationName());
+                }
+
+                medication.setQuantity(medication.getQuantity() - dto.getQuantity());
+                medicationRepository.save(medication);
+
+                MedicalEventMedicationEntity mem = MedicalEventMedicationEntity.builder()
+                        .medicalEvent(event)
+                        .medication(medication)
+                        .quantity(dto.getQuantity())
+                        .build();
+                usedMedications.add(mem);
+            }
+
+            medicalEventMedicationRepository.saveAll(usedMedications);
+            event.setMedications(new HashSet<>(usedMedications));
+        }
 
         if (student != null && student.getParent() != null) {
-            notificationService.push(
-                    reporter != null ? reporter.getUserId() : null,
-                    student.getParent().getUserId(),
-                    "Sự kiện y tế liên quan đến con bạn",
-                    "Con bạn (" + student.getUser().getFullname() + ") vừa gặp phải sự kiện y tế: "
-                            + request.getEventType() + ". Vui lòng kiểm tra chi tiết."
-            );
+             notificationService.push(
+                  reportedBy != null ? reportedBy.getUserId() : null,
+                  student.getParent().getUserId(),
+                  "Sự kiện y tế liên quan đến con bạn",
+                  "Con bạn (" + student.getUser().getFullname() + ") vừa gặp phải sự kiện y tế: "
+                          + request.getEventType() + ". Vui lòng kiểm tra chi tiết."
+             );
         }
 
-        return MedicalEventMapper.toDTO(saved);
+        return MedicalEventMapper.toDTO(event);
     }
+
 
     @Override
     public MedicalEventResponse update(Long reportedById,Long id, MedicalEventUpdateRequestDTO request) {
         MedicalEventEntity entity = medicalEventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Medical event not found"));
 
-        if (request.getStatus() != null) {
-        }
+
         entity.setFollowUpNotes(request.getFollowUpNotes());
 
         if (request.getStudentId() != null) {

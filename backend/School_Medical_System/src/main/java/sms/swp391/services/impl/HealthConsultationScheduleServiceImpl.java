@@ -10,9 +10,11 @@ import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.HealthConsultationScheduleRequestDTO;
 import sms.swp391.models.dtos.responses.HealthConsultationScheduleResponseDTO;
 import sms.swp391.models.entities.*;
+import sms.swp391.models.exception.NotFoundException;
 import sms.swp391.repositories.*;
 import sms.swp391.services.HealthConsultationScheduleService;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +66,12 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
 
         return resultPage.map(this::toResponse);
     }
-
+    @Override
+    public HealthConsultationScheduleResponseDTO getById(Long id) {
+        HealthConsultationScheduleEntity entity = scheduleRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy lịch tư vấn với id: " + id));
+        return toResponse(entity);
+    }
     @Override
     public HealthConsultationScheduleResponseDTO createSchedule(HealthConsultationScheduleRequestDTO request, Long createdById)
     {
@@ -95,9 +102,12 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         }
 
         List<MedicalStatus> statuses = List.of(MedicalStatus.PENDING, MedicalStatus.APPROVED);
-        if (scheduleRepo.existsByStudent_IdAndScheduleTimeAndStatusIn(student.getId(), request.getScheduleTime(), statuses)) {
-            throw new RuntimeException("Học sinh đã có lịch tư vấn vào thời điểm này.");
+        LocalDateTime scheduleTime = request.getScheduleTime();
+        // Lặp cho đến khi không còn trùng
+        while (scheduleRepo.existsByStudent_IdAndScheduleTimeAndStatusIn(student.getId(), scheduleTime, statuses)) {
+            scheduleTime = scheduleTime.plusMinutes(20);
         }
+
 
         HealthConsultationScheduleEntity entity = HealthConsultationScheduleEntity.builder()
                 .student(student)
@@ -148,7 +158,9 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         return HealthConsultationScheduleResponseDTO.builder()
                 .id(entity.getId())
                 .studentName(entity.getStudent().getUser().getFullname())
+                .studentId(entity.getStudent().getId())
                 .parentName(entity.getStudent().getParent().getFullname())
+                .parentId(entity.getStudent().getParent().getUserId())
                 .resultId(entity.getResult().getResultId())
                 .scheduleTime(entity.getScheduleTime())
                 .reason(entity.getReason())

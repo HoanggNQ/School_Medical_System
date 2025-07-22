@@ -170,9 +170,9 @@ public class ExcelExporter {
         }
     }
 
-    private static BigDecimal parseDecimalSafe(String value) {
+    private static Double parseDecimalSafe(String value) {
         try {
-            return (value == null || value.isBlank()) ? null : new BigDecimal(value.trim());
+            return (value == null || value.isBlank()) ? null :  Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
             return null;
         }
@@ -267,8 +267,8 @@ public class ExcelExporter {
             Sheet sheet = workbook.createSheet("EligibleVaccination");
 
             String[] headers = {
-                    "campaignId", "studentId", "studentName", "className",
-                    "injectionSite", "vaccineName", "reactionNotes", "followUpNotes"
+                    "campaignId", "studentId", "studentName", "className","vaccineName",
+                    "injectionSite", "reactionNotes", "followUpNotes"
             };
 
             // Create header row
@@ -291,8 +291,8 @@ public class ExcelExporter {
                 row.createCell(3).setCellValue(student.getClassEntity().getClassName());
 
                 // Empty columns for user input
-                row.createCell(4).setCellValue(""); // injectionSite
-                row.createCell(5).setCellValue(""); // vaccineName
+                row.createCell(4).setCellValue(consent.getVaccinationCampaign().getVaccineType()); // vaccineName
+                row.createCell(5).setCellValue(""); // injectionSite
                 row.createCell(6).setCellValue(""); // reactionNotes
                 row.createCell(7).setCellValue(""); // followUpNotes
 

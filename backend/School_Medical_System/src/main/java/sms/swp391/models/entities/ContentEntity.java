@@ -37,4 +37,7 @@ public class ContentEntity {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }

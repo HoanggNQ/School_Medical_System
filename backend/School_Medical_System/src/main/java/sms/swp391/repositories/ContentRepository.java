@@ -9,7 +9,8 @@ import sms.swp391.models.entities.ContentEntity;
 import io.lettuce.core.dynamic.annotation.Param;
 
 import java.util.List;
-
+import org.springframework.stereotype.Repository;
+@Repository
 public interface ContentRepository extends JpaRepository<ContentEntity, Long> {
     List<ContentEntity> findByContentCategoryEntity_Id(Long contentCategoryId);
 

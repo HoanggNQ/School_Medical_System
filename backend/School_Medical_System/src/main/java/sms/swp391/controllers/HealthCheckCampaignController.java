@@ -31,14 +31,14 @@ import java.util.List;
 public class HealthCheckCampaignController {
     private final HealthCheckCampaignService healthCheckService;
     private final HealthCheckConsentService healthCheckConsentService;
-    @Operation(summary = "gửi mail cho phụ huynh trong 1 chien dịch khám sức khỏe",
-            description = "Gửi email thông báo cho phụ huynh về chiến dịch khám sức khỏe theo ID chiến dịch.")
-    @PostMapping("/{id}/send-mails")
-    public ResponseEntity<?> sendMails(@PathVariable Long id,
-                                       @AuthenticationPrincipal UserEntity me) {
-        healthCheckService.sendConsentEmails(id, me.getUserId());
-        return ResponseEntity.ok("Đang gửi email cho phụ huynh…");
-    }
+//    @Operation(summary = "gửi mail cho phụ huynh trong 1 chien dịch khám sức khỏe",
+//            description = "Gửi email thông báo cho phụ huynh về chiến dịch khám sức khỏe theo ID chiến dịch.")
+//    @PostMapping("/{id}/send-mails")
+//    public ResponseEntity<?> sendMails(@PathVariable Long id,
+//                                       @AuthenticationPrincipal UserEntity me) {
+//        healthCheckService.sendConsentEmails(id, me.getUserId());
+//        return ResponseEntity.ok("Đang gửi email cho phụ huynh…");
+//    }
 
     @Operation(summary = "Tạo chiến dịch khám sức khỏe", description = "Khởi tạo một chiến dịch khám sức khỏe mới với thông tin từ người tạo.")
     @PostMapping("/campaigns")
