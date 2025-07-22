@@ -51,6 +51,54 @@ const fileService = {
             throw handleApiError(error);
         }
     },
+    exportUsers: async () => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.FILE_SERVICE.EXPORT_USERS, {
+                responseType: 'blob',
+            });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+    importUsers: async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await axiosInstance.post(API_ENDPOINTS.FILE_SERVICE.IMPORT_USERS, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+    exportStudents: async () => {
+        try {
+            const response = await axiosInstance.get(API_ENDPOINTS.FILE_SERVICE.EXPORT_STUDENTS, {
+                responseType: 'blob',
+            });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+    importStudents: async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await axiosInstance.post(API_ENDPOINTS.FILE_SERVICE.IMPORT_STUDENTS, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 };
 
 export default fileService; 

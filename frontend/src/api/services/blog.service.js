@@ -30,6 +30,38 @@ const BlogService = {
         }
     },
 
+    // Create a new blog with image
+    createBlogWithImage: async (formData) => {
+        try {
+            const response = await axiosInstance.post(API_ENDPOINTS.BLOG.CREATE_WITH_IMAGE, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    // Upload image for rich text editor
+    uploadImage: async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Using the same endpoint as blog image upload
+            const response = await axiosInstance.post('/api/v1/file/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
     // Get blog by ID
     getBlogById: async (blogId) => {
         try {
@@ -44,6 +76,20 @@ const BlogService = {
     updateBlog: async (blogId, blogData) => {
         try {
             const response = await axiosInstance.put(API_ENDPOINTS.BLOG.UPDATE(blogId), blogData);
+            return response;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
+
+    // Update blog with image
+    updateBlogWithImage: async (blogId, formData) => {
+        try {
+            const response = await axiosInstance.put(API_ENDPOINTS.BLOG.UPDATE_WITH_IMAGE(blogId), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
             return response;
         } catch (error) {
             throw handleApiError(error);
