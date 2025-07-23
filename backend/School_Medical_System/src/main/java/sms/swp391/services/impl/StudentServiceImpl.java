@@ -253,7 +253,7 @@ public class StudentServiceImpl implements StudentService {
         return new PageImpl<>(dtos, pageable, merged.size());
     }
 
-
+    @Transactional
     @Override
     public ResponseEntity<ResponseObject> importStudentsFromExcel(MultipartFile file) {
         try {
@@ -299,9 +299,9 @@ public class StudentServiceImpl implements StudentService {
     private StudentRequest convertToStudentRequest(StudentImportDTO dto) {
         UserRegisterDTO user = UserRegisterDTO.builder()
                 .email(dto.getEmail())
-                .phoneNumber(dto.getPhoneNumber())
                 .username(dto.getUsername())
                 .password(passwordEncoder.encode(dto.getPassword()))
+                .phoneNumber(dto.getPhone())
                 .fullName(dto.getFullname())
                 .address(dto.getAddress())
                 .dob(dto.getDob())
@@ -312,8 +312,6 @@ public class StudentServiceImpl implements StudentService {
                 .userRegister(user)
                 .classId(dto.getClassId())
                 .parentId(dto.getParentId())
-                .emergencyContactName(dto.getEmergencyContactName())
-                .emergencyContactPhone(dto.getEmergencyContactPhone())
                 .build();
     }
 
