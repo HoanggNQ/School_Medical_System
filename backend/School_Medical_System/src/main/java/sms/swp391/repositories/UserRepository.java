@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import sms.swp391.models.dtos.enums.RoleEnum;
+import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.responses.UserDashboardStatsDTO;
 import sms.swp391.models.entities.UserEntity;
 
@@ -61,4 +62,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
                 FROM UserEntity u
             """)
     UserDashboardStatsDTO fetchUserDashboardStats();
+
+
+    List<UserEntity> findByRoleNameAndFullnameAndStatusContainingIgnoreCase(RoleEnum roleName, String fullname, StatusEnum status);
 }
