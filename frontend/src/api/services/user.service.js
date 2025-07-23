@@ -217,6 +217,16 @@ const UserService = {
             throw handleApiError(error);
         }
     },
+
+    // Search parent by name for autocomplete
+    searchParent: async (name) => {
+        try {
+            const response = await axiosInstance.get(`/api/v1/user/searchParent`, { params: { name } });
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
 };
 
 export default UserService;
