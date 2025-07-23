@@ -46,6 +46,15 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileDatabaseService fileDatabaseService;
     private final Validator validator;
+    @Transactional
+    @Override
+    public List<UserResponse> searchParentByName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new ValidationFailedException("Name cannot be null or empty");
+        }
+        List<UserEntity> userEntities = userRepository.findByRoleNameAndFullnameAndStatusContainingIgnoreCase(RoleEnum.PARENT, name,StatusEnum.ACTIVE);
+        return userEntities.stream().map(UserMapper::toDTO).toList();
+    }
 
     @Override
     public List<UserResponse> getListUser() {
