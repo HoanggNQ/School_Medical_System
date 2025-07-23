@@ -63,6 +63,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             """)
     UserDashboardStatsDTO fetchUserDashboardStats();
 
-
-    List<UserEntity> findByRoleNameAndFullnameAndStatusContainingIgnoreCase(RoleEnum roleName, String fullname, StatusEnum status);
+    @Query("SELECT u FROM UserEntity u WHERE u.roleName = :#{T(sms.swp391.models.dtos.enums.RoleEnum).PARENT} AND LOWER(u.fullname) LIKE LOWER(CONCAT('%', :name, '%')) AND u.status = :#{T(sms.swp391.models.dtos.enums.StatusEnum).ACTIVE}")
+    List<UserEntity> searchParentsByName(String name);
 }
