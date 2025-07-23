@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import userService from '@/api/services/user.service';
 
 
 const classList = [
@@ -19,6 +20,32 @@ const classList = [
 ];
 
 const StudentForm = ({ isEdit = false, formData, handleInputChange, onCancel, onSubmit }) => {
+  // State cho autocomplete phụ huynh
+  const [parentSearch, setParentSearch] = useState('');
+  const [parentOptions, setParentOptions] = useState([]);
+  const [parentDropdownOpen, setParentDropdownOpen] = useState(false);
+  const [parentLoading, setParentLoading] = useState(false);
+
+  // Hàm search phụ huynh
+  const handleParentSearch = async (value) => {
+    setParentSearch(value);
+    setParentLoading(true);
+    try {
+      const results = await userService.searchParent(value);
+      // Map về dạng { id, name } cho dropdown dễ dùng
+      const mapped = (results.data || []).map(p => ({
+        id: p.userId,
+        name: p.fullName,
+        ...p
+      }));
+      setParentOptions(mapped);
+      setParentDropdownOpen(true);
+    } catch (e) {
+      setParentOptions([]);
+    }
+    setParentLoading(false);
+  };
+
   return (
     <div className="space-y-6">
      
@@ -144,21 +171,46 @@ const StudentForm = ({ isEdit = false, formData, handleInputChange, onCancel, on
       </div>
       {/* Thêm trường nhập parentId */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="parentId">Mã phụ huynh (parentId)</Label>
+        <div className="space-y-2 relative">
+          <Label htmlFor="parentId">Phụ huynh</Label>
           <Input
             id="parentId"
-            type="number"
-            value={formData.parentId}
-            onChange={(e) => handleInputChange('parentId', e.target.value)}
-            placeholder="Nhập mã phụ huynh (nếu có)"
-            min={0}
+            type="text"
+            value={formData.parentName || parentSearch}
+            onChange={(e) => {
+              handleParentSearch(e.target.value);
+              handleInputChange('userId', '');
+              handleInputChange('fullName', '');
+            }}
+            placeholder="Tìm tên phụ huynh..."
+            autoComplete="off"
+            onFocus={() => setParentDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setParentDropdownOpen(false), 200)}
           />
+          {parentDropdownOpen && parentOptions.length > 0 && (
+            <div className="absolute z-10 bg-white border rounded w-full mt-1 max-h-48 overflow-y-auto shadow">
+              {parentOptions.map((parent) => (
+                <div
+                  key={parent.id}
+                  className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                  onMouseDown={() => {
+                    handleInputChange('parentId', parent.id);
+                    handleInputChange('parentName', parent.name);
+                    setParentSearch(parent.name);
+                    setParentDropdownOpen(false);
+                  }}
+                >
+                  {parent.name} (ID: {parent.id})
+                </div>
+              ))}
+            </div>
+          )}
+          {parentLoading && <div className="text-xs text-gray-400 mt-1">Đang tìm kiếm...</div>}
         </div>
       </div>
 
       {/* Thông tin liên hệ khẩn cấp */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="emergencyContactName">Người liên hệ khẩn cấp</Label>
           <Input
@@ -177,7 +229,7 @@ const StudentForm = ({ isEdit = false, formData, handleInputChange, onCancel, on
             placeholder="Nhập SĐT liên hệ khẩn cấp"
           />
         </div>
-      </div>
+      </div> */}
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button
