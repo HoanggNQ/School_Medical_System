@@ -40,7 +40,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { type: 'item', id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
           { type: 'section', label: 'Chiến dịch' },
           { type: 'item', id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
-          { type: 'item', id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
+          { type: 'item', id: 'campaigns', label: 'Lịch Sức Khỏe', icon: FlameKindling, path: '/campaigns' },
       
           { type: 'section', label: 'Bài viết' },
           { type: 'item', id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
