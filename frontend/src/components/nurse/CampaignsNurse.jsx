@@ -119,7 +119,7 @@ const CampaignsNurse = () => {
                                 <TableHead>Địa điểm</TableHead>
                                 <TableHead>Khối lớp</TableHead>
                                 <TableHead>Trạng thái</TableHead>
-                                <TableHead>Ngày tạo</TableHead>
+                                <TableHead>Bắt đầu</TableHead>
                                 {/* <TableHead>Người tạo (ID)</TableHead> */}
                                 {/* <TableHead>Thao tác</TableHead> */}
                             </TableRow>
