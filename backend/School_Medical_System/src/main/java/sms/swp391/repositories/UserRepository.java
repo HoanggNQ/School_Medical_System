@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import sms.swp391.models.dtos.enums.RoleEnum;
+import sms.swp391.models.dtos.enums.StatusEnum;
 import sms.swp391.models.dtos.responses.UserDashboardStatsDTO;
 import sms.swp391.models.entities.UserEntity;
 
@@ -61,4 +62,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
                 FROM UserEntity u
             """)
     UserDashboardStatsDTO fetchUserDashboardStats();
+
+    @Query("SELECT u FROM UserEntity u WHERE u.roleName = :#{T(sms.swp391.models.dtos.enums.RoleEnum).PARENT} AND LOWER(u.fullname) LIKE LOWER(CONCAT('%', :name, '%')) AND u.status = :#{T(sms.swp391.models.dtos.enums.StatusEnum).ACTIVE}")
+    List<UserEntity> searchParentsByName(String name);
 }
