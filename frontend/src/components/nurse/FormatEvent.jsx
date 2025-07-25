@@ -21,6 +21,10 @@ const EventForm = ({ initialData = {}, onCancel, isEdit, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const [medications, setMedications] = useState([{ medicationId: "", medicationName: "", quantity: 1 }]);
+  const [medicationOptions, setMedicationOptions] = useState([]);
+  const [filteredMedicationOptions, setFilteredMedicationOptions] = useState([]);
+
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -28,6 +32,29 @@ const EventForm = ({ initialData = {}, onCancel, isEdit, onSuccess }) => {
       studentName: initialData?.student?.user?.fullName || "", // Nếu là edit
     }));
   }, [initialData]);
+
+  useEffect(() => {
+    async function fetchMedications() {
+      try {
+        const res = await medicalService.getAllMedications({ size: 1000, sort: 'medicationName,ASC' });
+        setMedicationOptions(res.data?.content || []);
+      } catch {}
+    }
+    fetchMedications();
+  }, []);
+
+  // Hàm search/filter thuốc trên frontend
+  const searchMedication = (keyword) => {
+    if (!keyword || keyword.length < 2) {
+      setFilteredMedicationOptions([]);
+      return;
+    }
+    const filtered = medicationOptions.filter(m =>
+      m.medicationName.toLowerCase().includes(keyword.toLowerCase()) ||
+      (m.id + '').includes(keyword)
+    );
+    setFilteredMedicationOptions(filtered);
+  };
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -77,6 +104,7 @@ const EventForm = ({ initialData = {}, onCancel, isEdit, onSuccess }) => {
         location: formData.location,
         studentId: Number(formData.studentId),
         followUpNotes: formData.followUpNotes,
+        medications: medications.filter(m => m.medicationId && m.quantity)
       };
 
       if (isEdit && initialData?.id) {
@@ -142,6 +170,7 @@ const EventForm = ({ initialData = {}, onCancel, isEdit, onSuccess }) => {
               placeholder="Nhập ghi chú theo dõi"
             />
           </div>
+          {/* Đã bỏ phần thuốc sử dụng khi sửa */}
         </>
       ) : (
         <>
@@ -248,6 +277,98 @@ const EventForm = ({ initialData = {}, onCancel, isEdit, onSuccess }) => {
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* Ô điền thuốc giống tìm học sinh */}
+            <div className="space-y-2 relative col-span-2">
+              <Label htmlFor="medicationSearch">Thuốc sử dụng *</Label>
+              {medications.map((med, idx) => (
+                <div key={idx} className="flex items-center gap-2 mb-2">
+                  {!med.medicationId ? (
+                    <>
+                      <Input
+                        id={`medicationSearch-${idx}`}
+                        value={med.medicationName || ""}
+                        onChange={e => {
+                          const keyword = e.target.value;
+                          const newMeds = [...medications];
+                          newMeds[idx] = { ...newMeds[idx], medicationName: keyword, medicationId: "" };
+                          setMedications(newMeds);
+                          searchMedication(keyword);
+                        }}
+                        placeholder="Nhập tên thuốc hoặc mã thuốc"
+                        required
+                        autoComplete="off"
+                      />
+                      {filteredMedicationOptions.length > 0 && idx === medications.length - 1 && (
+                        <ul className="absolute z-10 bg-white border rounded w-full mt-1 shadow max-h-48 overflow-y-auto">
+                          {filteredMedicationOptions.map((m) => (
+                            <li
+                              key={m.id}
+                              onClick={() => {
+                                const newMeds = [...medications];
+                                newMeds[idx] = { medicationId: m.id, medicationName: m.medicationName, quantity: 1 };
+                                setMedications(newMeds);
+                                setFilteredMedicationOptions([]);
+                              }}
+                              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                            >
+                              <div className="font-medium">{m.medicationName}</div>
+                              <div className="text-xs text-gray-500">Mã: {m.id}</div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-medium">{med.medicationName}</span>
+                      {/* Input số lượng và button tăng/giảm */}
+                      <div className="flex items-center ml-4">
+                        <button
+                          type="button"
+                          className="px-2 py-1 border rounded-l bg-white hover:bg-gray-200"
+                          onClick={() => {
+                            setMedications(meds => meds.map((m, i) => i === idx ? { ...m, quantity: Math.max(1, (parseInt(m.quantity) || 1) - 1) } : m));
+                          }}
+                        >-</button>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={med.quantity}
+                          onChange={e => {
+                            const val = Math.max(1, parseInt(e.target.value) || 1);
+                            setMedications(meds => meds.map((m, i) => i === idx ? { ...m, quantity: val } : m));
+                          }}
+                          className="w-16 text-center rounded-none border-l-0 border-r-0"
+                          style={{ borderLeft: 'none', borderRight: 'none' }}
+                        />
+                        <button
+                          type="button"
+                          className="px-2 py-1 border rounded-r bg-white hover:bg-gray-200"
+                          onClick={() => {
+                            setMedications(meds => meds.map((m, i) => i === idx ? { ...m, quantity: (parseInt(m.quantity) || 1) + 1 } : m));
+                          }}
+                        >+</button>
+                      </div>
+                    </>
+                  )}
+                  {/* Nút xóa dòng thuốc nếu có nhiều hơn 1 dòng */}
+                  {medications.length > 1 && (
+                    <button
+                      type="button"
+                      className="ml-2 text-red-500 hover:text-red-700"
+                      onClick={() => setMedications(meds => meds.filter((_, i) => i !== idx))}
+                      title="Xóa thuốc này"
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
+              ))}
+              <Button type="button" variant="outline" onClick={() => setMedications(meds => [...meds, { medicationId: "", medicationName: "", quantity: 1 }])}>
+                Thêm thuốc
+              </Button>
             </div>
           </div>
 

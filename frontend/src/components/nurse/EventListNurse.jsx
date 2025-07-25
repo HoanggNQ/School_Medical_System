@@ -10,6 +10,7 @@ import { medicalService } from '../../api/services/medical.service';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { useCallback } from 'react';
 
 const statusMap = {
   PENDING: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800' },
@@ -32,6 +33,7 @@ const EventListNurse = () => {
   const [scheduleForm, setScheduleForm] = useState({ scheduleTime: '', reason: '' });
   const [creatingSchedule, setCreatingSchedule] = useState(false);
   const [selectedScheduleStudent, setSelectedScheduleStudent] = useState(null);
+  const [consultationSchedules, setConsultationSchedules] = useState([]);
 
   // Fetch data
   useEffect(() => {
@@ -41,17 +43,22 @@ const EventListNurse = () => {
       try {
         const res = await medicalService.getHealthCheckResultsByCampaign(campaignId);
         setResults(res.data || []);
-        console.log("res.data", res.data);
-
+        // Lấy danh sách lịch tư vấn
+        const consultRes = await medicalService.getConsultationSchedules(0, 1000); // lấy nhiều để đủ
+        setConsultationSchedules(consultRes.data?.content || []);
       } catch (error) {
         setErroror(error?.message || 'Lỗi khi tải danh sách kết quả khám sức khỏe');
-        console.log("error.message", error?.message);
       } finally {
         setLoading(false);
       }
     };
     if (campaignId) fetchResults();
   }, [campaignId]);
+
+  // Hàm kiểm tra đã tạo lịch tư vấn cho học sinh này chưa
+  const hasConsultationSchedule = useCallback((studentId) => {
+    return consultationSchedules.some(sch => sch.studentId === studentId);
+  }, [consultationSchedules]);
 
   // Filtered data
   const filteredResults = results.filter(ev =>
@@ -167,16 +174,18 @@ const EventListNurse = () => {
                       <TableCell>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${ev.healthStatus === 'TỐT' ? 'bg-green-100 text-green-800' : ev.healthStatus === 'XẤU' ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-800'}`}>{ev.healthStatus}</span>
                         {ev.healthStatus === 'XẤU' && (
-                          <Button
-                            size="sm"
-                            className="ml-2 bg-blue-500 hover:bg-blue-600 text-white"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleCreateScheduleClick(ev);
-                            }}
-                          >
-                            Tạo lịch khám
-                          </Button>
+                          hasConsultationSchedule(ev.studentId)
+                            ? <span className="ml-2 text-green-600 font-semibold">Đã tạo lịch khám</span>
+                            : <Button
+                                size="sm"
+                                className="ml-2 bg-blue-500 hover:bg-blue-600 text-white"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleCreateScheduleClick(ev);
+                                }}
+                              >
+                                Tạo lịch khám
+                              </Button>
                         )}
                       </TableCell>
                     </TableRow>
