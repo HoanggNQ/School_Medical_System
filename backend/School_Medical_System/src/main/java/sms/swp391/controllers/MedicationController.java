@@ -40,7 +40,7 @@ public class MedicationController {
             @RequestPart("medication") @Valid MedicationRequestDTO dto,
             @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
-            MedicationResponseDTO created = medicationService.create(dto,image);
+            MedicationResponseDTO created = medicationService.create(dto, image);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("CREATE_MEDICATION_SUCCESS")
@@ -69,7 +69,7 @@ public class MedicationController {
             @RequestPart("medication") @Valid MedicationRequestDTO dto,
             @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
-            MedicationResponseDTO updated = medicationService.update(id, dto,image);
+            MedicationResponseDTO updated = medicationService.update(id, dto, image);
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .code("UPDATE_MEDICATION_SUCCESS")
@@ -143,16 +143,18 @@ public class MedicationController {
             );
         }
     }
+
     @PatchMapping("/{id}/quantity")
     public ResponseEntity<Void> updateQuantity(@PathVariable Long id, @RequestParam int quantity) {
         medicationService.updateQuantity(id, quantity);
         return ResponseEntity.ok().build();
     }
+
     @Operation(summary = "Danh sách thuốc trong kho")
     @GetMapping
     public ResponseEntity<ResponseObject> getAll(
             @ParameterObject
-            @PageableDefault(size = 10,
+            @PageableDefault(size = 30,
                     sort = "medicationName",
                     direction = Sort.Direction.ASC) Pageable pageable) {
 
@@ -168,7 +170,7 @@ public class MedicationController {
                         .build());
     }
 
-       @GetMapping("/export/excel")
+    @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportExcel() {
         try {
             List<MedicationEntity> list = medicationRepository.findAll();
