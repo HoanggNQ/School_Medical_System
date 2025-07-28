@@ -41,7 +41,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="startDate">Ngày bắt đầu</Label>
+        <Label htmlFor="startDate">Ngày bắt đầu(phải sau ngày hôm nay ít nhất 30 ngày)</Label>
         <Input
           id="startDate"
           type="date"
