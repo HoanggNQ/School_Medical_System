@@ -286,6 +286,9 @@ public class VaccinationServiceImpl implements VaccinationService {
     public void startCampaign(Long campaignId) {
         VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found " + campaignId));
+        if (campaign.getStartDate().isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + campaign.getStartDate());
+        }
         campaign.setStatus(MedicalStatus.APPROVED);
         campaignRepository.save(campaign);
     }
