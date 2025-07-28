@@ -46,6 +46,14 @@ const StudentForm = ({ isEdit = false, formData, handleInputChange, onCancel, on
     setParentLoading(false);
   };
 
+  // Hàm xử lý khi nhấn Enter
+  const handleParentKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleParentSearch(parentSearch);
+    }
+  };
+
   return (
     <div className="space-y-6">
      
@@ -169,24 +177,30 @@ const StudentForm = ({ isEdit = false, formData, handleInputChange, onCancel, on
           </Select>
         </div>
       </div>
-      {/* Thêm trường nhập parentId */}
+  
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 relative">
           <Label htmlFor="parentId">Phụ huynh</Label>
-          <Input
-            id="parentId"
-            type="text"
-            value={formData.parentName || parentSearch}
-            onChange={(e) => {
-              handleParentSearch(e.target.value);
-              handleInputChange('userId', '');
-              handleInputChange('fullName', '');
-            }}
-            placeholder="Tìm tên phụ huynh..."
-            autoComplete="off"
-            onFocus={() => setParentDropdownOpen(true)}
-            onBlur={() => setTimeout(() => setParentDropdownOpen(false), 200)}
-          />
+          <div className="flex gap-2">
+            <Input
+              id="parentId"
+              type="text"
+              value={parentSearch}
+              onChange={(e) => {
+                setParentSearch(e.target.value);
+               
+                handleInputChange('parentId', '');
+                handleInputChange('parentName', '');
+              }}
+              onKeyDown={handleParentKeyDown}
+              placeholder="Tìm tên phụ huynh."
+              autoComplete="off"
+              onFocus={() => setParentDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setParentDropdownOpen(false), 200)}
+              className="flex-1"
+            />
+         
+          </div>
           {parentDropdownOpen && parentOptions.length > 0 && (
             <div className="absolute z-10 bg-white border rounded w-full mt-1 max-h-48 overflow-y-auto shadow">
               {parentOptions.map((parent) => (

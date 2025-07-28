@@ -104,6 +104,9 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
 
         List<MedicalStatus> statuses = List.of(MedicalStatus.PENDING, MedicalStatus.APPROVED);
         LocalDateTime requestedTime = request.getScheduleTime();
+        if (requestedTime.isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Không thể đặt lịch tư vấn trong quá khứ.");
+        }
         LocalDateTime scheduleTime = requestedTime;
 
         LocalTime startTime = LocalTime.of(8, 0);
@@ -114,11 +117,11 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         }
 
 
-        while (scheduleRepo.existsByStudent_IdAndScheduleTimeBetweenAndStatusIn(
-                student.getId(),
+        while (scheduleRepo.existsByScheduleTimeBetweenAndStatusIn(
                 scheduleTime.minusMinutes(19),
                 scheduleTime.plusMinutes(19),
                 statuses)) {
+
 
             scheduleTime = scheduleTime.plusMinutes(20);
 
