@@ -1,4 +1,3 @@
-
 INSERT INTO public."user" (user_id, fullname, username, password, role_name, status, phone)
 VALUES (1, 'Phụ huynh 1', 'ph1', '$2a$10$6N6jvBtisKk5qwenCNVIMugJ4JzcVCQSK3GPl13oh63hBFBVwRltm', 'PARENT', 'ACTIVE', '0900000001');
 INSERT INTO public."user" (user_id, fullname, username, password, role_name, status, phone)
