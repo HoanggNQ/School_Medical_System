@@ -1,5 +1,6 @@
 package sms.swp391.utils;
 
+import sms.swp391.models.dtos.enums.MedicalStatus;
 import sms.swp391.models.dtos.requests.HealthCheckResultRequestDTO;
 import sms.swp391.models.dtos.responses.HealthCheckResultResponse;
 import sms.swp391.models.entities.HealthCheckResultEntity;
@@ -7,7 +8,7 @@ import sms.swp391.models.entities.StudentEntity;
 import sms.swp391.models.entities.StudentHealthProfileEntity;
 import sms.swp391.models.entities.UserEntity;
 
-import java.math.BigDecimal;
+import java.lang.Double;
 import java.math.RoundingMode;
 import java.util.Optional;
 
@@ -19,10 +20,14 @@ public class HealthCheckResultMapper {
         StudentEntity student = entity.getStudent();
         StudentHealthProfileEntity profile = student.getHealthProfile();
 
-        BigDecimal bmi = calculateBMI(
+        Double bmi = calculateBMI(
                 profile != null ? profile.getHeight() : null,
                 profile != null ? profile.getWeight() : null
         );
+
+        MedicalStatus  consentStatus = entity.getConsent() != null
+                ? entity.getConsent().getConsentStatus()
+                : null;
 
         return HealthCheckResultResponse.builder()
                 .id(entity.getResultId())
@@ -49,8 +54,7 @@ public class HealthCheckResultMapper {
                 .overallHealthRating(entity.getOverallHealthRating())
                 .academicYear(entity.getAcademicYear())
                 .healthStatus(isAbnormal(entity) ? "XẤU" : "TỐT")
-
-
+                .consentStatus(consentStatus != null ? consentStatus.name() : null)
                 .build();
     }
 
@@ -64,19 +68,20 @@ public class HealthCheckResultMapper {
                 .build();
     }
 
-    public static BigDecimal calculateBMI(BigDecimal height, BigDecimal weight) {
-        if (height == null || weight == null || height.compareTo(BigDecimal.ZERO) == 0)
+
+    public static Double calculateBMI(Double height, Double weight) {
+        if (height == null || weight == null || height == 0)
             return null;
 
-        BigDecimal heightM = height.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        return weight.divide(heightM.multiply(heightM), 2, RoundingMode.HALF_UP);
+        double heightM = height / 100.0;
+        return Math.round((weight / (heightM * heightM)) * 100.0) / 100.0;
     }
 
     public static boolean isAbnormal(HealthCheckResultEntity result) {
         StudentHealthProfileEntity p = result.getStudent().getHealthProfile();
         if (p == null) return false;
 
-        if (p.getTemperature() != null && p.getTemperature().compareTo(BigDecimal.valueOf(38.0)) > 0)
+        if (p.getTemperature() != null && p.getTemperature().compareTo(Double.valueOf(38.0)) > 0)
             return true;
 
         if (p.getBloodPressure() != null && p.getBloodPressure().contains("/")) {

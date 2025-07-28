@@ -70,8 +70,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { type: 'item', id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
           { type: 'item', id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           { type: 'item', id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
-                    // { type: 'item', id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
-          // { type: 'item', id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
+
           { type: 'item', id: 'consultation-schedules-nurse', label: 'Lịch tư vấn', icon: ClipboardList, path: '/consultation-schedules' },
           { type: 'item', id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];

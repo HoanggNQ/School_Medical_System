@@ -1,6 +1,7 @@
 package sms.swp391.services;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import sms.swp391.models.dtos.enums.RoleEnum;
 import sms.swp391.models.dtos.requests.UserRegisterDTO;
@@ -12,6 +13,9 @@ import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
+    @Transactional
+    List<UserResponse> searchParentByName(String name);
+
     List<UserResponse> getListUser();
 
     UserResponse userDelete(long id);

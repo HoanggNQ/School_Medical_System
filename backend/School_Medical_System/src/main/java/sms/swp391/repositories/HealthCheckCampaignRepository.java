@@ -16,35 +16,38 @@ public interface HealthCheckCampaignRepository extends JpaRepository<HealthCheck
     @Query("SELECT h FROM HealthCheckCampaignEntity h WHERE h.status = 'ACTIVE'")
     List<HealthCheckCampaignEntity> getAllByHealthCheckCampaign();
     @Query("""
-        SELECT
-            'HEALTH_CHECK'                         AS type,
-            cam.id                                 AS campaignId,
-            cam.name                               AS campaignName,
-            con.id                                 AS consentId,
-            cam.startDate                          AS startDate,
-            cam.endDate                            AS endDate,
-            con.consentStatus                      AS consentStatus,
-            stu.user.fullname                      AS studentName,
-            cam.location                           AS location,
-            CASE
-              WHEN res.resultId IS NOT NULL                THEN 'COMPLETED'
-              WHEN con.consentStatus = 'REJECTED'          THEN 'REJECTED'
-              WHEN con.id IS NULL                          THEN 'NO_CONSENT'
-              ELSE 'PENDING'
-            END                                    AS resultStatus
-        FROM HealthCheckCampaignEntity cam
-        LEFT JOIN cam.healthCheckConsents con
-               ON con.student.id = :studentId
-        LEFT JOIN cam.healthCheckResults  res
-               ON res.student.id = :studentId
-        JOIN StudentEntity stu
-               ON stu.id = :studentId
-        WHERE LOWER(cam.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    """)
+    SELECT
+        'HEALTH_CHECK'                         AS type,
+        cam.id                                 AS campaignId,
+        cam.name                               AS campaignName,
+        con.id                                 AS consentId,
+        cam.startDate                          AS startDate,
+        cam.endDate                            AS endDate,
+        con.consentStatus                      AS consentStatus,
+        stu.user.fullname                      AS studentName,
+        cam.location                           AS location,
+        CASE
+            WHEN res.resultId IS NOT NULL THEN 'COMPLETED'
+            WHEN con.consentStatus = 'AGREED' THEN 'APPROVED'
+            WHEN con.consentStatus = 'APPROVED' THEN 'REJECTED'
+            WHEN con.consentStatus = 'PENDING' AND cam.endDate < CURRENT_DATE THEN 'REJECTED'
+            WHEN con.consentStatus = 'PENDING' THEN 'PENDING'
+            ELSE 'UNKNOWN'
+        END                                    AS resultStatus
+    FROM HealthCheckCampaignEntity cam
+    LEFT JOIN cam.healthCheckConsents con
+           ON con.student.id = :studentId
+    LEFT JOIN cam.healthCheckResults res
+           ON res.student.id = :studentId
+    JOIN StudentEntity stu
+           ON stu.id = :studentId
+    WHERE LOWER(cam.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+""")
     Page<StudentHealthEventProjection> findEvents(
             @Param("studentId") Long studentId,
             @Param("keyword")   String keyword,
             Pageable pageable);
+
     @Query("SELECT h.status, COUNT(h) FROM HealthCheckCampaignEntity h GROUP BY h.status")
     List<Object[]> countCampaignsByStatus();
 }
