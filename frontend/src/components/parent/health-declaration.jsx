@@ -31,7 +31,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
     bloodType: "",
     allergies: "",
     chronicDiseases: "",
-    currentMedications: "",
+    // currentMedications: "",
     emergencyContactName: parentProfile.fullName || "",
     emergencyContactPhone: parentProfile.phoneNumber || "",
   })
@@ -98,7 +98,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
         bloodType: "",
         allergies: "",
         chronicDiseases: "",
-        currentMedications: "",
+        // currentMedications: "",
         emergencyContactName: parentProfile.fullName || "",
         emergencyContactPhone: parentProfile.phoneNumber || "",
       })
@@ -225,7 +225,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
           bloodType: "",
           allergies: "",
           chronicDiseases: "",
-          currentMedications: "",
+          // currentMedications: "",
           emergencyContactName: parentProfile.fullName || "",
           emergencyContactPhone: parentProfile.phoneNumber || "",
         })
@@ -437,7 +437,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                   placeholder="Mô tả các bệnh mãn tính: hen suyễn, tiểu đường, tim mạch..."
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Pill className="w-4 h-4 inline mr-1" />
                   Thuốc đang sử dụng (nếu có)
@@ -449,7 +449,7 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                   placeholder="Liệt kê các loại thuốc đang sử dụng thường xuyên..."
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 
