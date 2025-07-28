@@ -46,11 +46,12 @@ const UserManagement = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [sort, setSort] = useState('userId,asc');
   const [importing, setImporting] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const fileInputRef = useState(null);
 
   useEffect(() => {
     fetchUsers(currentPage);
-  }, [currentPage, searchTerm, sort]);
+  }, [currentPage, searchTerm, sort, refreshTrigger]);
 
   const fetchUsers = async (page = 0) => {
     try {
@@ -194,13 +195,14 @@ const UserManagement = () => {
     try {
       const response = await UserService.deleteUser({userId});
       console.log(response);
-      if (response.data.isSuccess == true) {
+      if (response.data) {
         toast({
           title: "Thành công!",
           description: "Người dùng đã được xóa.",
           className: "bg-green-500 text-white"
         });
-        fetchUsers();
+      
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (error) {
       toast({
