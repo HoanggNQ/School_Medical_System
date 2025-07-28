@@ -16,7 +16,8 @@ public interface HealthConsultationScheduleRepository extends JpaRepository<Heal
     List<HealthConsultationScheduleEntity> findByStudent_Parent_UserId(Long parentId);
     boolean existsByStudentIdAndScheduleTime(Long studentId, LocalDateTime scheduleTime);
     boolean existsByStudent_IdAndResult_ResultId(Long id, Long resultId);
-    boolean existsByStudent_IdAndScheduleTimeAndStatusIn(Long studentId, LocalDateTime scheduleTime, List<MedicalStatus> statuses);
+    boolean existsByStudent_IdAndScheduleTimeBetweenAndStatusIn(Long studentId,  LocalDateTime startTime,
+                                                         LocalDateTime endTime, List<MedicalStatus> statuses);
 
     boolean existsByStudent_IdAndStatus(Long studentId, MedicalStatus status);
 }

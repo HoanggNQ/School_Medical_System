@@ -308,13 +308,13 @@ public class HealthCheckCampaignServiceImpl implements HealthCheckCampaignServic
 
     @Override
     public void startCampaign(Long campaignId) {
-        HealthCheckCampaignEntity c = campaignRepository.findById(campaignId)
+        HealthCheckCampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new NotFoundException("Campaign not found"));
-        if (c.getStartDate().isAfter(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + c.getStartDate());
+        if (campaign.getStartDate().isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + campaign.getStartDate());
         }
-        c.setStatus(MedicalStatus.APPROVED);
-        campaignRepository.save(c);
+        campaign.setStatus(MedicalStatus.APPROVED);
+        campaignRepository.save(campaign);
     }
 
 
