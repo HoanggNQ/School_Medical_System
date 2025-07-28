@@ -43,6 +43,30 @@ public class UserController {
     private final OTPService otpService;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    @GetMapping("/searchParent")
+    public ResponseEntity<ResponseObject> searchParentByName(@RequestParam String name) {
+        List<UserResponse> userResponses = userService.searchParentByName(name);
+        if (userResponses.isEmpty()) {
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .code("NO_PARENT_FOUND")
+                            .message("No parent found with the given name")
+                            .status(HttpStatus.NOT_FOUND)
+                            .isSuccess(false)
+                            .data(new ArrayList<>())
+                            .build()
+            );
+        }
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .code("SEARCH_SUCCESS")
+                        .message("Search parent successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(userResponses)
+                        .build()
+        );
+    }
 
     @PutMapping(path = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseObject> update(@RequestPart("user") UserUpdateDTO updateUserDTO,

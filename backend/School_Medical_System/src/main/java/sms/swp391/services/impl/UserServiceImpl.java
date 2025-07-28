@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static sms.swp391.utils.ExcelExporter.parseUsersFromExcel;
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -47,11 +48,20 @@ public class UserServiceImpl implements UserService {
     private final FileDatabaseService fileDatabaseService;
     private final Validator validator;
 
+    @Transactional
+    @Override
+    public List<UserResponse> searchParentByName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new ValidationFailedException("Name cannot be null or empty");
+        }
+        List<UserEntity> userEntities = userRepository.searchParentsByName(name);
+        return userEntities.stream().map(UserMapper::toDTO).toList();
+    }
+
     @Override
     public List<UserResponse> getListUser() {
         List<UserEntity> userEntities = userRepository.findAll();
-        var userResponses = userEntities.stream().map(UserMapper::toDTO).toList();
-        return userResponses;
+        return userEntities.stream().map(UserMapper::toDTO).toList();
     }
 
     @Override
@@ -76,7 +86,7 @@ public class UserServiceImpl implements UserService {
         Pageable validatedPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                Sort.unsorted()
+                pageable.getSort()
         );
 
         Page<UserEntity> userPage = (search != null && !search.isBlank())
@@ -189,6 +199,7 @@ public class UserServiceImpl implements UserService {
         var saved = userRepository.save(user);
         return UserMapper.toDTO(saved);
     }
+
     @Override
     public UserResponse changPassword(String email, String oldPassword, String newPassword, String newPasswordConfirm) {
         UserEntity userEntity = userRepository.findByEmail(email)
@@ -219,23 +230,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse checkUser(String email) {
         UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
-                ()-> new NotFoundException("User not found")
+                () -> new NotFoundException("User not found")
         );
-        if(userEntity.getStatus().equals(StatusEnum.DELETED)){
-            throw  new ActionFailedException("account has been deleted");
+        if (userEntity.getStatus().equals(StatusEnum.DELETED)) {
+            throw new ActionFailedException("account has been deleted");
         }
-        if(userEntity.getStatus().equals(StatusEnum.BAN)){
+        if (userEntity.getStatus().equals(StatusEnum.BAN)) {
             throw new ActionFailedException("account has been ban");
         }
-        if(userEntity.getStatus().equals(StatusEnum.VERIFY)){
+        if (userEntity.getStatus().equals(StatusEnum.VERIFY)) {
             throw new ActionFailedException("account has been not verify");
         }
         return UserMapper.toDTO(userEntity);
     }
+
     @Override
     public UserResponse setPasswordForget(String email, String newPassword, String newPasswordConfirm) {
         UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
-                ()-> new NotFoundException("User not found")
+                () -> new NotFoundException("User not found")
         );
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         if (passwordEncoder.matches(newPassword, userEntity.getPassword())) {
@@ -275,6 +287,7 @@ public class UserServiceImpl implements UserService {
 
         return UserMapper.toDTO(userCreate);
     }
+
     @Override
     public void chooseRole(String email, RoleEnum role) {
         UserEntity userEntity = userRepository.findByEmail(email)
@@ -286,6 +299,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setRoleName(role);
         userRepository.save(userEntity);
     }
+
     @Override
     @Transactional
     public List<UserResponse> importUsersFromExcel(MultipartFile excelFile) throws IOException {
@@ -300,6 +314,7 @@ public class UserServiceImpl implements UserService {
 
         return bulkCreateUsers(dtos);
     }
+
     @Override
     @Transactional
     public List<UserResponse> bulkCreateUsers(List<UserRegisterDTO> dtos) {

@@ -21,11 +21,11 @@ public class HealthCheckResultRequestDTO {
 
     @DecimalMin(value = "30.0", message = "Chiều cao không hợp lệ")
     @DecimalMax(value = "250.0", message = "Chiều cao vượt quá giới hạn")
-    private BigDecimal heightCm;
+    private Double heightCm;
 
     @DecimalMin(value = "3.0", message = "Cân nặng không hợp lệ")
     @DecimalMax(value = "200.0", message = "Cân nặng vượt quá giới hạn")
-    private BigDecimal weightKg;
+    private Double weightKg;
 
     @Size(max = 20, message = "Thị lực trái quá dài")
     private String visionLeft;
@@ -47,8 +47,8 @@ public class HealthCheckResultRequestDTO {
     private Integer pulse;
 
     @DecimalMin(value = "34.0", message = "Nhiệt độ thấp bất thường")
-    @DecimalMax(value = "43.0", message = "Nhiệt độ cao bất thường")
-    private BigDecimal temperature;
+    @DecimalMax(value = "40.0", message = "Nhiệt độ cao bất thường")
+    private Double temperature;
 
     @Size(max = 500, message = "Ghi chú khác quá dài")
     private String otherNotes;

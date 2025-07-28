@@ -15,6 +15,7 @@ import sms.swp391.repositories.*;
 import sms.swp391.services.HealthConsultationScheduleService;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,8 +74,7 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         return toResponse(entity);
     }
     @Override
-    public HealthConsultationScheduleResponseDTO createSchedule(HealthConsultationScheduleRequestDTO request, Long createdById)
-    {
+    public HealthConsultationScheduleResponseDTO createSchedule(HealthConsultationScheduleRequestDTO request, Long createdById) {
 
         StudentEntity student = studentRepo.findById(request.getStudentId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy học sinh."));
@@ -86,6 +86,7 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         if (parent == null) {
             throw new RuntimeException("Học sinh chưa được gán phụ huynh.");
         }
+
         UserEntity creator = userRepo.findById(createdById)
                 .orElseThrow(() -> new RuntimeException("Người tạo không tồn tại."));
 
@@ -102,10 +103,28 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         }
 
         List<MedicalStatus> statuses = List.of(MedicalStatus.PENDING, MedicalStatus.APPROVED);
-        LocalDateTime scheduleTime = request.getScheduleTime();
-        // Lặp cho đến khi không còn trùng
-        while (scheduleRepo.existsByStudent_IdAndScheduleTimeAndStatusIn(student.getId(), scheduleTime, statuses)) {
+        LocalDateTime requestedTime = request.getScheduleTime();
+        LocalDateTime scheduleTime = requestedTime;
+
+        LocalTime startTime = LocalTime.of(8, 0);
+        LocalTime endTime = LocalTime.of(17, 0);
+
+        if (requestedTime.toLocalTime().isBefore(startTime) || requestedTime.toLocalTime().isAfter(endTime.minusMinutes(20))) {
+            throw new RuntimeException("Thời gian hẹn tư vấn phải trong khung giờ 08:00 - 17:00. Mỗi phiên cách nhau 20 phút.");
+        }
+
+
+        while (scheduleRepo.existsByStudent_IdAndScheduleTimeBetweenAndStatusIn(
+                student.getId(),
+                scheduleTime.minusMinutes(19),
+                scheduleTime.plusMinutes(19),
+                statuses)) {
+
             scheduleTime = scheduleTime.plusMinutes(20);
+
+            if (scheduleTime.toLocalTime().isAfter(endTime.minusMinutes(20))) {
+                throw new RuntimeException("Không còn khung giờ trống phù hợp trong ngày để đặt lịch tư vấn.");
+            }
         }
 
 
@@ -114,13 +133,14 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
                 .result(result)
                 .parent(parent)
                 .reason(request.getReason())
-                .scheduleTime(request.getScheduleTime())
+                .scheduleTime(scheduleTime)
                 .status(MedicalStatus.PENDING)
                 .build();
 
         HealthConsultationScheduleEntity saved = scheduleRepo.save(entity);
 
-        String formattedTime = request.getScheduleTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+        String formattedTime = scheduleTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+
         sendMailService.sendConsultationScheduleEmail(
                 parent.getEmail(),
                 student.getUser().getFullname(),
@@ -129,7 +149,7 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
         );
 
         notificationService.push(
-                creator.getUserId(),  // Nếu bạn có thông tin người tạo, truyền ID vào đây
+                creator.getUserId(),
                 parent.getUserId(),
                 "Lịch tư vấn sức khỏe",
                 "Bạn đã đặt lịch tư vấn cho con vào " + formattedTime
@@ -137,6 +157,7 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
 
         return toResponse(saved);
     }
+
 
     @Override
     public List<HealthConsultationScheduleResponseDTO> getSchedulesByStudent(Long studentId) {

@@ -73,37 +73,40 @@ public class ExcelExporter {
             for (Row row : sheet) {
                 if (rowNum++ == 0) continue;  // Bỏ qua header
 
-                StudentImportDTO dto = new StudentImportDTO();
-                dto.setEmail(fmt.formatCellValue(row.getCell(0)));
-                dto.setPassword(fmt.formatCellValue(row.getCell(1)));
-                dto.setUsername(fmt.formatCellValue(row.getCell(2)));
-                dto.setFullname(fmt.formatCellValue(row.getCell(3)));
-                dto.setAddress(fmt.formatCellValue(row.getCell(4)));
-                dto.setGender(fmt.formatCellValue(row.getCell(5)));
+                // Bỏ qua các dòng trống hoàn toàn
+                if (isRowEmpty(row)) continue;
 
-                Cell dobCell = row.getCell(6);
+                StudentImportDTO dto = new StudentImportDTO();
+
+                dto.setEmail(getSafeString(row, 0, fmt));
+                dto.setPassword(getSafeString(row, 1, fmt));
+                dto.setUsername(getSafeString(row, 2, fmt));
+                dto.setPhone(getSafeString(row, 3, fmt));
+                dto.setFullname(getSafeString(row, 4, fmt));
+                dto.setAddress(getSafeString(row, 5, fmt));
+                dto.setGender(getSafeString(row, 6, fmt));
+
+                // Xử lý ngày sinh
+                Cell dobCell = row.getCell(7);
                 if (dobCell != null) {
-                    if (dobCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dobCell)) {
-                        dto.setDob(dobCell.getLocalDateTimeCellValue().toLocalDate());
-                    } else {
-                        String dobStr = fmt.formatCellValue(dobCell);
-                        if (!dobStr.isBlank()) {
-                            dto.setDob(LocalDate.parse(dobStr));
+                    try {
+                        if (dobCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dobCell)) {
+                            dto.setDob(dobCell.getLocalDateTimeCellValue().toLocalDate());
+                        } else {
+                            String dobStr = fmt.formatCellValue(dobCell).trim();
+                            if (!dobStr.isBlank()) {
+                                dto.setDob(LocalDate.parse(dobStr));
+                            }
                         }
+                    } catch (Exception e) {
+                        throw new RuntimeException("Ngày sinh không hợp lệ ở dòng " + rowNum + ": " + e.getMessage());
                     }
                 }
 
-                dto.setPhoneNumber(fmt.formatCellValue(row.getCell(7)));
-                dto.setClassId(parseLong(fmt.formatCellValue(row.getCell(8))));
-                dto.setParentId(parseLong(fmt.formatCellValue(row.getCell(9))));
-                dto.setBloodType(fmt.formatCellValue(row.getCell(10)));
-                dto.setGeneticDiseases(fmt.formatCellValue(row.getCell(11)));
-                dto.setChronicDiseases(fmt.formatCellValue(row.getCell(12)));
-                dto.setAllergies(fmt.formatCellValue(row.getCell(13)));
-                dto.setEmergencyContactName(fmt.formatCellValue(row.getCell(14)));
-                dto.setEmergencyContactPhone(fmt.formatCellValue(row.getCell(15)));
-                dto.setHeight(parseDecimal(fmt.formatCellValue(row.getCell(16))));
-                dto.setWeight(parseDecimal(fmt.formatCellValue(row.getCell(17))));
+                // Lấy classId và parentId an toàn
+                dto.setClassId(parseLongSafe(fmt.formatCellValue(row.getCell(8))));
+                dto.setParentId(parseLongSafe(fmt.formatCellValue(row.getCell(9))));
+
 
                 list.add(dto);
             }
@@ -113,7 +116,6 @@ public class ExcelExporter {
 
         return list;
     }
-
     public static List<UserRegisterDTO> parseUsersFromExcel(InputStream in) {
         DataFormatter fmt = new DataFormatter();
         List<UserRegisterDTO> list = new ArrayList<>();
@@ -123,7 +125,12 @@ public class ExcelExporter {
             int rowNum = 0;
 
             for (Row row : sheet) {
-                if (rowNum++ == 0) continue;      // skip header
+                if (rowNum++ == 0) continue; // skip header
+
+                // Bỏ qua dòng rỗng (vd: cuối file)
+                if (row == null || row.getCell(0) == null || fmt.formatCellValue(row.getCell(0)).trim().isEmpty()) {
+                    continue;
+                }
 
                 UserRegisterDTO dto = new UserRegisterDTO();
                 dto.setEmail(fmt.formatCellValue(row.getCell(0)));
@@ -145,13 +152,17 @@ public class ExcelExporter {
 
                 dto.setPhoneNumber(fmt.formatCellValue(row.getCell(7)));
 
-                String rawRole = fmt.formatCellValue(row.getCell(8)).trim().toUpperCase();
+                // Kiểm tra Role rõ ràng hơn
+                Cell roleCell = row.getCell(8);
+                String rawRole = roleCell != null ? fmt.formatCellValue(roleCell).trim().toUpperCase() : "";
+                if (rawRole.isBlank()) {
+                    throw new IllegalArgumentException("Missing role at row " + rowNum + ". Allowed: SCHOOL_NURSE, PARENT");
+                }
+
                 try {
                     dto.setRoleName(RoleEnum.valueOf(rawRole));
                 } catch (IllegalArgumentException ex) {
-                    throw new IllegalArgumentException(
-                            "Invalid role '" + rawRole + "' at row " + rowNum +
-                                    ". Allowed: SCHOOL_NURSE, PARENT");
+                    throw new IllegalArgumentException("Invalid role '" + rawRole + "' at row " + rowNum + ". Allowed: SCHOOL_NURSE, PARENT");
                 }
 
                 list.add(dto);
@@ -162,6 +173,21 @@ public class ExcelExporter {
         return list;
     }
 
+    private static boolean isRowEmpty(Row row) {
+        if (row == null) return true;
+        for (int c = 0; c < row.getLastCellNum(); c++) {
+            Cell cell = row.getCell(c);
+            if (cell != null && cell.getCellType() != CellType.BLANK && !new DataFormatter().formatCellValue(cell).trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    private static String getSafeString(Row row, int index, DataFormatter fmt) {
+        Cell cell = row.getCell(index);
+        return cell == null ? "" : fmt.formatCellValue(cell).trim();
+    }
+
     private static Long parseLongSafe(String value) {
         try {
             return (value == null || value.isBlank()) ? null : Long.parseLong(value.trim());
@@ -170,9 +196,9 @@ public class ExcelExporter {
         }
     }
 
-    private static BigDecimal parseDecimalSafe(String value) {
+    private static Double parseDecimalSafe(String value) {
         try {
-            return (value == null || value.isBlank()) ? null : new BigDecimal(value.trim());
+            return (value == null || value.isBlank()) ? null : Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
             return null;
         }
@@ -267,8 +293,8 @@ public class ExcelExporter {
             Sheet sheet = workbook.createSheet("EligibleVaccination");
 
             String[] headers = {
-                    "campaignId", "studentId", "studentName", "className",
-                    "injectionSite", "vaccineName", "reactionNotes", "followUpNotes"
+                    "campaignId", "studentId", "studentName", "className", "vaccineName",
+                    "injectionSite", "reactionNotes", "followUpNotes"
             };
 
             // Create header row
@@ -291,8 +317,8 @@ public class ExcelExporter {
                 row.createCell(3).setCellValue(student.getClassEntity().getClassName());
 
                 // Empty columns for user input
-                row.createCell(4).setCellValue(""); // injectionSite
-                row.createCell(5).setCellValue(""); // vaccineName
+                row.createCell(4).setCellValue(consent.getVaccinationCampaign().getVaccineType()); // vaccineName
+                row.createCell(5).setCellValue(""); // injectionSite
                 row.createCell(6).setCellValue(""); // reactionNotes
                 row.createCell(7).setCellValue(""); // followUpNotes
 
@@ -338,7 +364,6 @@ public class ExcelExporter {
 
         return list;
     }
-
 
 
 }

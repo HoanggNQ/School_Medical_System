@@ -1,9 +1,7 @@
 package sms.swp391.models.dtos.responses;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,20 +17,22 @@ public class HealthCheckResultResponse {
     private Long checkedById;
     private String checkedByName;
     private LocalDate checkDate;
-    private BigDecimal heightCm;
-    private BigDecimal weightKg;
-    private BigDecimal bmi;
+    private Double heightCm;
+    private Double weightKg;
+    private Double bmi;
     private String visionLeft;
     private String visionRight;
     private String hearing;
     private String dentalHealth;
     private String bloodPressure;
     private Integer pulse;
-    private BigDecimal temperature;
+    private Double temperature;
     private String otherNotes;
     private String recommendation;
     private String followUpNotes;
     private String overallHealthRating;
     private String academicYear;
     private String healthStatus;
+    private String consentStatus;
+
 }
