@@ -344,7 +344,7 @@ const ProfileForm = () => {
                 type="text" 
                 value={formData.fullName} 
                 onChange={(e) => handleChange('fullName', e.target.value)}
-                disabled={!isEditing}
+                disabled
                 required
                 className="rounded-lg border border-gray-200 bg-white"
               />
@@ -359,7 +359,7 @@ const ProfileForm = () => {
                 type="tel" 
                 value={formData.phoneNumber} 
                 onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                disabled={!isEditing}
+                disabled
                 className="rounded-lg border border-gray-200 bg-white"
               />
             </div>
@@ -376,7 +376,7 @@ const ProfileForm = () => {
                 type="date" 
                 value={formData.dob} 
                 onChange={(e) => handleChange('dob', e.target.value)}
-                disabled={!isEditing}
+                disabled
                 className="rounded-lg border border-gray-200 bg-white"
               />
             </div>
@@ -409,7 +409,7 @@ const ProfileForm = () => {
               type="text" 
               value={formData.address} 
               onChange={(e) => handleChange('address', e.target.value)}
-              disabled={!isEditing}
+              disabled
               placeholder="Nhập địa chỉ của bạn"
               className="rounded-lg border border-gray-200 bg-white"
             />
