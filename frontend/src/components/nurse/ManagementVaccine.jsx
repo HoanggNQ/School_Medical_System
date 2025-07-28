@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { medicalService } from "@/api/services/medical.service"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, Syringe, Search } from "lucide-react"
+import { AlertCircle, Syringe, Search, FileDown, FileUp  } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useParams, useLocation } from "react-router-dom";
+import fileService from '@/api/services/file.service'
 
 const ManagementVaccine = () => {
   const { toast } = useToast()
@@ -30,13 +31,18 @@ const ManagementVaccine = () => {
   })
   const { campaignId } = useParams();
   const location = useLocation();
-  const campaignStatus = location.state?.campaignStatus;
-  console.log("campaignId",campaignId);
-  console.log("location.state",location.state);
-  console.log("location",location);
+  const vaccinationStatus = location.state?.vaccinationStatus;
+  console.log("campaignId", campaignId);
+  console.log("location.state", location.state);
+  console.log("location", location);
+  console.log("vaccinationStatus", vaccinationStatus);
+
+
 
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10); // Số học sinh mỗi trang
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useState(null);
 
   useEffect(() => {
     if (!campaignId) {
@@ -60,7 +66,7 @@ const ManagementVaccine = () => {
   }, [campaignId]);
 
   const handleOpenDialog = (student) => {
-    if (campaignStatus === 'PENDING') {
+    if (vaccinationStatus === 'PENDING') {
       toast({ title: 'Thông báo', description: 'Chiến dịch đang chờ duyệt. Không thể ghi nhận kết quả.' });
       return;
     }
@@ -107,6 +113,45 @@ const ManagementVaccine = () => {
     }
   }
 
+  // Export handler
+  const handleExport = async () => {
+    try {
+      const blob = await fileService.exportVaccinationRecord(campaignId);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `vaccination_records_campaign_${campaignId}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({ title: 'Thành công', description: 'Xuất file thành công.' });
+    } catch (err) {
+      console.log("err", err);
+      // Ưu tiên lấy message tiếng Việt từ backend nếu có
+      let msg = err?.response?.data?.message || err?.message || 'Không thể xuất file.';
+      toast({ title: 'Lỗi', description: msg });
+    }
+  };
+
+  // Import handler
+  const handleImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      await fileService.importVaccinationRecord(file);
+      toast({ title: 'Thành công', description: 'Nhập file thành công.' });
+      // Optionally refresh data here
+    } catch (err) {
+      let msg = err?.response?.data?.message || err?.message || 'Không thể nhập file.';
+      toast({ title: 'Lỗi', description: msg });
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   // Tính toán phân trang phía client
   const totalElements = studentsVaccine.length;
   const totalPages = Math.ceil(totalElements / size);
@@ -115,7 +160,7 @@ const ManagementVaccine = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Syringe className="h-6 w-6 text-green-600"/>Danh sách học sinh chuẩn bị tiêm chủng</h2>
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Syringe className="h-6 w-6 text-green-600" />Danh sách học sinh chuẩn bị tiêm chủng</h2>
         {/* Ẩn phần tìm kiếm chiến dịch */}
         {/*
         <form onSubmit={handleSearch} className="flex items-center gap-2">
@@ -132,6 +177,7 @@ const ManagementVaccine = () => {
           <Button type="submit" variant="outline" className="flex items-center gap-1"><Search className="h-4 w-4"/>Tìm kiếm</Button>
         </form>
         */}
+
       </div>
       {loadingVaccine ? (
         <div className="flex items-center justify-center min-h-[120px]">
@@ -152,7 +198,36 @@ const ManagementVaccine = () => {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <h3 className="text-xl font-bold mb-2">Chiến dịch {campaignId}</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold mb-2">Chiến dịch {campaignId}</h3>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="default"
+                onClick={handleExport}
+                disabled={!campaignId}
+                className="ml-4 bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              >
+                <FileDown className="w-4 h-4" />
+                Export Excel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                className="ml-2 bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+                disabled={importing}
+              >
+                <FileUp className="w-4 h-4" />
+                {importing ? 'Đang nhập...' : 'Import Excel'}
+              </Button>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                ref={el => fileInputRef.current = el}
+                style={{ display: 'none' }}
+                onChange={handleImport}
+              />
+            </div>
+          </div>
           <table className="min-w-full bg-white border border-gray-200 rounded-lg">
             <thead className="bg-gray-50">
               <tr>
@@ -171,14 +246,14 @@ const ManagementVaccine = () => {
                   <td className="px-4 py-2 text-sm">{item.campaignId}</td>
                   <td className="px-4 py-2 text-sm">
                     {item.consentStatus === 'DONE' ? 'Đã tiêm chủng' :
-                     item.consentStatus === 'APPROVED' ? 'Đã đồng ý' :
-                     item.consentStatus === 'PENDING' ? 'Chờ xác nhận' :
-                     item.consentStatus === 'REJECTED' ? 'Từ chối' :
-                     item.consentStatus || 'Không rõ'}
+                      item.consentStatus === 'APPROVED' ? 'Đã đồng ý' :
+                        item.consentStatus === 'PENDING' ? 'Chờ xác nhận' :
+                          item.consentStatus === 'REJECTED' ? 'Từ chối' :
+                            item.consentStatus || 'Không rõ'}
                   </td>
                   <td className="px-4 py-2 text-sm">
-                    {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và campaignStatus là 'ACTIVE' */}
-                    {item.consentStatus === 'APPROVED' && campaignStatus === 'ACTIVE' && (
+                    {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và vaccinationStatus là 'ACTIVE' */}
+                    {item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="success" onClick={() => handleOpenDialog(item)}>

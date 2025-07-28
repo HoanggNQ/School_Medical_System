@@ -36,7 +36,7 @@ const BlogManagement = () => {
 
   useEffect(() => {
     fetchBlogs(currentPage);
-  }, [currentPage, searchTerm, sort]);
+  }, [currentPage, searchTerm, sort,totalElements]);
 
   const fetchBlogs = async (page = 0) => {
     try {
@@ -74,9 +74,7 @@ const BlogManagement = () => {
     }));
   };
 
-  const handleCreateBlog = async (e) => {
-    e.preventDefault();
-
+  const handleCreateBlog = async (formDataToSend) => {
     if (!formData.title || formData.title.trim() === '') {
       toast({
         title: "Lỗi",
@@ -107,10 +105,14 @@ const BlogManagement = () => {
     setLoadingCreate(true);
 
     try {
-      const response = await BlogService.createBlog(formData);
+      // Use createWithImage API if FormData is provided, otherwise use regular create
+      const response = formDataToSend instanceof FormData 
+        ? await BlogService.createBlogWithImage(formDataToSend)
+        : await BlogService.createBlog(formData);
+      
       console.log(response);
 
-      if (response.data?.isSuccess) {
+      if (response.data?.message) {
         toast({
           title: "Thành công!",
           description: "Bài viết đã được tạo thành công.",
@@ -143,10 +145,14 @@ const BlogManagement = () => {
     }
   };
 
-  const handleEditBlog = async () => {
+  const handleEditBlog = async (formDataToSend) => {
     try {
-      const response = await BlogService.updateBlog(selectedBlog.id, formData);
-      if (response.data?.isSuccess) {
+      // Use updateWithImage API if FormData is provided, otherwise use regular update
+      const response = formDataToSend instanceof FormData 
+        ? await BlogService.updateBlogWithImage(selectedBlog.id, formDataToSend)
+        : await BlogService.updateBlog(selectedBlog.id, formData);
+      
+      if (response.data) {
         setBlogs(blogs.map(blog =>
           blog.id === selectedBlog.id ? response.data.data : blog
         ));
@@ -173,7 +179,7 @@ const BlogManagement = () => {
     try {
       const response = await BlogService.deleteBlog(blogId);
       console.log(response);
-      if (response.data?.isSuccess) {
+      if (response.data) {
         toast({
           title: "Thành công!",
           description: "Bài viết đã được xóa.",
@@ -367,6 +373,7 @@ const BlogManagement = () => {
             handleInputChange={handleInputChange}
             onCancel={() => setIsEditModalOpen(false)}
             onSubmit={handleEditBlog}
+            existingImageUrl={selectedBlog?.imageUrl}
           />
         </DialogContent>
       </Dialog>
@@ -404,7 +411,7 @@ const BlogManagement = () => {
               
               <div>
                 <span className="font-semibold text-gray-700">Nội dung:</span>
-                <div className="mt-2 p-4 bg-gray-50 rounded-lg whitespace-pre-wrap">
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg whitespace-pre-wrap max-h-[1000px] overflow-y-auto">
                   {selectedDetail.bodyContent || 'N/A'}
                 </div>
               </div>

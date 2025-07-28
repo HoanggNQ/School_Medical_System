@@ -40,7 +40,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { type: 'item', id: 'students', label: 'Quản lý học sinh', icon: Users, path: '/students' },
           { type: 'section', label: 'Chiến dịch' },
           { type: 'item', id: 'vaccinations', label: 'Lịch tiêm chủng', icon: Calendar, path: '/vaccinations' },
-          { type: 'item', id: 'campaigns', label: 'Tạo chiến dịch', icon: FlameKindling, path: '/campaigns' },
+          { type: 'item', id: 'campaigns', label: 'Lịch Sức Khỏe', icon: FlameKindling, path: '/campaigns' },
       
           { type: 'section', label: 'Bài viết' },
           { type: 'item', id: 'blogs', label: 'Quản lý bài viết', icon: BookOpen, path: '/blogs' },
@@ -70,8 +70,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { type: 'item', id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
           { type: 'item', id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           { type: 'item', id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
+<<<<<<< HEAD
                     // { type: 'item', id: 'heath-result', label: 'Kết quả sức khỏe', icon: ClipboardList, path: '/heath-result' },
           // { type: 'item', id: 'vaccine-result', label: 'Kết quả tiêm chủng', icon: ClipboardList, path: '/vaccine-result' },
+=======
+          { type: 'item', id: 'consultation-schedules-nurse', label: 'Lịch tư vấn', icon: ClipboardList, path: '/consultation-schedules' },
+>>>>>>> f792340263a9ca90517581dd166842cf3c2433a1
           { type: 'item', id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
       case 'STUDENT':
