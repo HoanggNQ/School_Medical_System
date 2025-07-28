@@ -166,13 +166,13 @@ const VaccinationHistory = ({ selectedStudent }) => {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
+                  {/* <div className="flex items-center space-x-3">
                     <Clock className="w-4 h-4 text-orange-500" />
                     <div>
                       <span className="text-sm text-gray-600">Mũi tiếp theo:</span>
                       <span className="ml-2 font-medium">{formatDate(vaccination.nextDoseDate)}</span>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Reaction Notes / Side Effects */}
                   <div className="flex items-center space-x-3">
