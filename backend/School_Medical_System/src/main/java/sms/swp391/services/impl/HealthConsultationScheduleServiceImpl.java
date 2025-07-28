@@ -113,13 +113,20 @@ public class HealthConsultationScheduleServiceImpl implements HealthConsultation
             throw new RuntimeException("Thời gian hẹn tư vấn phải trong khung giờ 08:00 - 17:00. Mỗi phiên cách nhau 20 phút.");
         }
 
-        while (scheduleRepo.existsByStudent_IdAndScheduleTimeAndStatusIn(student.getId(), scheduleTime, statuses)) {
+
+        while (scheduleRepo.existsByStudent_IdAndScheduleTimeBetweenAndStatusIn(
+                student.getId(),
+                scheduleTime.minusMinutes(19),
+                scheduleTime.plusMinutes(19),
+                statuses)) {
+
             scheduleTime = scheduleTime.plusMinutes(20);
 
             if (scheduleTime.toLocalTime().isAfter(endTime.minusMinutes(20))) {
                 throw new RuntimeException("Không còn khung giờ trống phù hợp trong ngày để đặt lịch tư vấn.");
             }
         }
+
 
         HealthConsultationScheduleEntity entity = HealthConsultationScheduleEntity.builder()
                 .student(student)
