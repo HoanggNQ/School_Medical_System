@@ -417,9 +417,13 @@ const validate = () => {
                           <Edit className="w-4 h-4 text-blue-500" />
                         </Button>
                       )}
-                      <Button size="icon" variant="outline" onClick={() => handleDeleteVaccination(vaccination.id)}>
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
+                      {vaccination.status === 'PENDING' && (
+                        <Button size="icon" variant="outline" onClick={() => handleDeleteVaccination(vaccination.id)}>
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      )}
+                      
+
                       {vaccination.status === 'PENDING' && (
                         <Button size="sm" className="bg-green-500 text-white hover:bg-green-600" onClick={() => handleStartVaccination(vaccination.id)} disabled={loading}>
                           Bắt đầu 
