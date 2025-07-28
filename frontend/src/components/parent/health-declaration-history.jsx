@@ -283,7 +283,7 @@ const HealthDeclarationHistory = ({ selectedStudent, onEdit }) => {
                     </p>
                   </div>
 
-                  <div className="bg-pink-50 p-3 rounded-lg">
+                  {/* <div className="bg-pink-50 p-3 rounded-lg">
                     <h6 className="font-medium text-pink-800 mb-1 flex items-center">
                       <Pill className="w-4 h-4 mr-1" />
                       Thuốc đang dùng
@@ -295,7 +295,7 @@ const HealthDeclarationHistory = ({ selectedStudent, onEdit }) => {
                           : declaration.currentMedications
                         : "Không có"}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Emergency Contact */}
@@ -411,10 +411,10 @@ const HealthDeclarationHistory = ({ selectedStudent, onEdit }) => {
                         <strong>Bệnh mãn tính:</strong>
                         <p className="mt-1">{formatValue(selectedDeclaration.chronicDiseases)}</p>
                       </div>
-                      <div>
+                      {/* <div>
                         <strong>Thuốc đang dùng:</strong>
                         <p className="mt-1">{formatValue(selectedDeclaration.currentMedications)}</p>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
