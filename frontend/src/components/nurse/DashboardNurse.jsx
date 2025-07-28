@@ -31,10 +31,10 @@ const DashboardNurse = () => {
       setLoading(true);
       const response = await AuthService.getDashboardNurse();
      
-      
-      // Đảm bảo events luôn là array - lấy từ response.data.data
+
      
       setEvents(response.data.data);
+      console.log("(response.data.data",response.data.data);
      
       
       setError(null);
@@ -57,32 +57,40 @@ const DashboardNurse = () => {
   };
 
   // Convert events to calendar events
-  const calendarEvents = events.map(event => ({
-    id: event.eventId,
-    title: event.name,
-    start: new Date(event.startDate),
-    end: new Date(event.endDate),
-    resource: event,
-    location: event.location,
-    type: event.type,
-    eventId: event.eventId
-  }));
+  const calendarEvents = events.map(event => {
+    const start = new Date(event.startDate);
+    // Nếu endDate null hoặc không hợp lệ, dùng startDate luôn
+    const end = event.endDate ? new Date(event.endDate) : start;
+    return {
+      id: event.eventId,
+      title: event.name,
+      start,
+      end,
+      resource: event,
+      location: event.location,
+      status: event.status,
+      type: event.type,
+      eventId: event.eventId
+    };
+  });
 
   // Custom event component
   const EventComponent = ({ event }) => (
     <div className="p-1">
       <div className="font-semibold text-sm text-black">{event.title}</div>
       <div className="text-xs text-gray-600">{event.location}</div>
-      <div className={`text-xs px-1 py-0.5 rounded mt-1 inline-block ${
-        event.type === 'VACCINATION' ? 'bg-blue-100 text-blue-800' :
-        event.type === 'HEALTH_CHECK' ? 'bg-green-100 text-green-800' :
-        event.type === 'MEDICATION-REQUEST' ? 'bg-purple-100 text-purple-800' :
-        'bg-gray-100 text-gray-800'
-      }`}>
+      <div className={`text-xs px-1 py-0.5 rounded mt-1 inline-block
+        ${event.type === 'VACCINATION' ? 'bg-blue-100 text-blue-800' :
+          event.type === 'HEALTH_CHECK' ? 'bg-green-100 text-green-800' :
+          event.type === 'MEDICATION-REQUEST' ? 'bg-purple-100 text-purple-800' :
+          event.type === 'CONSULTATION' ? 'bg-orange-100 text-orange-800' :
+          'bg-gray-100 text-gray-800'}
+      `}>
         {event.type === 'VACCINATION' ? 'Tiêm chủng' :
-         event.type === 'HEALTH_CHECK' ? 'Khám sức khỏe' :
-         event.type === 'MEDICATION-REQUEST' ? 'Yêu cầu thuốc' :
-         event.type}
+          event.type === 'HEALTH_CHECK' ? 'Khám sức khỏe' :
+          event.type === 'MEDICATION-REQUEST' ? 'Yêu cầu thuốc' :
+          event.type === 'CONSULTATION' ? 'Lịch tư vấn' :
+          event.type}
       </div>
     </div>
   );
@@ -90,13 +98,15 @@ const DashboardNurse = () => {
   // Handle event click
   const handleEventClick = (event) => {
     if (event.type === 'VACCINATION') {
-      navigate(`/management-vaccine/${event.eventId}`);
+      navigate(`/management-vaccine/${event.eventId}`, { state: { vaccinationStatus: event.status } });
     } else if (event.type === 'HEALTH_CHECK') {
-      navigate(`/health-check/${event.eventId}`);
+      navigate(`/health-check/${event.eventId}`, { state: { campaignStatus: event.status } });
     } else if (event.type === 'MEDICATION-REQUEST') {
       navigate(`/medication-requests/${event.eventId}`);
+    } else if (event.type === 'CONSULTATION') {
+      navigate(`/consultation-schedules/${event.eventId}`);
     } else {
-      // Handle other event types
+   
       console.log('Event clicked:', event);
     }
   };
@@ -236,7 +246,7 @@ const DashboardNurse = () => {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      {/* Header */}
+  
       <div className="flex justify-between items-center">
         <div>
           <motion.h1 
@@ -333,9 +343,24 @@ const DashboardNurse = () => {
             </p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Lịch tư vấn</CardTitle>
+            <Calendar className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-500">
+              {events.filter(e => e.type === 'CONSULTATION').length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Lịch tư vấn 
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Calendar */}
+   
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -364,6 +389,7 @@ const DashboardNurse = () => {
                   event.type === 'VACCINATION' ? 'bg-blue-100 border-blue-300' :
                   event.type === 'HEALTH_CHECK' ? 'bg-green-100 border-green-300' :
                   event.type === 'MEDICATION-REQUEST' ? 'bg-purple-100 border-purple-300' :
+                  event.type === 'CONSULTATION' ? 'bg-orange-100 border-orange-300' :
                   'bg-gray-100 border-gray-300'
                 }`
               })}

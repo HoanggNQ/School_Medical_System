@@ -329,14 +329,14 @@ const Event = () => {
                           </span>
                         </div>
                         
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+                        <p className="text-sm text-gray-600 mb-4 overflow-hidden text-ellipsis" style={{maxHeight: '3em'}}>{event.description}</p>
                         
                         <div className="flex items-center text-sm text-gray-500 mb-4">
                           <Calendar className="h-4 w-4 mr-2" />
                           {new Date(event.eventDate).toLocaleDateString('vi-VN')}
                         </div>
 
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center relative">
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm" className="flex items-center space-x-2">
@@ -371,15 +371,34 @@ const Event = () => {
                                     <p className="mt-1">{event.followUpNotes}</p>
                                   </div>
                                 
+                                {/* Thông tin thuốc */}
+                                <div>
+                                  <Label>Thuốc đã dùng</Label>
+                                  {Array.isArray(event.medications) && event.medications.length > 0 ? (
+                                    <ul className="list-disc ml-6 mt-1">
+                                      {event.medications.map((med, idx) => (
+                                        <li key={idx}>
+                                          {med.medicationName || med.name || `ID: ${med.medicationId}`} - Số lượng: {med.quantity}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <p className="mt-1 text-gray-500">Không có thuốc</p>
+                                  )}
+                                </div>
                               </div>
                             </DialogContent>
                           </Dialog>
 
+                          {/* Các button Sửa và Xóa nằm ngoài Dialog để không bị chồng lấn sự kiện */}
                           <div className="flex gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleEdit(event)}
+                              onClick={() => {
+                                setShowForm(true);
+                                setSelectedEvent(event);
+                              }}
                               className="flex items-center space-x-2"
                             >
                               <Edit className="h-4 w-4" />

@@ -232,48 +232,48 @@ const ProfileForm = () => {
 
   if (loading && !originalData) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="w-5 h-5" />
-          Hồ sơ cá nhân
-        </CardTitle>
-        <CardDescription>Xem và cập nhật thông tin cá nhân của bạn</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-2xl shadow-lg rounded-xl border-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+            <User className="w-6 h-6" />
+            Hồ sơ cá nhân
+          </CardTitle>
+          <CardDescription className="text-base text-gray-500">Xem và cập nhật thông tin cá nhân của bạn</CardDescription>
+        </CardHeader>
+        <CardContent className="p-8 pt-2 space-y-8">
           {/* Avatar section */}
-          <div className="space-y-2">
-            <Label htmlFor="avatarUrl">Ảnh đại diện</Label>
+          <div className="space-y-2 flex flex-col items-center">
+            <Label htmlFor="avatarUrl" className="text-lg font-medium">Ảnh đại diện</Label>
             <div className="flex items-center gap-4">
               {(imagePreview || formData.avatarUrl) ? (
                 <div className="relative">
                   <img
                     src={imagePreview || formData.avatarUrl}
                     alt="Avatar"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md bg-gray-100"
                   />
                   {isEditing && (imagePreview || selectedImage) && (
                     <Button
                       type="button"
                       variant="destructive"
                       size="sm"
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                      className="absolute -top-2 -right-2 w-7 h-7 rounded-full p-0 shadow"
                       onClick={removeImage}
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-4 h-4" />
                     </Button>
                   )}
                 </div>
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 border-4 border-white shadow-md">
                   No Avatar
                 </div>
               )}
@@ -281,7 +281,7 @@ const ProfileForm = () => {
                 <Button
                   type="button"
                   onClick={() => document.getElementById('avatar-upload').click()}
-                  className="ml-2"
+                  className="ml-2 rounded-full px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 shadow"
                 >
                   {imagePreview ? 'Thay đổi ảnh' : 'Tải lên ảnh'}
                 </Button>
@@ -297,9 +297,9 @@ const ProfileForm = () => {
             />
           </div>
           {/* Read-only fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
+              <Label htmlFor="email" className="flex items-center gap-2 font-medium">
                 <Mail className="w-4 h-4" />
                 Email
               </Label>
@@ -308,27 +308,27 @@ const ProfileForm = () => {
                 type="email" 
                 value={formData.email} 
                 disabled 
-                className="bg-gray-50"
+                className="bg-gray-100 border border-gray-200 rounded-lg"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="roleName" className="flex items-center gap-2">
+              <Label htmlFor="roleName" className="flex items-center gap-2 font-medium">
                 <Shield className="w-4 h-4" />
                 Vai trò
               </Label>
               <div className="flex items-center gap-2">
-                <Badge variant={getRoleBadgeVariant(formData.roleName)}>
+                <Badge variant={getRoleBadgeVariant(formData.roleName)} className="text-base px-3 py-1 rounded-full">
                   {getRoleDisplayName(formData.roleName)}
                 </Badge>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="status">Trạng thái</Label>
+              <Label htmlFor="status" className="font-medium">Trạng thái</Label>
               <div className="flex items-center gap-2">
-                <Badge variant={getStatusBadgeVariant(formData.status)}>
+                <Badge variant={getStatusBadgeVariant(formData.status)} className="text-base px-3 py-1 rounded-full">
                   {getStatusDisplayName(formData.status)}
                 </Badge>
               </div>
@@ -336,20 +336,21 @@ const ProfileForm = () => {
           </div>
 
           {/* Editable fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Họ và tên</Label>
+              <Label htmlFor="fullName" className="font-medium">Họ và tên</Label>
               <Input 
                 id="fullName" 
                 type="text" 
                 value={formData.fullName} 
                 onChange={(e) => handleChange('fullName', e.target.value)}
-                disabled={!isEditing}
+                disabled
                 required
+                className="rounded-lg border border-gray-200 bg-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+              <Label htmlFor="phoneNumber" className="flex items-center gap-2 font-medium">
                 <Phone className="w-4 h-4" />
                 Số điện thoại
               </Label>
@@ -358,14 +359,15 @@ const ProfileForm = () => {
                 type="tel" 
                 value={formData.phoneNumber} 
                 onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                disabled={!isEditing}
+                disabled
+                className="rounded-lg border border-gray-200 bg-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="dob" className="flex items-center gap-2">
+              <Label htmlFor="dob" className="flex items-center gap-2 font-medium">
                 <Calendar className="w-4 h-4" />
                 Ngày sinh
               </Label>
@@ -374,17 +376,18 @@ const ProfileForm = () => {
                 type="date" 
                 value={formData.dob} 
                 onChange={(e) => handleChange('dob', e.target.value)}
-                disabled={!isEditing}
+                disabled
+                className="rounded-lg border border-gray-200 bg-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="gender">Giới tính</Label>
+              <Label htmlFor="gender" className="font-medium">Giới tính</Label>
               <Select 
                 value={formData.gender} 
                 onValueChange={(value) => handleChange('gender', value)}
                 disabled={!isEditing}
               >
-                <SelectTrigger>
+                <SelectTrigger className="rounded-lg border border-gray-200 bg-white">
                   <SelectValue placeholder="Chọn giới tính" />
                 </SelectTrigger>
                 <SelectContent>
@@ -397,7 +400,7 @@ const ProfileForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address" className="flex items-center gap-2">
+            <Label htmlFor="address" className="flex items-center gap-2 font-medium">
               <MapPin className="w-4 h-4" />
               Địa chỉ
             </Label>
@@ -406,18 +409,19 @@ const ProfileForm = () => {
               type="text" 
               value={formData.address} 
               onChange={(e) => handleChange('address', e.target.value)}
-              disabled={!isEditing}
+              disabled
               placeholder="Nhập địa chỉ của bạn"
+              className="rounded-lg border border-gray-200 bg-white"
             />
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-4">
             {!isEditing ? (
               <Button 
                 type="button" 
                 onClick={handleEdit}
-                className="flex-1"
+                className="flex-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 text-lg py-3 shadow"
               >
                 Chỉnh sửa hồ sơ
               </Button>
@@ -427,7 +431,7 @@ const ProfileForm = () => {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1"
+                  className="flex-1 rounded-full bg-green-600 text-white hover:bg-green-700 text-lg py-3 shadow"
                 >
                   {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </Button>
@@ -436,16 +440,16 @@ const ProfileForm = () => {
                   variant="outline"
                   onClick={handleCancel}
                   disabled={loading}
-                  className="flex-1"
+                  className="flex-1 rounded-full border border-gray-300 text-lg py-3 shadow"
                 >
                   Hủy
                 </Button>
               </>
             )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

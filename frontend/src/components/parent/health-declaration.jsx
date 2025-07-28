@@ -17,6 +17,7 @@ import {
   Calendar,
 } from "lucide-react"
 import ParentService from "../../api/services/parent.service"
+import { toast } from "@/components/ui/use-toast"
 
 const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave, onCancel }) => {
   const parentProfile = JSON.parse(localStorage.getItem("parentProfile")) || {}
@@ -196,11 +197,19 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
       if (editingDeclaration) {
         // Update existing declaration
         await ParentService.updateHealthDeclaration(editingDeclaration.id, submitData)
-        alert("Cập nhật khai báo sức khỏe thành công!")
+        toast({
+                  title: "Cập nhật thành công",
+                  description: "Cập nhật khai báo sức khỏe thành công!",
+                  variant: "success",
+        })
       } else {
         // Create new declaration
         await ParentService.postHealthDeclaration(submitData)
-        alert("Tạo khai báo sức khỏe thành công!")
+        toast({
+                  title: "Tạo thành công",
+                  description: "Tạo khai báo sức khỏe thành công!",
+                  variant: "success",
+        })
       }
 
       // Reset form if creating new
@@ -228,7 +237,12 @@ const HealthDeclaration = ({ selectedStudent, editingDeclaration = null, onSave,
       }
     } catch (error) {
       console.error("Error submitting health declaration:", error)
-      alert("Có lỗi xảy ra khi gửi khai báo sức khỏe")
+      toast({
+                title: "Gửi thất bại",
+                description: "Có lỗi xảy ra khi gửi khai báo sức khỏe",
+                variant: "destructive",
+      })
+
     } finally {
       setIsSubmitting(false)
     }
