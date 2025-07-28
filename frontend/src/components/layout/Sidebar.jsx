@@ -70,6 +70,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           { type: 'item', id: 'watch-vaccination', label: 'Xem lịch tiêm chủng', icon: Calendar, path: '/watch-vaccination' },
           { type: 'item', id: 'campaigns', label: 'Lịch khám sức khỏe', icon: FlameKindling, path: '/campaigns-nurse' },
           { type: 'item', id: 'event', label: 'Sự kiện y tế', icon: ClipboardList, path: '/event' },
+
           { type: 'item', id: 'consultation-schedules-nurse', label: 'Lịch tư vấn', icon: ClipboardList, path: '/consultation-schedules' },
           { type: 'item', id: 'HealthDeclarationSearch', label: 'Phiếu sức khỏe', icon: ClipboardList, path: '/HealthDeclarationSearch' }
         ];
