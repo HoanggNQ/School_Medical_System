@@ -285,11 +285,7 @@ const HealthCheck = () => {
                   <td className="px-4 py-2 text-sm">{consent.studentId}</td>
                   <td className="px-4 py-2 text-sm">{consent.studentName}</td>
                   <td className="px-4 py-2 text-sm">{consent.className}</td>
-<<<<<<< HEAD
                   {/* <td className="px-4 py-2 text-sm">{consent.campaignId}</td> */}
-=======
-                  <td className="px-4 py-2 text-sm">{consent.campaignName}</td>
->>>>>>> 9be38e41f5e17d7b8e8e7b80755df70a71ffc466
                   <td className="px-4 py-2 text-sm">
                     {consent.status === 'DONE' ? 'Đã khám' :
                      consent.status === 'APPROVED' ? 'Đã đồng ý' :
