@@ -41,11 +41,12 @@ const HealthCheck = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useState(null);
+  const [campaignName, setCampaignName] = useState("");
 
   const { campaignId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  // Lấy trạng thái chiến dịch từ location.state nếu được truyền từ CampaignsNurse
+
   const campaignStatus = location.state?.campaignStatus;
 
   console.log("campaignId",campaignId);
@@ -57,19 +58,26 @@ const HealthCheck = () => {
   useEffect(() => {
     if (!campaignId) {
       setStudentsHealth([])
+      setCampaignName("");
       return
     }
     const fetchStudentsHealth = async () => {
       try {
         setLoadingHealth(true)
         setErrorHealth(null)
-        // Lấy danh sách học sinh khám sức khỏe
+       
         const res = await medicalService.getHealthCheckConsentsByCampaign(campaignId, page, size);
         console.log("res", res);
+        console.log("res", res);
+        console.log("res", res);
+
         setStudentsHealth(res.data?.healthCheckConsents || []);
         setTotalPages(res.data?.totalPages || (res.data?.totalElements ? Math.ceil(res.data.totalElements / size) : 1));
+        setCampaignName(res.data.healthCheckConsents[1].campaignName);
+       
       } catch (error) {
         setErrorHealth("Không thể tải danh sách học sinh chuẩn bị khám sức khỏe.")
+        setCampaignName("");
       } finally {
         setLoadingHealth(false)
       }
@@ -222,7 +230,7 @@ const HealthCheck = () => {
         <div className="overflow-x-auto">
           
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-xl font-bold">Chiến dịch {campaignId}</h3>
+            <h3 className="text-xl font-bold">{campaignName}</h3>
             <div className="flex items-center gap-2">
               <Button
                 variant="default"
@@ -266,7 +274,7 @@ const HealthCheck = () => {
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Id</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Tên học sinh</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Lớp</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Chiến dịch</th>
+                {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Chiến dịch</th> */}
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Trạng thái</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Ghi nhận</th>
               </tr>
@@ -277,7 +285,7 @@ const HealthCheck = () => {
                   <td className="px-4 py-2 text-sm">{consent.studentId}</td>
                   <td className="px-4 py-2 text-sm">{consent.studentName}</td>
                   <td className="px-4 py-2 text-sm">{consent.className}</td>
-                  <td className="px-4 py-2 text-sm">{consent.campaignId}</td>
+                  {/* <td className="px-4 py-2 text-sm">{consent.campaignId}</td> */}
                   <td className="px-4 py-2 text-sm">
                     {consent.status === 'DONE' ? 'Đã khám' :
                      consent.status === 'APPROVED' ? 'Đã đồng ý' :

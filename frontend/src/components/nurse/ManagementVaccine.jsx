@@ -29,6 +29,7 @@ const ManagementVaccine = () => {
     reactionNotes: '',
     scheduleTime: ''
   })
+  const [campaignName, setCampaignName] = useState("");
   const { campaignId } = useParams();
   const location = useLocation();
   const vaccinationStatus = location.state?.vaccinationStatus;
@@ -47,6 +48,7 @@ const ManagementVaccine = () => {
   useEffect(() => {
     if (!campaignId) {
       setStudentsVaccine([]);
+      setCampaignName("");
       return;
     }
     const fetchStudentsVaccine = async () => {
@@ -54,10 +56,22 @@ const ManagementVaccine = () => {
         setLoadingVaccine(true)
         setErrorVaccine(null)
         const res = await medicalService.getVaccinationConsentsByCampaign(campaignId);
+        console.log("res",res);
+        console.log("res",res);
+        console.log("res",res);
         setStudentsVaccine(res.data || [])
         setPage(0); // Reset về trang đầu khi đổi chiến dịch
+        
+       
+        setCampaignName(res.data[1].campaignName);
+        console.log("campaignName",campaignName);
+        console.log("campaignName",campaignName);
+        console.log("campaignName",campaignName);
+    
+       
       } catch (err) {
         setErrorVaccine("Không thể tải danh sách học sinh chuẩn bị tiêm chủng.")
+        setCampaignName("");
       } finally {
         setLoadingVaccine(false)
       }
@@ -199,7 +213,7 @@ const ManagementVaccine = () => {
       ) : (
         <div className="overflow-x-auto">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold mb-2">Chiến dịch {campaignId}</h3>
+            <h3 className="text-xl font-bold mb-2">{campaignName}</h3>
             <div className="flex items-center gap-2">
               <Button
                 variant="default"
@@ -233,7 +247,7 @@ const ManagementVaccine = () => {
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">ID</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">TÊN HỌC SINH</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">CHIẾN DỊCH</th>
+                {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">CHIẾN DỊCH</th> */}
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">TRẠNG THÁI</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">GHI NHẬN</th>
               </tr>
@@ -243,7 +257,7 @@ const ManagementVaccine = () => {
                 <tr key={item.id}>
                   <td className="px-4 py-2 text-sm">{item.studentId}</td>
                   <td className="px-4 py-2 text-sm">{item.studentName}</td>
-                  <td className="px-4 py-2 text-sm">{item.campaignId}</td>
+                  {/* <td className="px-4 py-2 text-sm">{item.campaignId}</td> */}
                   <td className="px-4 py-2 text-sm">
                     {item.consentStatus === 'DONE' ? 'Đã tiêm chủng' :
                       item.consentStatus === 'APPROVED' ? 'Đã đồng ý' :

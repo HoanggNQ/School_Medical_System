@@ -244,28 +244,82 @@ const validate = () => {
     }
 };
 
-  const handleDeleteVaccination = (vaccinationId) => {
-    setVaccinations(vaccinations.filter(vaccination => vaccination.id !== vaccinationId));
-    toast({
-      title: "Thành công!",
-      description: "Lịch tiêm chủng đã được xóa.",
-    });
+  const handleDeleteVaccination = async (vaccinationId) => {
+    setLoading(true);
+    try {
+      await vaccinationService.deleteVaccination(vaccinationId);
+      setVaccinations(vaccinations.filter(vaccination => vaccination.id !== vaccinationId));
+      toast({
+        title: "Thành công!",
+        description: "Lịch tiêm chủng đã được xóa.",
+      });
+    } catch (error) {
+      let errorMsg = 'Đã xảy ra lỗi.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = error.toString();
+      }
+      toast({
+        title: 'Xóa lịch tiêm chủng thất bại',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStartVaccination = async (vaccinationId) => {
     setLoading(true);
-    await vaccinationService.startVaccination(vaccinationId);
-    fetchVaccinations();
-    toast({ title: 'Chiến dịch tiêm chủng đã bắt đầu!' });
-    setLoading(false);
+    try {
+      await vaccinationService.startVaccination(vaccinationId);
+      fetchVaccinations();
+      toast({ title: 'Chiến dịch tiêm chủng đã bắt đầu!' });
+    } catch (error) {
+      let errorMsg = 'Đã xảy ra lỗi.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = error.toString();
+      }
+      toast({
+        title: 'Bắt đầu chiến dịch thất bại',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEndVaccination = async (vaccinationId) => {
     setLoading(true);
-    await vaccinationService.endVaccination(vaccinationId);
-    fetchVaccinations();
-    toast({ title: 'Chiến dịch tiêm chủng đã kết thúc!' });
-    setLoading(false);
+    try {
+      await vaccinationService.endVaccination(vaccinationId);
+      fetchVaccinations();
+      toast({ title: 'Chiến dịch tiêm chủng đã kết thúc!' });
+    } catch (error) {
+      let errorMsg = 'Đã xảy ra lỗi.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = error.toString();
+      }
+      toast({
+        title: 'Kết thúc chiến dịch thất bại',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRemindVaccination = async (vaccinationId) => {
