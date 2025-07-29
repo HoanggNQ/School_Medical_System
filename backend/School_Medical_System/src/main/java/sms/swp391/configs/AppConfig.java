@@ -1,10 +1,7 @@
 package sms.swp391.configs;
 
 import com.cloudinary.Cloudinary;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.auth.FirebaseAuth;
+
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +9,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,8 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 import sms.swp391.security.CustomUserDetailsService;
 
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -91,25 +85,7 @@ public class AppConfig {
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
-    @Bean
-    @Lazy
-    FirebaseApp firebaseApp() throws IOException {
-        Resource resource = new ClassPathResource("school-medical-firebase.json");
 
-        //  Mở  InputStream  để  đọc  file
-        try (InputStream serviceAccount = resource.getInputStream()) {
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            return FirebaseApp.initializeApp(options);
-        }
-    }
-    @Bean
-    @Lazy
-    FirebaseAuth firebaseAuth() throws IOException {
-        return FirebaseAuth.getInstance(firebaseApp());
-    }
     @Bean
     @Lazy
     public Cloudinary getCloudinary(){

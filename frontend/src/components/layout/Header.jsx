@@ -33,8 +33,8 @@ const Header = () => {
               <Heart className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="text-2xl font-extrabold bg-gradient-to-r from-sky-500 via-blue-500 to-blue-700 bg-clip-text text-transparent tracking-wide drop-shadow">HealthCare</span>
-              <p className="text-xs text-gray-500 leading-none font-medium">Quản lý sức khỏe</p>
+              <span className="text-2xl font-extrabold bg-gradient-to-r from-sky-500 via-blue-500 to-blue-700 bg-clip-text text-transparent tracking-wide drop-shadow">School Medical</span>
+              <p className="text-xs text-gray-500 leading-none font-medium">Sức Khỏe Học Đường</p>
             </div>
           </div>
           {/* Left menu: Homepage, Blog */}
