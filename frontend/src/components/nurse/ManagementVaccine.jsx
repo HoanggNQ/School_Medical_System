@@ -270,7 +270,10 @@ const ManagementVaccine = () => {
                     {item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
-                          <Button size="sm" variant="success" onClick={() => handleOpenDialog(item)}>
+                        <Button size="sm" 
+                          variant="success" 
+                          onClick={() => handleOpenDialog(item)}
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200">
                             Ghi kết quả sau tiêm
                           </Button>
                         </DialogTrigger>
