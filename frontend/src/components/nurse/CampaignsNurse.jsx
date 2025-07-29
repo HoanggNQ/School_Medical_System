@@ -91,14 +91,14 @@ const CampaignsNurse = () => {
         >
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý chiến dịch</h1>
-                    <p className="text-gray-600 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch khám sức khỏe</h1>
+                    <p className="text-gray-600 mt-2">Quản lý các  sự kiện sức khỏe</p>
                 </div>
             </div>
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                        <CardTitle>Danh sách chiến dịch</CardTitle>
+                        <CardTitle>Danh sách lịch khám sức khỏe</CardTitle>
                         <div className="relative w-full sm:w-80">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
@@ -120,6 +120,7 @@ const CampaignsNurse = () => {
                                 <TableHead>Khối lớp</TableHead>
                                 <TableHead>Trạng thái</TableHead>
                                 <TableHead>Bắt đầu</TableHead>
+                                <TableHead>Ngày kết thúc</TableHead>
                                 {/* <TableHead>Người tạo (ID)</TableHead> */}
                                 {/* <TableHead>Thao tác</TableHead> */}
                             </TableRow>
@@ -149,7 +150,8 @@ const CampaignsNurse = () => {
                                                 campaign.status}
                                     </span>
                                     </TableCell>
-                                    <TableCell>{campaign.createdAt}</TableCell>
+                                    <TableCell>{campaign.startDate}</TableCell>
+                                    <TableCell>{campaign.endDate}</TableCell>
                                     {/* <TableCell>
                                         <div className="flex gap-2">
                                             <Button size="icon" variant="outline" onClick={() => handleDeleteCampaign(campaign.id)}>
