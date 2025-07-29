@@ -277,7 +277,7 @@ const HealthCheck = () => {
                   <td className="px-4 py-2 text-sm">{consent.studentId}</td>
                   <td className="px-4 py-2 text-sm">{consent.studentName}</td>
                   <td className="px-4 py-2 text-sm">{consent.className}</td>
-                  <td className="px-4 py-2 text-sm">{consent.campaignId}</td>
+                  <td className="px-4 py-2 text-sm">{consent.campaignName}</td>
                   <td className="px-4 py-2 text-sm">
                     {consent.status === 'DONE' ? 'Đã khám' :
                      consent.status === 'APPROVED' ? 'Đã đồng ý' :
