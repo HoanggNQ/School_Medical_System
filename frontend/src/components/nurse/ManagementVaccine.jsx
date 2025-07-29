@@ -31,8 +31,10 @@ const ManagementVaccine = () => {
   })
   const [campaignName, setCampaignName] = useState("");
   const { campaignId } = useParams();
+  const { campaignName } = useParams();
   const location = useLocation();
   const vaccinationStatus = location.state?.vaccinationStatus;
+  console.log("campaignName", campaignName);
   console.log("campaignId", campaignId);
   console.log("location.state", location.state);
   console.log("location", location);
@@ -257,7 +259,11 @@ const ManagementVaccine = () => {
                 <tr key={item.id}>
                   <td className="px-4 py-2 text-sm">{item.studentId}</td>
                   <td className="px-4 py-2 text-sm">{item.studentName}</td>
+<<<<<<< HEAD
                   {/* <td className="px-4 py-2 text-sm">{item.campaignId}</td> */}
+=======
+                  <td className="px-4 py-2 text-sm">{item.campaignName}</td>
+>>>>>>> 9be38e41f5e17d7b8e8e7b80755df70a71ffc466
                   <td className="px-4 py-2 text-sm">
                     {item.consentStatus === 'DONE' ? 'Đã tiêm chủng' :
                       item.consentStatus === 'APPROVED' ? 'Đã đồng ý' :
@@ -270,7 +276,10 @@ const ManagementVaccine = () => {
                     {item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
-                          <Button size="sm" variant="success" onClick={() => handleOpenDialog(item)}>
+                          <Button size="sm" 
+                          variant="success" 
+                          onClick={() => handleOpenDialog(item)}
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200">
                             Ghi kết quả sau tiêm
                           </Button>
                         </DialogTrigger>
