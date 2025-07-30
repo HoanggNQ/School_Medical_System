@@ -353,8 +353,8 @@ const CampaignManagement = () => {
         >
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý chiến dịch</h1>
-                    <p className="text-gray-600 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch khám sức khỏe</h1>
+                    <p className="text-gray-600 mt-2">Lập lịch và quản lý các đợt khám sức khỏe</p>
                 </div>
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                     <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -383,7 +383,7 @@ const CampaignManagement = () => {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                        <CardTitle>Danh sách chiến dịch</CardTitle>
+                        <CardTitle>Danh sách chiến dịch Khám sức khỏe</CardTitle>
                         <div className="relative w-full sm:w-80">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input

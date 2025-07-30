@@ -91,8 +91,8 @@ const ShowListCampaign = () => {
         >
             <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Quản lý chiến dịch</h1>
-                    <p className="text-gray-600 mt-2">Quản lý các chiến dịch tiêm chủng và sự kiện sức khỏe</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Quản lý chiến dịch Khám sức khỏe</h1>
+                    <p className="text-gray-600 mt-2">Quản lý lịch khám sức khỏe</p>
                 </div>
                 <div className="flex gap-2">
                     <Button onClick={() => navigate('/show-campaigns')} className="btn-primary">

@@ -4,6 +4,12 @@ import { handleApiError } from '../../utils/api.helper';
 
 export const medicalService = {
   // Create a new medication
+  getHealthCheckResultByConsentId: (consentId) =>
+    axiosInstance.get(`/api/v1/health-check-result/consent/${consentId}`),
+  
+  
+  getVaccinationRecordByConsentId: (consentId) =>
+    axiosInstance.get(`/api/vaccination-record/consent/${consentId}`),
   createMedication: async (newMedicineData) => {
     try {
       const formData = new FormData();
