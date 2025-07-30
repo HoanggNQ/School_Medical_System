@@ -197,7 +197,7 @@ const EventListNurse = () => {
         </CardContent>
       </Card>
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Chi tiết kết quả khám sức khỏe</DialogTitle>
           </DialogHeader>
