@@ -120,7 +120,7 @@ const API_ENDPOINTS = {
     CREATE:   `api/vaccination-campaign/campaigns`,
     GET_ALL: 'api/vaccination-campaign/campaigns',
     UPDATE: (id) => `api/vaccination-campaign/campaigns/${id}`,
-    DELETE: (id) => `api/vaccination-campaign/campaigns/${id}`,
+    DELETE: (id) => `api/vaccination-campaign/delete/${id}`,
     GET_BY_ID: (id) => `api/vaccination-campaign/campaigns/${id}`,
     START: (id) => `api/vaccination-campaign/campaigns/${id}/start`,
     END: (id) => `api/vaccination-campaign/campaigns/${id}/end`,

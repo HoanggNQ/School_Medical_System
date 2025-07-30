@@ -16,6 +16,8 @@ public interface HealthCheckResultService {
 
     HealthCheckResultResponse getResultById(Long id);
 
+    HealthCheckResultResponse getResultsByConsentID(Long consentId);
+
     List<HealthCheckResultResponse> getResultsByCampaign(Long campaignId);
 
     List<HealthCheckResultResponse> getResultsByStudent(Long studentId);

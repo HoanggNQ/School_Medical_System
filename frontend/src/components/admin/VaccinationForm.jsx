@@ -73,7 +73,7 @@ const VaccinationForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = f
             const value = e.target.value.replace(/[^0-9, ]/g, '');
             setFormData({ ...formData, targetGrade: value });
           }}
-          placeholder="6,7,8"
+          placeholder="1 - > 2"
         />
         {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
       </div>

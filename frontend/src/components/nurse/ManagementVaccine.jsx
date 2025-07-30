@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { medicalService } from "@/api/services/medical.service"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, Syringe, Search, FileDown, FileUp  } from "lucide-react"
+import { AlertCircle, Syringe, Search, FileDown, FileUp } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -44,6 +44,9 @@ const ManagementVaccine = () => {
   const [size, setSize] = useState(10); // Số học sinh mỗi trang
   const [importing, setImporting] = useState(false);
   const fileInputRef = useState(null);
+  const [errors, setErrors] = useState({});
+  const [detailResult, setDetailResult] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   useEffect(() => {
     if (!campaignId) {
@@ -56,19 +59,19 @@ const ManagementVaccine = () => {
         setLoadingVaccine(true)
         setErrorVaccine(null)
         const res = await medicalService.getVaccinationConsentsByCampaign(campaignId);
-        console.log("res",res);
-        console.log("res",res);
-        console.log("res",res);
+        console.log("res", res);
+        console.log("res", res);
+        console.log("res", res);
         setStudentsVaccine(res.data || [])
         setPage(0); // Reset về trang đầu khi đổi chiến dịch
-        
-       
+
+
         setCampaignName(res.data[1].campaignName);
-        console.log("campaignName",campaignName);
-        console.log("campaignName",campaignName);
-        console.log("campaignName",campaignName);
-    
-       
+        console.log("campaignName", campaignName);
+        console.log("campaignName", campaignName);
+        console.log("campaignName", campaignName);
+
+
       } catch (err) {
         setErrorVaccine("Không thể tải danh sách học sinh chuẩn bị tiêm chủng.")
         setCampaignName("");
@@ -98,23 +101,47 @@ const ManagementVaccine = () => {
       reactionNotes: '',
       scheduleTime: ''
     })
+    setErrors({}); // Xóa lỗi khi mở dialog mới
   }
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    // Xóa lỗi khi người dùng nhập lại
+    setErrors(prev => ({ ...prev, [name]: '' }));
   }
 
   // Gọi API tạo kết quả tiêm chủng
   const handleSubmitResult = async () => {
     if (!selectedStudent) return;
+    // Kiểm tra tất cả các trường (trừ checkbox) phải điền
+    const requiredFields = [
+      'nextDoseDate',
+      'expirationDate',
+      'injectionSite',
+      'lotNumber',
+      'vaccineName',
+      'vaccineBatch',
+      'followUpNotes',
+      'reactionNotes',
+      'scheduleTime',
+    ];
+    const newErrors = {};
+    requiredFields.forEach(field => {
+      if (!formData[field]) newErrors[field] = 'Không được để trống.';
+    });
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
     try {
       const payload = {
         campaignId: Number(selectedStudent.campaignId),
         studentId: Number(selectedStudent.studentId),
         nextDoseDate: formData.nextDoseDate || null,
+        expirationDate: formData.expirationDate || null,
         injectionSite: formData.injectionSite,
+        lotNumber: formData.lotNumber,
         vaccineName: formData.vaccineName,
+        vaccineBatch: formData.vaccineBatch,
         followUpNotes: formData.followUpNotes,
         reactionNotes: formData.reactionNotes,
         scheduleTime: formData.scheduleTime ? new Date(formData.scheduleTime).toISOString() : null,
@@ -163,6 +190,21 @@ const ManagementVaccine = () => {
     } finally {
       setImporting(false);
       e.target.value = '';
+    }
+  };
+
+  const handleViewDetail = async (item) => {
+    setSelectedStudent(item);
+    setShowDialog(true);
+    setLoadingDetail(true);
+    try {
+      const res = await medicalService.getVaccinationRecordByConsentId(item.id); // hoặc item.consentId nếu backend trả consentId
+      setDetailResult(res.data.data); // LẤY ĐÚNG TRƯỜNG data
+    } catch (err) {
+      toast({ title: 'Lỗi', description: err?.message || 'Không thể lấy chi tiết kết quả.' });
+      setDetailResult(null);
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -255,82 +297,63 @@ const ManagementVaccine = () => {
             <tbody className="divide-y divide-gray-200">
               {paginatedStudents.map((item) => (
                 <tr key={item.id}>
-                  <td className="px-4 py-2 text-sm">{item.studentId}</td>
+                  <td className="px-4 py-2 text-sm">{item.id}</td>
                   <td className="px-4 py-2 text-sm">{item.studentName}</td>
                   {/* <td className="px-4 py-2 text-sm">{item.campaignId}</td> */}
-                  <td className="px-4 py-2 text-sm">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold
+                      ${item.consentStatus === 'DONE' ? 'bg-green-100 text-green-800' :
+                      item.consentStatus === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
+                          item.consentStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            item.consentStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'}
+  `}
+                  >
                     {item.consentStatus === 'DONE' ? 'Đã tiêm chủng' :
                       item.consentStatus === 'APPROVED' ? 'Đã đồng ý' :
                         item.consentStatus === 'PENDING' ? 'Chờ xác nhận' :
                           item.consentStatus === 'REJECTED' ? 'Từ chối' :
                             item.consentStatus || 'Không rõ'}
-                  </td>
+                  </span>
+
+
                   <td className="px-4 py-2 text-sm">
                     {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và vaccinationStatus là 'ACTIVE' */}
-                    {item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
+                    {item.consentStatus === 'DONE' && (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
-                        <Button size="sm" 
-                          variant="success" 
-                          onClick={() => handleOpenDialog(item)}
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200">
-                            Ghi kết quả sau tiêm
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewDetail(item)}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
+                          >
+                            Xem chi tiết
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md w-full max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>Ghi nhận kết quả tiêm chủng</DialogTitle>
+                            <DialogTitle>Chi tiết kết quả tiêm chủng</DialogTitle>
                           </DialogHeader>
-                          <form className="space-y-3">
-                            <div>
-                              <Label>Tên học sinh</Label>
-                              <div className="font-semibold">{item.studentName}</div>
+                          {loadingDetail ? (
+                            <div>Đang tải...</div>
+                          ) : detailResult ? (
+                            <div className="space-y-2">
+                              <div><b>Tên học sinh:</b> {detailResult.studentName}</div>
+                              <div><b>Tên vaccine:</b> {detailResult.vaccineName}</div>
+                              <div><b>Vị trí tiêm:</b> {detailResult.injectionSite}</div>
+                              <div><b>Người tiêm:</b> {detailResult.administrationByName}</div>
+                              <div><b>Ngày tiêm:</b> {detailResult.administrationDate}</div>
+                              <div><b>Năm học:</b> {detailResult.academicYear}</div>
+                              <div><b>Ghi chú theo dõi:</b> {detailResult.followUpNotes}</div>
+                              <div><b>Phản ứng sau tiêm:</b> {detailResult.reactionNotes}</div>
                             </div>
-                            {/* <div className="flex items-center gap-2">
-                              <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
-                              <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
-                            </div> */}
-                            {/* <div>
-                              <Label htmlFor="nextDoseDate">Ngày tiêm liều tiếp theo</Label>
-                              <Input id="nextDoseDate" name="nextDoseDate" type="date" value={formData.nextDoseDate} onChange={handleInputChange} className="w-full" />
-                            </div> */}
-                            {/* <div>
-                              <Label htmlFor="expirationDate">Ngày hết hạn</Label>
-                              <Input id="expirationDate" name="expirationDate" type="date" value={formData.expirationDate} onChange={handleInputChange} className="w-full" />
-                            </div> */}
-                            <div>
-                              <Label htmlFor="injectionSite">Vị trí tiêm</Label>
-                              <Input id="injectionSite" name="injectionSite" value={formData.injectionSite} onChange={handleInputChange} className="w-full" />
-                            </div>
-                            {/* <div>
-                              <Label htmlFor="lotNumber">Số lô</Label>
-                              <Input id="lotNumber" name="lotNumber" value={formData.lotNumber} onChange={handleInputChange} className="w-full" />
-                            </div> */}
-                            <div>
-                              <Label htmlFor="vaccineName">Tên vaccine</Label>
-                              <Input id="vaccineName" name="vaccineName" value={formData.vaccineName} onChange={handleInputChange} className="w-full" />
-                            </div>
-                            {/* <div>
-                              <Label htmlFor="vaccineBatch">Số lô vaccine (vaccineBatch)</Label>
-                              <Input id="vaccineBatch" name="vaccineBatch" value={formData.vaccineBatch} onChange={handleInputChange} className="w-full" />
-                            </div> */}
-                            <div>
-                              <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
-                              <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} className="w-full" />
-                            </div>
-                            <div>
-                              <Label htmlFor="reactionNotes">Phản ứng sau tiêm</Label>
-                              <Textarea id="reactionNotes" name="reactionNotes" value={formData.reactionNotes} onChange={handleInputChange} className="w-full" />
-                            </div>
-                            <div>
-                              <Label htmlFor="scheduleTime">Thời gian lịch tiêm</Label>
-                              <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} className="w-full" />
-                            </div>
-                            <div className="flex justify-end gap-2 pt-2">
-                              <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
-                              <Button className="" type="button" onClick={handleSubmitResult}>Lưu kết quả</Button>
-                            </div>
-                          </form>
+                          ) : (
+                            <div>Không có dữ liệu chi tiết.</div>
+                          )}
+                          <div className="flex justify-end pt-2">
+                            <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
+                          </div>
                         </DialogContent>
                       </Dialog>
                     )}
@@ -339,7 +362,7 @@ const ManagementVaccine = () => {
               ))}
             </tbody>
           </table>
-          {/* Pagination UI dưới bảng */}
+
           <div className="flex justify-center items-center mt-8 gap-2">
             <Button
               variant="outline"

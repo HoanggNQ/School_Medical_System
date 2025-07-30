@@ -39,6 +39,20 @@ public class VaccinationRecordController {
     private final VaccinationService vaccinationService;
     private final VaccinationConsentRepository vaccinationConsentRepository;
     private final VaccinationCampaignRepository vaccinationCampaignRepository;
+    @GetMapping("/consent/{consentId}")
+    public ResponseEntity<ResponseObject> getConsentById(@PathVariable Long consentId) {
+        VaccinationRecordResponse result = vaccinationService.getRecordbyConsentId(consentId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_RESULT_SUCCESS")
+                        .message("Result retrieved successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(result)
+                        .build()
+        );
+    }
 
     @Operation(
             summary = "Nhập kết quả tiêm chủng từ file Excel",

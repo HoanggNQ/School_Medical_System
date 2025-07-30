@@ -61,6 +61,7 @@ public class VaccinationCampaignController {
             );
         }
     }
+
     @Operation(summary = "Tạo chiến dịch tiêm vaccine", description = "Khởi tạo một chiến tiêm vaccine mới với thông tin từ người tạo.")
     @PostMapping("/campaigns")
     public ResponseEntity<ResponseObject> createCampaign(

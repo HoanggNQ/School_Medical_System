@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import {  useParams, useLocation, useNavigate } from "react-router-dom"
+import { useParams, useLocation, useNavigate } from "react-router-dom"
 import fileService from '@/api/services/file.service'
 
 const HealthCheck = () => {
@@ -31,17 +31,21 @@ const HealthCheck = () => {
     temperature: '',
     otherNotes: '',
     recommendation: '',
-  
+
     followUpNotes: '',
     overallHealthRating: '',
 
   })
+  
+  const [errors, setErrors] = useState({});
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useState(null);
   const [campaignName, setCampaignName] = useState("");
+  const [detailResult, setDetailResult] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const { campaignId } = useParams();
   const location = useLocation();
@@ -49,11 +53,24 @@ const HealthCheck = () => {
 
   const campaignStatus = location.state?.campaignStatus;
 
-  console.log("campaignId",campaignId);
-  console.log("location.state",location.state);
-  console.log("location",location);
-  
+  console.log("campaignId", campaignId);
+  console.log("location.state", location.state);
+  console.log("location", location);
 
+  const handleViewDetail = async (consent) => {
+    setSelectedStudent(consent);
+    setShowDialog(true);
+    setLoadingDetail(true);
+    try {
+      const res = await medicalService.getHealthCheckResultByConsentId(consent.consentId);
+      setDetailResult(res.data.data); // <-- SỬA DÒNG NÀY
+    } catch (err) {
+      toast({ title: 'Lỗi', description: err?.message || 'Không thể lấy chi tiết kết quả.' });
+      setDetailResult(null);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
 
   useEffect(() => {
     if (!campaignId) {
@@ -65,7 +82,7 @@ const HealthCheck = () => {
       try {
         setLoadingHealth(true)
         setErrorHealth(null)
-       
+
         const res = await medicalService.getHealthCheckConsentsByCampaign(campaignId, page, size);
         console.log("res", res);
         console.log("res", res);
@@ -74,7 +91,7 @@ const HealthCheck = () => {
         setStudentsHealth(res.data?.healthCheckConsents || []);
         setTotalPages(res.data?.totalPages || (res.data?.totalElements ? Math.ceil(res.data.totalElements / size) : 1));
         setCampaignName(res.data.healthCheckConsents[1].campaignName);
-       
+
       } catch (error) {
         setErrorHealth("Không thể tải danh sách học sinh chuẩn bị khám sức khỏe.")
         setCampaignName("");
@@ -113,20 +130,43 @@ const HealthCheck = () => {
       temperature: '',
       otherNotes: '',
       recommendation: '',
-      // followUpRequired: false,
       followUpNotes: '',
       overallHealthRating: '',
-      // scheduleTime: '',
     })
+    setErrors({}); // Xóa lỗi khi mở dialog mới
   }
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    // Xóa lỗi khi người dùng nhập lại
+    setErrors(prev => ({ ...prev, [name]: '' }));
   }
 
   const handleSubmitResult = async () => {
     if (!selectedStudent) return;
+    // Kiểm tra tất cả các trường phải điền
+    const requiredFields = [
+      'heightCm',
+      'weightKg',
+      'visionLeft',
+      'visionRight',
+      'hearing',
+      'dentalHealth',
+      'bloodPressure',
+      'pulse',
+      'temperature',
+      'otherNotes',
+      'recommendation',
+      'followUpNotes',
+      'overallHealthRating',
+    ];
+    const newErrors = {};
+    requiredFields.forEach(field => {
+      if (!formData[field]) newErrors[field] = 'Không được để trống.';
+    });
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
     try {
       const payload = {
         campaignId: Number(selectedStudent.campaignId),
@@ -142,10 +182,8 @@ const HealthCheck = () => {
         temperature: Number(formData.temperature),
         otherNotes: formData.otherNotes,
         recommendation: formData.recommendation,
-        // followUpRequired: !!formData.followUpRequired,
         followUpNotes: formData.followUpNotes,
         overallHealthRating: formData.overallHealthRating,
-        // scheduleTime: formData.scheduleTime ? new Date(formData.scheduleTime).toISOString() : null,
       };
       console.log('payload gửi lên:', payload);
       const response = await medicalService.createHealthCheckResult(payload);
@@ -171,11 +209,11 @@ const HealthCheck = () => {
       window.URL.revokeObjectURL(url);
       toast({ title: 'Thành công', description: 'Xuất file thành công.' });
     } catch (error) {
-       const errorMessage = error.customMessage || 
-                           error.response?.data?.message || 
-                           error.message || 
-                           'Đã có lỗi xảy ra.';
-      
+      const errorMessage = error.customMessage ||
+        error.response?.data?.message ||
+        error.message ||
+        'Đã có lỗi xảy ra.';
+
       console.log("Lỗi chi tiết:", error);
       console.log("customMessage chi tiết  :", error.customMessage);
 
@@ -207,7 +245,7 @@ const HealthCheck = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Stethoscope className="h-6 w-6 text-blue-600"/>Danh sách học sinh chuẩn bị khám sức khỏe</h2>
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2"><Stethoscope className="h-6 w-6 text-blue-600" />Danh sách học sinh chuẩn bị khám sức khỏe</h2>
       </div>
       {loadingHealth ? (
         <div className="flex items-center justify-center min-h-[120px]">
@@ -228,7 +266,7 @@ const HealthCheck = () => {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          
+
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xl font-bold">{campaignName}</h3>
             <div className="flex items-center gap-2">
@@ -257,17 +295,17 @@ const HealthCheck = () => {
                 style={{ display: 'none' }}
                 onChange={handleImport}
               />
-               {campaignId && (
-                  <Button
-                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                    onClick={() => navigate(`/consultation-schedules-nurse/${campaignId}`)}
-                  >
-                    Xem lịch tư vấn
-                  </Button>
-                )}
+              {campaignId && (
+                <Button
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  onClick={() => navigate(`/consultation-schedules-nurse/${campaignId}`)}
+                >
+                  Xem lịch tư vấn
+                </Button>
+              )}
             </div>
           </div>
-          
+
           <table className="min-w-full bg-white border border-gray-200 rounded-lg">
             <thead className="bg-gray-50">
               <tr>
@@ -282,120 +320,94 @@ const HealthCheck = () => {
             <tbody className="divide-y divide-gray-200">
               {studentsHealth.map((consent) => (
                 <tr key={consent.consentId}>
-                  <td className="px-4 py-2 text-sm">{consent.studentId}</td>
+                  <td className="px-4 py-2 text-sm">{consent.consentId}</td>
                   <td className="px-4 py-2 text-sm">{consent.studentName}</td>
                   <td className="px-4 py-2 text-sm">{consent.className}</td>
                   {/* <td className="px-4 py-2 text-sm">{consent.campaignId}</td> */}
                   <td className="px-4 py-2 text-sm">
-                    {consent.status === 'DONE' ? 'Đã khám' :
-                     consent.status === 'APPROVED' ? 'Đã đồng ý' :
-                     consent.status === 'PENDING' ? 'Chờ xác nhận' :
-                     consent.status === 'REJECTED' ? 'Từ chối' :
-                     consent.status || 'Không rõ'}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold
+      ${consent.status === 'DONE' ? 'bg-green-100 text-green-800' :
+                          consent.status === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
+                            consent.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                              consent.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'}
+    `}
+                    >
+                      {consent.status === 'DONE' ? 'Đã khám' :
+                        consent.status === 'APPROVED' ? 'Đã đồng ý' :
+                          consent.status === 'PENDING' ? 'Chờ xác nhận' :
+                            consent.status === 'REJECTED' ? 'Từ chối' :
+                              consent.status || 'Không rõ'}
+                    </span>
                   </td>
-                  <td className="px-4 py-2 text-sm">
-                    {/* Chỉ hiển thị nút nếu campaignStatus là 'APPROVED' và học sinh có status là 'APPROVED' */}
-                    {campaignStatus === 'APPROVED' && consent.status === 'APPROVED' && (
-                      <Dialog open={showDialog && selectedStudent?.consentId === consent.consentId} onOpenChange={setShowDialog}>
-                        <DialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="success"
-                            onClick={() => handleOpenDialog(consent)}
-                            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Ghi nhận kết quả
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Ghi nhận kết quả khám sức khỏe</DialogTitle>
-                          </DialogHeader>
-                          <form className="space-y-3">
-                            <div>
-                              <Label>Tên học sinh</Label>
-                              <div className="font-semibold">{consent.studentName}</div>
-                            </div>
-                            {/* <div>
-                              <Label>Mã học sinh</Label>
-                              <div className="font-semibold">{item.studentId}</div>
-                            </div>
-                            <div>
-                              <Label>Mã chiến dịch</Label>
-                              <div className="font-semibold">{item.campaignId}</div>
-                            </div> */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor="heightCm">Chiều cao (cm)</Label>
-                                <Input id="heightCm" name="heightCm" value={formData.heightCm} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="weightKg">Cân nặng (kg)</Label>
-                                <Input id="weightKg" name="weightKg" value={formData.weightKg} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="visionLeft">Thị lực trái</Label>
-                                <Input id="visionLeft" name="visionLeft" value={formData.visionLeft} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="visionRight">Thị lực phải</Label>
-                                <Input id="visionRight" name="visionRight" value={formData.visionRight} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="hearing">Thính lực</Label>
-                                <Input id="hearing" name="hearing" value={formData.hearing} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="dentalHealth">Răng miệng</Label>
-                                <Input id="dentalHealth" name="dentalHealth" value={formData.dentalHealth} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="bloodPressure">Huyết áp</Label>
-                                <Input id="bloodPressure" name="bloodPressure" value={formData.bloodPressure} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="pulse">Mạch</Label>
-                                <Input id="pulse" name="pulse" value={formData.pulse} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="temperature">Nhiệt độ</Label>
-                                <Input id="temperature" name="temperature" value={formData.temperature} onChange={handleInputChange} />
-                              </div>
-                              <div>
-                                <Label htmlFor="overallHealthRating">Đánh giá tổng thể</Label>
-                                <Input id="overallHealthRating" name="overallHealthRating" value={formData.overallHealthRating} onChange={handleInputChange} />
-                              </div>
-                              <div className="md:col-span-2">
-                                <Label htmlFor="otherNotes">Ghi chú khác</Label>
-                                <Textarea id="otherNotes" name="otherNotes" value={formData.otherNotes} onChange={handleInputChange} />
-                              </div>
-                              <div className="md:col-span-2">
-                                <Label htmlFor="recommendation">Khuyến nghị</Label>
-                                <Input id="recommendation" name="recommendation" value={formData.recommendation} onChange={handleInputChange} />
-                              </div>
-                              {/* <div className="flex items-center gap-2 md:col-span-2">
-                                <input type="checkbox" id="followUpRequired" name="followUpRequired" checked={formData.followUpRequired} onChange={handleInputChange} />
-                                <Label htmlFor="followUpRequired" className="mb-0">Cần theo dõi thêm</Label>
-                              </div> */}
-                              <div className="md:col-span-2">
-                                <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
-                                <Textarea id="followUpNotes" name="followUpNotes" value={formData.followUpNotes} onChange={handleInputChange} />
-                              </div>
-                              {/* <div className="md:col-span-2">
-                                <Label htmlFor="scheduleTime">Thời gian lịch tái khám</Label>
-                                <Input id="scheduleTime" name="scheduleTime" type="datetime-local" value={formData.scheduleTime} onChange={handleInputChange} />
-                              </div> */}
-                            </div>
-                            <div className="flex justify-end gap-2 pt-2">
-                              <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
-                              <Button className="" type="button" onClick={handleSubmitResult}>Lưu kết quả</Button>
-                            </div>
-                          </form>
-                        </DialogContent>
-                      </Dialog>
-                    )}
-                  </td>
+
+                  <td className="px-4 py-2 text-sm flex gap-2">
+  {campaignStatus === 'APPROVED' && consent.status === 'APPROVED' && (
+    <Dialog open={showDialog && selectedStudent?.consentId === consent.consentId} onOpenChange={setShowDialog}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="success"
+          onClick={() => handleOpenDialog(consent)}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
+        >
+          <CheckCircle className="w-4 h-4 mr-1" />
+          Ghi nhận kết quả
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        {/* ...form ghi nhận kết quả như bạn đã làm */}
+      </DialogContent>
+    </Dialog>
+  )}
+
+  {consent.status === 'DONE' && (
+    <Dialog open={showDialog && selectedStudent?.consentId === consent.consentId} onOpenChange={setShowDialog}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleViewDetail(consent)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
+        >
+          Xem chi tiết
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Chi tiết kết quả khám sức khỏe</DialogTitle>
+        </DialogHeader>
+        {loadingDetail ? (
+          <div>Đang tải...</div>
+        ) : detailResult ? (
+          <div className="space-y-2">
+            <div><b>Tên học sinh:</b> {detailResult.studentName}</div>
+            <div><b>Chiều cao:</b> {detailResult.heightCm} cm</div>
+            <div><b>Cân nặng:</b> {detailResult.weightKg} kg</div>
+            <div><b>Thị lực trái:</b> {detailResult.visionLeft}</div>
+            <div><b>Thị lực phải:</b> {detailResult.visionRight}</div>
+            <div><b>Thính lực:</b> {detailResult.hearing}</div>
+            <div><b>Răng miệng:</b> {detailResult.dentalHealth}</div>
+            <div><b>Huyết áp:</b> {detailResult.bloodPressure}</div>
+            <div><b>Mạch:</b> {detailResult.pulse}</div>
+            <div><b>Nhiệt độ:</b> {detailResult.temperature}</div>
+            <div><b>Ghi chú khác:</b> {detailResult.otherNotes}</div>
+            <div><b>Khuyến nghị:</b> {detailResult.recommendation}</div>
+            <div><b>Ghi chú theo dõi:</b> {detailResult.followUpNotes}</div>
+            <div><b>Đánh giá tổng thể:</b> {detailResult.overallHealthRating}</div>
+          </div>
+        ) : (
+          <div>Không có dữ liệu chi tiết.</div>
+        )}
+        <div className="flex justify-end pt-2">
+          <Button onClick={() => setShowDialog(false)} variant="outline" type="button">Đóng</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )}
+</td>
+
                 </tr>
               ))}
             </tbody>

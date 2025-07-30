@@ -27,6 +27,8 @@ public interface VaccinationService {
 
     void startCampaign(Long campaignId);
 
+    VaccinationRecordResponse getRecordbyConsentId(Long id);
+
     VaccinationCampaignResponse getCampaignById(Long id);
 
     List<VaccinationCampaignResponse> getAllCampaigns();

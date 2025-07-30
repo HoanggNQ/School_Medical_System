@@ -18,35 +18,34 @@ public class HealthCheckResultMapper {
         if (entity == null) return null;
 
         StudentEntity student = entity.getStudent();
-        StudentHealthProfileEntity profile = student.getHealthProfile();
+        StudentHealthProfileEntity profile = (student != null) ? student.getHealthProfile() : null;
 
-        Double bmi = calculateBMI(
-                profile != null ? profile.getHeight() : null,
-                profile != null ? profile.getWeight() : null
-        );
+        Double height = (profile != null) ? profile.getHeight() : null;
+        Double weight = (profile != null) ? profile.getWeight() : null;
+        Double bmi = calculateBMI(height, weight);
 
-        MedicalStatus  consentStatus = entity.getConsent() != null
-                ? entity.getConsent().getConsentStatus()
-                : null;
+        MedicalStatus consentStatus = (entity.getConsent() != null) ? entity.getConsent().getConsentStatus() : null;
 
         return HealthCheckResultResponse.builder()
                 .id(entity.getResultId())
-                .campaignId(entity.getHealthCheckCampaign().getId())
-                .studentId(student.getId())
-                .studentName(Optional.ofNullable(student.getUser()).map(UserEntity::getFullname).orElse(null))
-                .checkedById(entity.getCheckedBy().getUserId())
-                .checkedByName(entity.getCheckedBy().getFullname())
-                .campaignName(entity.getHealthCheckCampaign().getName())
+                .campaignId(entity.getHealthCheckCampaign() != null ? entity.getHealthCheckCampaign().getId() : null)
+                .campaignName(entity.getHealthCheckCampaign() != null ? entity.getHealthCheckCampaign().getName() : null)
+                .studentId(student != null ? student.getId() : null)
+                .studentName(Optional.ofNullable(student)
+                        .map(StudentEntity::getUser)
+                        .map(UserEntity::getFullname)
+                        .orElse(null))
+                .checkedById(entity.getCheckedBy() != null ? entity.getCheckedBy().getUserId() : null)
+                .checkedByName(entity.getCheckedBy() != null ? entity.getCheckedBy().getFullname() : null)
                 .checkDate(entity.getCheckDate())
-                .heightCm(profile != null ? profile.getHeight() : null)
-                .weightKg(profile != null ? profile.getWeight() : null)
+                .heightCm(height)
+                .weightKg(weight)
                 .bmi(bmi)
                 .visionLeft(profile != null ? profile.getVisionLeft() : null)
                 .visionRight(profile != null ? profile.getVisionRight() : null)
                 .hearing(profile != null ? profile.getHearing() : null)
                 .dentalHealth(profile != null ? profile.getDentalHealth() : null)
                 .bloodPressure(profile != null ? profile.getBloodPressure() : null)
-                .otherNotes(entity.getFollowUpNotes())
                 .pulse(profile != null ? profile.getPulse() : null)
                 .temperature(profile != null ? profile.getTemperature() : null)
                 .recommendation(entity.getRecommendation())
@@ -57,6 +56,7 @@ public class HealthCheckResultMapper {
                 .consentStatus(consentStatus != null ? consentStatus.name() : null)
                 .build();
     }
+
 
     public static HealthCheckResultEntity fromRequestDTO(HealthCheckResultRequestDTO dto) {
         if (dto == null) return null;

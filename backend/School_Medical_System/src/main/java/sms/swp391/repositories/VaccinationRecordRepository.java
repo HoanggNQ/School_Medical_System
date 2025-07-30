@@ -14,5 +14,7 @@ public interface VaccinationRecordRepository extends JpaRepository<VaccinationRe
     List<VaccinationRecordEntity> findByVaccinationCampaign_Id(Long vaccinationCampaignId);
     Optional<VaccinationRecordEntity> findTopByVaccinationCampaignIdAndStudentIdOrderByAdministrationDateDesc(Long campaignId, Long studentId);
 
-  //  Optional<VaccinationRecordEntity> findTopByVaccinationCampaignIdAndStudentIdOrderByAdministration_dateDesc(Long vaccinationCampaignId, Long studentId);
+    Optional<VaccinationRecordEntity>findVaccinationRecordEntityByConsent_Id(Long consentId);
+
+    //  Optional<VaccinationRecordEntity> findTopByVaccinationCampaignIdAndStudentIdOrderByAdministration_dateDesc(Long vaccinationCampaignId, Long studentId);
 }

@@ -285,10 +285,19 @@ public class VaccinationServiceImpl implements VaccinationService {
     @Override
     public void startCampaign(Long campaignId) {
         VaccinationCampaignEntity campaign = campaignRepository.findById(campaignId)
-                .orElseThrow(() -> new NotFoundException("Campaign not found " + campaignId));
-        if (campaign.getStartDate().isAfter(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + campaign.getStartDate());
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy chiến dịch với ID: " + campaignId));
+
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = campaign.getStartDate();
+        if (startDate.isAfter(today)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chiến dịch chưa tới ngày bắt đầu. Ngày bắt đầu là: " + startDate);
         }
+        if (campaign.getStatus() == MedicalStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chiến dịch đã được bắt đầu trước đó.");
+        }
+
         campaign.setStatus(MedicalStatus.APPROVED);
         campaignRepository.save(campaign);
     }
@@ -376,6 +385,15 @@ public class VaccinationServiceImpl implements VaccinationService {
         return VaccinationCampaignMapper.toDTO(updatedCampaign);
     }
 
+    @Transactional
+    @Override
+    public VaccinationRecordResponse getRecordbyConsentId(Long id) {
+        return recordRepository.findVaccinationRecordEntityByConsent_Id(id)
+                .stream()
+                .findFirst()
+                .map(VaccinationRecordMapper::toDTO)
+                .orElse(null);
+    }
 
     @Override
     public VaccinationCampaignResponse getCampaignById(Long id) {

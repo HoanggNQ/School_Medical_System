@@ -63,6 +63,14 @@ export const vaccinationService = {
             throw handleApiError(error);
         }
     },
+    deleteVaccination: async (vaccinationId) => {
+        try {
+            const response = await axiosInstance.delete(API_ENDPOINTS.VACCINATION_ENDPOINTS.DELETE(vaccinationId));
+            return response.data;
+        } catch (error) {
+            throw handleApiError(error);
+        }
+    },
       getVaccinationStatistics: async (vaccinationId) => {
     try {
       const response = await axiosInstance.get(API_ENDPOINTS.VACCINATION_ENDPOINTS.STATISTICS(vaccinationId));

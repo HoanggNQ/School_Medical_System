@@ -104,10 +104,10 @@ const validate = () => {
     } else {
         const invalid = gradeArr.some(s => {
             const n = Number(s);
-            return isNaN(n) || n < 1 || n > 12;
+            return isNaN(n) || n < 1 || n > 5;
         });
         if (invalid) {
-            newErrors.targetGrade = "Chỉ được nhập các số từ 1 đến 12, phân tách bằng dấu phẩy.";
+            newErrors.targetGrade = "Chỉ được nhập các số từ 1 đến 5, phân tách bằng dấu phẩy.";
         }
     }
 

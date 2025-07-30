@@ -37,7 +37,20 @@ public class HealthCheckResultController {
     private final HealthCheckResultService healthCheckService;
     private final HealthCheckCampaignRepository healthCheckCampaignRepository;
     private final HealthCheckConsentRepository healthCheckConsentRepository;
+    @GetMapping("/consent/{consentId}")
+    public ResponseEntity<ResponseObject> getConsentById(@PathVariable Long consentId) {
+        HealthCheckResultResponse result = healthCheckService.getResultsByConsentID(consentId);
 
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .code("GET_RESULT_SUCCESS")
+                        .message("Result retrieved successfully")
+                        .status(HttpStatus.OK)
+                        .isSuccess(true)
+                        .data(result)
+                        .build()
+        );
+    }
     @Operation(summary = "Nhập kết quả khám sức khỏe từ file Excel", description = "Nhập nhiều kết quả khám sức khỏe từ file Excel.")
     @Transactional
     @PostMapping(
