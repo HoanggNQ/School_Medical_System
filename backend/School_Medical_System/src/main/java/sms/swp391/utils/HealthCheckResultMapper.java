@@ -81,7 +81,7 @@ public class HealthCheckResultMapper {
         StudentHealthProfileEntity p = result.getStudent().getHealthProfile();
         if (p == null) return false;
 
-        if (p.getTemperature() != null && p.getTemperature().compareTo(Double.valueOf(38.0)) > 0)
+        if (p.getTemperature() != null && p.getTemperature().compareTo(38.0) > 0)
             return true;
 
         if (p.getBloodPressure() != null && p.getBloodPressure().contains("/")) {
@@ -89,7 +89,9 @@ public class HealthCheckResultMapper {
                 String[] parts = p.getBloodPressure().split("/");
                 int sys = Integer.parseInt(parts[0].trim());
                 int dia = Integer.parseInt(parts[1].trim());
-                if (sys > 140 || dia > 90) return true;
+                if (sys >= 140 || dia >= 90 || sys < 90 || dia < 60) {
+                    return true;
+                }
             } catch (Exception ignored) {
                 return false;
             }
@@ -105,6 +107,12 @@ public class HealthCheckResultMapper {
             return false;
         }
 
+        Double bmi = calculateBMI(p.getHeight(), p.getWeight());
+        if (bmi != null && (bmi < 18.5 || bmi > 24.9)) {
+            return true;
+        }
+
         return false;
     }
+
 }
