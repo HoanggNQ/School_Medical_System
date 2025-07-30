@@ -546,14 +546,14 @@ const StudentEvents = ({ selectedStudent }) => {
                           </div>
                         </div>
                       </div>
-                      {resultStatusInfo.shouldDisplay && (
+                      {/* {resultStatusInfo.shouldDisplay && (
                         <Badge className={resultStatusInfo.color}>
                           <div className="flex items-center space-x-1">
                             {resultStatusInfo.icon}
                             <span>{resultStatusInfo.label}</span>
                           </div>
                         </Badge>
-                      )}
+                      )} */}
                     </div>
 
                     {/* Event Details Grid */}
