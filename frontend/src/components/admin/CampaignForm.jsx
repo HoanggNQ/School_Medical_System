@@ -56,7 +56,7 @@ const CampaignForm = ({ formData, setFormData, onCancel, onSubmit, isEdit = fals
                     type="text"
                     value={formData.targetGrade}
                     onChange={(e) => setFormData({ ...formData, targetGrade: e.target.value })}
-                    placeholder=" 6,7,8 "
+                    placeholder="1 -> 5"
                 />
                 {errors.targetGrade && <div className="text-red-500 text-sm">{errors.targetGrade}</div>}
             </div>

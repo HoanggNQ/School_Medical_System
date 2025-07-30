@@ -18,16 +18,10 @@ const ManagementVaccine = () => {
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [showDialog, setShowDialog] = useState(false)
   const [formData, setFormData] = useState({
-    followUpRequired: false,
-    nextDoseDate: '',
-    expirationDate: '',
     injectionSite: '',
-    lotNumber: '',
     vaccineName: '',
-    vaccineBatch: '',
     followUpNotes: '',
     reactionNotes: '',
-    scheduleTime: ''
   })
   const [campaignName, setCampaignName] = useState("");
   const { campaignId } = useParams();
@@ -90,16 +84,10 @@ const ManagementVaccine = () => {
     setSelectedStudent(student)
     setShowDialog(true)
     setFormData({
-      followUpRequired: false,
-      nextDoseDate: '',
-      expirationDate: '',
       injectionSite: '',
-      lotNumber: '',
       vaccineName: '',
-      vaccineBatch: '',
       followUpNotes: '',
       reactionNotes: '',
-      scheduleTime: ''
     })
     setErrors({}); // Xóa lỗi khi mở dialog mới
   }
@@ -114,45 +102,49 @@ const ManagementVaccine = () => {
   // Gọi API tạo kết quả tiêm chủng
   const handleSubmitResult = async () => {
     if (!selectedStudent) return;
-    // Kiểm tra tất cả các trường (trừ checkbox) phải điền
-    const requiredFields = [
-      'nextDoseDate',
-      'expirationDate',
-      'injectionSite',
-      'lotNumber',
-      'vaccineName',
-      'vaccineBatch',
-      'followUpNotes',
-      'reactionNotes',
-      'scheduleTime',
-    ];
-    const newErrors = {};
-    requiredFields.forEach(field => {
-      if (!formData[field]) newErrors[field] = 'Không được để trống.';
-    });
+
+    const newErrors = validateForm();
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
+
     try {
       const payload = {
-        campaignId: Number(selectedStudent.campaignId),
-        studentId: Number(selectedStudent.studentId),
-        nextDoseDate: formData.nextDoseDate || null,
-        expirationDate: formData.expirationDate || null,
-        injectionSite: formData.injectionSite,
-        lotNumber: formData.lotNumber,
-        vaccineName: formData.vaccineName,
-        vaccineBatch: formData.vaccineBatch,
-        followUpNotes: formData.followUpNotes,
-        reactionNotes: formData.reactionNotes,
-        scheduleTime: formData.scheduleTime ? new Date(formData.scheduleTime).toISOString() : null,
+        campaignId: Number(campaignId),
+        studentId: Number(selectedStudent.studentId || selectedStudent.id),
+        injectionSite: formData.injectionSite.trim(),
+        vaccineName: formData.vaccineName.trim(),
+        followUpNotes: formData.followUpNotes.trim(),
+        reactionNotes: formData.reactionNotes.trim(),
       };
+
+      console.log("Payload gửi lên:", payload);
+
       await medicalService.createVaccine(payload);
-      toast({ title: 'Thành công', description: 'Đã ghi nhận kết quả tiêm chủng.' });
+      toast({
+        title: 'Thành công',
+        description: 'Đã ghi nhận kết quả tiêm chủng.',
+      });
+
       setShowDialog(false);
+      setSelectedStudent(null);
+      const res = await medicalService.getVaccinationConsentsByCampaign(campaignId);
+      setStudentsVaccine(res.data || []);
     } catch (err) {
-      toast({ title: 'Lỗi', description: err?.message || 'Không thể ghi nhận kết quả.' });
+      console.error("Lỗi khi ghi kết quả:", err.response?.data || err.message);
+      const msg = err?.response?.data?.message || err?.message || 'Không thể ghi nhận kết quả.';
+      toast({ title: 'Lỗi', description: msg });
     }
-  }
+  };
+// validateForm.ts
+const validateForm = () => {
+  const errors = {};
+  if (!formData.injectionSite.trim()) errors.injectionSite = 'Vị trí tiêm không được để trống.';
+  if (!formData.vaccineName.trim()) errors.vaccineName = 'Tên vaccine không được để trống.';
+  if (!formData.followUpNotes.trim()) errors.followUpNotes = 'Ghi chú theo dõi không được để trống.';
+  if (!formData.reactionNotes.trim()) errors.reactionNotes = 'Phản ứng sau tiêm không được để trống.';
+  return errors;
+};
+
 
   // Export handler
   const handleExport = async () => {
@@ -303,7 +295,7 @@ const ManagementVaccine = () => {
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-semibold
                       ${item.consentStatus === 'DONE' ? 'bg-green-100 text-green-800' :
-                      item.consentStatus === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
+                        item.consentStatus === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
                           item.consentStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                             item.consentStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
                               'bg-gray-100 text-gray-800'}
@@ -318,8 +310,8 @@ const ManagementVaccine = () => {
 
 
                   <td className="px-4 py-2 text-sm">
-                    {/* Chỉ hiển thị nút nếu consentStatus là 'APPROVED' và vaccinationStatus là 'ACTIVE' */}
-                    {item.consentStatus === 'DONE' && (
+                    {/* Nếu đã DONE thì xem chi tiết, ngược lại nếu đang APPROVED thì cho ghi kết quả */}
+                    {item.consentStatus === 'DONE' ? (
                       <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
                         <DialogTrigger asChild>
                           <Button
@@ -356,8 +348,116 @@ const ManagementVaccine = () => {
                           </div>
                         </DialogContent>
                       </Dialog>
+                    ) : (
+                      item.consentStatus === 'APPROVED' && vaccinationStatus === 'APPROVED' && (
+                        <Dialog open={showDialog && selectedStudent?.id === item.id} onOpenChange={setShowDialog}>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="success"
+                              onClick={() => handleOpenDialog(item)}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md rounded-lg px-4 py-2 transition-colors duration-200"
+                            >
+                              Ghi kết quả sau tiêm
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md w-full max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Ghi nhận kết quả tiêm chủng</DialogTitle>
+                            </DialogHeader>
+                            <form className="space-y-4">
+  <div>
+    <Label>Tên học sinh</Label>
+    <div className="font-semibold">{item.studentName}</div>
+  </div>
+
+  <div>
+    <Label htmlFor="injectionSite">
+      Vị trí tiêm <span className="text-red-500">*</span>
+    </Label>
+    <Input
+      id="injectionSite"
+      name="injectionSite"
+      value={formData.injectionSite}
+      onChange={handleInputChange}
+      placeholder="Nhập vị trí tiêm (ví dụ: Cánh tay trái)"
+      className={errors.injectionSite ? "border-red-500" : ""}
+    />
+    {errors.injectionSite && (
+      <p className="text-red-500 text-sm mt-1">{errors.injectionSite}</p>
+    )}
+  </div>
+
+  <div>
+    <Label htmlFor="vaccineName">
+      Tên vaccine <span className="text-red-500">*</span>
+    </Label>
+    <Input
+      id="vaccineName"
+      name="vaccineName"
+      value={formData.vaccineName}
+      onChange={handleInputChange}
+      placeholder="Nhập tên vaccine"
+      className={errors.vaccineName ? "border-red-500" : ""}
+    />
+    {errors.vaccineName && (
+      <p className="text-red-500 text-sm mt-1">{errors.vaccineName}</p>
+    )}
+  </div>
+
+  <div>
+    <Label htmlFor="followUpNotes">Ghi chú theo dõi</Label>
+    <Textarea
+      id="followUpNotes"
+      name="followUpNotes"
+      value={formData.followUpNotes}
+      onChange={handleInputChange}
+      placeholder="Nhập các ghi chú theo dõi sau tiêm (nếu có)"
+      className={errors.followUpNotes ? "border-red-500" : ""}
+    />
+    {errors.followUpNotes && (
+      <p className="text-red-500 text-sm mt-1">{errors.followUpNotes}</p>
+    )}
+  </div>
+
+  <div>
+    <Label htmlFor="reactionNotes">Phản ứng sau tiêm</Label>
+    <Textarea
+      id="reactionNotes"
+      name="reactionNotes"
+      value={formData.reactionNotes}
+      onChange={handleInputChange}
+      placeholder="Nhập ghi nhận phản ứng (nếu có)"
+      className={errors.reactionNotes ? "border-red-500" : ""}
+    />
+    {errors.reactionNotes && (
+      <p className="text-red-500 text-sm mt-1">{errors.reactionNotes}</p>
+    )}
+  </div>
+
+  <div className="flex justify-end gap-2 pt-4">
+    <Button
+      onClick={() => setShowDialog(false)}
+      variant="outline"
+      type="button"
+    >
+      Đóng
+    </Button>
+    <Button
+      type="button"
+      onClick={handleSubmitResult}
+    >
+      Lưu kết quả
+    </Button>
+  </div>
+</form>
+
+                          </DialogContent>
+                        </Dialog>
+                      )
                     )}
                   </td>
+
                 </tr>
               ))}
             </tbody>
