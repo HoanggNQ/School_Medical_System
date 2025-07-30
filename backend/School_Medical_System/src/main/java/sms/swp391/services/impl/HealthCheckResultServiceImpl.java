@@ -103,7 +103,7 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
         List<HealthCheckResultResponse> responses = new ArrayList<>();
 
         for (HealthCheckResultRequestDTO dto : req.getResults()) {
-
+            System.out.println("DTO: " + dto);
             HealthCheckResultEntity result = handleSingleStudentResult(dto, campaign, checker);
             resultsToSave.add(result);
             consentsToSave.add(result.getConsent());
@@ -111,12 +111,17 @@ public class HealthCheckResultServiceImpl implements HealthCheckResultService {
 
         }
 
+        studentRepository.saveAll(new ArrayList<>(studentsToSave));
+        studentRepository.flush();
+
         resultRepository.saveAll(resultsToSave);
         consentRepository.saveAll(new ArrayList<>(consentsToSave));
-        studentRepository.saveAll(new ArrayList<>(studentsToSave));
 
-        for (HealthCheckResultEntity result : resultsToSave) {
-            responses.add(HealthCheckResultMapper.toDTO(result));
+
+        for (int i = 0; i < resultsToSave.size(); i++) {
+            HealthCheckResultResponse resp = HealthCheckResultMapper.toDTO(resultsToSave.get(i), req.getResults().get(i));
+            System.out.println("Response: " + resp);
+            responses.add(resp);
         }
 
         return responses;

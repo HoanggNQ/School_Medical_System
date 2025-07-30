@@ -81,30 +81,33 @@ public class HealthCheckResultMapper {
         StudentHealthProfileEntity p = result.getStudent().getHealthProfile();
         if (p == null) return false;
 
-        if (p.getTemperature() != null && p.getTemperature().compareTo(38.0) > 0)
+        if (p.getTemperature() != null && p.getTemperature() > 38.0)
             return true;
 
         if (p.getBloodPressure() != null && p.getBloodPressure().contains("/")) {
             try {
                 String[] parts = p.getBloodPressure().split("/");
-                int sys = Integer.parseInt(parts[0].trim());
-                int dia = Integer.parseInt(parts[1].trim());
+                int sys = Integer.parseInt(parts[0].replaceAll("[^0-9]", "").trim());
+                int dia = Integer.parseInt(parts[1].replaceAll("[^0-9]", "").trim());
                 if (sys >= 140 || dia >= 90 || sys < 90 || dia < 60) {
                     return true;
                 }
             } catch (Exception ignored) {
-                return false;
             }
         }
 
         try {
-            if (p.getVisionLeft() != null && !p.getVisionLeft().isBlank() &&
-                    Float.parseFloat(p.getVisionLeft()) < 5.0f) return true;
-
-            if (p.getVisionRight() != null && !p.getVisionRight().isBlank() &&
-                    Float.parseFloat(p.getVisionRight()) < 5.0f) return true;
+            if (p.getVisionLeft() != null && !p.getVisionLeft().isBlank()) {
+                String left = p.getVisionLeft().split("/")[0].trim();
+                float leftVal = Float.parseFloat(left);
+                if (leftVal < 5.0f) return true;
+            }
+            if (p.getVisionRight() != null && !p.getVisionRight().isBlank()) {
+                String right = p.getVisionRight().split("/")[0].trim();
+                float rightVal = Float.parseFloat(right);
+                if (rightVal < 5.0f) return true;
+            }
         } catch (NumberFormatException ignored) {
-            return false;
         }
 
         Double bmi = calculateBMI(p.getHeight(), p.getWeight());
@@ -114,5 +117,101 @@ public class HealthCheckResultMapper {
 
         return false;
     }
+    public static HealthCheckResultResponse toDTO(HealthCheckResultEntity entity, HealthCheckResultRequestDTO dto) {
+        if (entity == null) return null;
 
+        Double height = dto.getHeightCm();
+        Double weight = dto.getWeightKg();
+        Double bmi = calculateBMI(height, weight);
+
+        MedicalStatus consentStatus = (entity.getConsent() != null) ? entity.getConsent().getConsentStatus() : null;
+
+        return HealthCheckResultResponse.builder()
+                .id(entity.getResultId())
+                .campaignId(entity.getHealthCheckCampaign() != null ? entity.getHealthCheckCampaign().getId() : null)
+                .campaignName(entity.getHealthCheckCampaign() != null ? entity.getHealthCheckCampaign().getName() : null)
+                .studentId(dto.getStudentId())
+                .studentName(entity.getStudent() != null ? entity.getStudent().getUser().getFullname() : null)
+                .checkedById(entity.getCheckedBy() != null ? entity.getCheckedBy().getUserId() : null)
+                .checkedByName(entity.getCheckedBy() != null ? entity.getCheckedBy().getFullname() : null)
+                .checkDate(entity.getCheckDate())
+                .heightCm(height)
+                .weightKg(weight)
+                .bmi(bmi)
+                .visionLeft(dto.getVisionLeft())
+                .visionRight(dto.getVisionRight())
+                .hearing(dto.getHearing())
+                .dentalHealth(dto.getDentalHealth())
+                .bloodPressure(dto.getBloodPressure())
+                .pulse(dto.getPulse())
+                .temperature(dto.getTemperature())
+                .recommendation(entity.getRecommendation())
+                .followUpNotes(entity.getFollowUpNotes())
+                .overallHealthRating(entity.getOverallHealthRating())
+                .academicYear(entity.getAcademicYear())
+                .healthStatus(isAbnormal(dto) ? "XẤU" : "TỐT")
+                .consentStatus(consentStatus != null ? consentStatus.name() : null)
+                .build();
+    }
+
+    public static boolean isAbnormal(HealthCheckResultRequestDTO dto) {
+
+        System.out.println(" height=" + dto.getHeightCm() + ", weight=" + dto.getWeightKg()
+                + ", visionLeft=" + dto.getVisionLeft() + ", visionRight=" + dto.getVisionRight()
+                + ", bloodPressure=" + dto.getBloodPressure() + ", temperature=" + dto.getTemperature());
+
+        // Kiểm tra nhiệt độ
+        if (dto.getTemperature() != null && dto.getTemperature() > 38.0) {
+            System.out.println("xấu");
+            return true;
+        }
+
+        // Kiểm tra huyết áp
+        if (dto.getBloodPressure() != null && dto.getBloodPressure().contains("/")) {
+            try {
+                String[] parts = dto.getBloodPressure().split("/");
+                int sys = Integer.parseInt(parts[0].replaceAll("[^0-9]", "").trim());
+                int dia = Integer.parseInt(parts[1].replaceAll("[^0-9]", "").trim());
+                if (sys >= 140 || dia >= 90 || sys < 90 || dia < 60) {
+                    System.out.println("xấu");
+                    return true;
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        // Kiểm tra thị lực
+        try {
+            if (dto.getVisionLeft() != null && !dto.getVisionLeft().isBlank()) {
+                String left = dto.getVisionLeft().split("/")[0].trim();
+                float leftVal = Float.parseFloat(left);
+                if (leftVal < 5.0f) {
+                    System.out.println(" < 5.0");
+                    return true;
+                }
+            }
+            if (dto.getVisionRight() != null && !dto.getVisionRight().isBlank()) {
+                String right = dto.getVisionRight().split("/")[0].trim();
+                float rightVal = Float.parseFloat(right);
+                if (rightVal < 5.0f) {
+                    System.out.println(" < 5.0");
+                    return true;
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // Kiểm tra BMI
+        Double bmi = calculateBMI(dto.getHeightCm(), dto.getWeightKg());
+        System.out.println("BMI: " + bmi);
+        if (bmi != null && (bmi < 18.5 || bmi > 24.9)) {
+            System.out.println("xau");
+            return true;
+        }
+
+        System.out.println("Tốt");
+        return false;
+    }
 }
